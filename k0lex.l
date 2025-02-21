@@ -11,7 +11,7 @@
 spaces_and_tabs         [ \t]+
 ExcludeCRLF             [^\r\n]*
 LineComment 	        "//"[^\r\n]*
-DelimitedComment	"/*"([^*]|"*"+[^/*])*"*"+"/"
+DelimitedComment	    "/*"([^*]|"*"+[^/*])*"*"+"/"
 DecDigitNoZero          [1-9]
 DecDigit                [0-9]
 DecDigitOrSeparator     [{DecDigit}_]
