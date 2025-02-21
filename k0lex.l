@@ -1,11 +1,14 @@
-/* -*-bison-*- */
-/* Simple wc implementation in Flex */
 %option noyywrap
 %option noinput
 %option nounput
 %option yylineno 
 %{
 #include "token.h"
+double yylval;
+int yyival;
+double yydval;
+char *yysval;
+char* removeSeparators(char* yytext);
 %}
 
 spaces_and_tabs         [ \t]+
