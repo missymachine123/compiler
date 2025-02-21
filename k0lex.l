@@ -1,129 +1,144 @@
+/* -*-bison-*- */
+/* Simple wc implementation in Flex */
+%option noyywrap
 %option noinput
-%option nounput  
+%option nounput
 %option yylineno 
 %{
 #include "token.h"
-int line = 1;
-void set_token(int category, const char* text);
-
-struct token {
-   int category;
-   char *text; 
-   int lineno;
-   char *filename;
-   int ival;
-   double dval;
-   char *sval;
-};
-
-extern struct token yytoken;
-
 %}
-WS                      [ \t\f]+
-CR                      \r
-NL                      \n
-LF                      \f
-SHEBANG_LINE            "#!"[^\r\n]*
-float_literal           [0-9]*"."[0-9]+[lL]?
-scientific              [0-9]+"."[0-9]+[eE][+-]?[0-9]+
-int_literal             [0-9]+[lL]?
-hex_literal             0[xX][0-9a-fA-F]+                
-LineComment             \/\/[^\r\n]*
-DelimitedComment        (\/\*([^*]|\*[^\/])*\*\/)
-hidden                  ((\/\*([^*]|\*[^\/])*\*\/)|\/\/[^\r\n]*|[ \t\f]+)
-char_literals           \'[A-Za-z0-9]\'
-line_string_literals    \"([^\"\\]|\\.)*\"
+
+spaces_and_tabs         [ \t]+
+ExcludeCRLF             [^\r\n]*
+LineComment 	        "//"[^\r\n]*
+DelimitedComment	"/*"([^*]|"*"+[^/*])*"*"+"/"
+DecDigitNoZero          [1-9]
+DecDigit                [0-9]
+DecDigitOrSeparator     [{DecDigit}_]
+NL                      \n|(\r\n?)
+WS			[ \t\x0c]
+Hidden			[{DelimitedComment}{LineComment}{WS}]
+DecDigits		{DecDigit}{DecDigitOrSeparator}*{DecDigit}|{DecDigit}
+DoubleExponent          [eE][+-]?{DecDigits}
+FloatLiteral		{DoubleLiteral}['f''F']|{DecDigits}['f''F']	
+DoubleLiteral		({DecDigits}?"."{DecDigits}{DoubleExponent}?)|{DecDigits}{DoubleExponent}
+HexDigit                [0-9a-fA-F]
+HexDigitOrSeparator	{HexDigit}|"_"
+BinDigit		0|1
+BinDigitOrSeparator	{BinDigit}|'_'
+IntegerLiteral		{DecDigitNoZero}{DecDigitOrSeparator}*{DecDigit}|{DecDigit}*
+HexLiteral           	"0"(['x''X']){HexDigit}{HexDigitOrSeparator}*{HexDigit}|"0"(['x''X']){HexDigit}
+BinLiteral           	"0"(['b''B']){BinDigit}{BinDigitOrSeparator}*{BinDigit}|"0"(['b''B']){BinDigit}
+UniCharacterLiteral	'\''u'{HexDigit}{HexDigit}{HexDigit}{HexDigit}
+EscapeSeq		{UniCharacterLiteral}|{EscapedIdentifier}
+LineStrEscapedChar	{EscapedIdentifier}|{UniCharacterLiteral}
+Letter			[A-Za-z]
+UnicodeDigit		[0-9]
+QuotedSymbol		[^\r\n']
+Identifier		[a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"
+LineStrText		[^\\"$]*|"$"
 multiline_string_literals     \"\"\"([^"]|\n|\"[^"]|\"\"[^"])*\"\"\" 
-escaped                 "\\"("t"|"n"|"b"|"r"|"0"|"$"|\\)
-boolean_literal         "true"|"false"
+EscapedIdentifier	\\[tbrn'\\$] 
+ineStringExpression	"${"{NL}*{expression}{NL}*'}'
+lineStringContent	{LineStrText}|{LineStrEscapedChar}|{IDENTIFIER}
 unsupported             "as?"|"as"|"class"|"!in"|"is"|"!is"|"object"|"package"|"super"|"this"|"throw"|"typealias"|"try"|"typeof"|"field"|"it"
 unsupported_op          "@"|"$"|"$"|"`"|"\\"|"#"|"::"|"->"|"=>"|";;"
 unsupported_bit         "~"|">>"|"<<"|"&="|"|="|"^="|">>="|"<<="|"&"|"|"|"^"
-unsupported_word        "by"|"catch"|"constructor"|"delagate"|"dynamic"|"field"|"file"|"finally"|"get"|"init"|"param"|"property"|"reciever"|"set"|"setparam"|"value"|"where"
-unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"sealed"|"annotation"|"data"|"inner"|"tailrec"|"operator"|"inline"|"infix"|"external"|"override"|"abstract"|"final"|"open"|"lateinit"|"vararg"|"noinline"|"crossinline"|"reified"|"expect"|"actual"
+unsupported_word        "by"|"catch"|"constructor"|"delegate"|"dynamic"|"file"|"finally"|"get"|"init"|"param"|"property"|"reciever"|"set"|"setparam"|"value"|"where"
+unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"sealed"|"annotation"|"data"|"inner"|"tailrec"|"operator"|"inline"|"infix"|"external"|"override"|"abstract"|"final"|"open"|"lateinit"|"vararg"|"noinline"|"crossinline"|"reified"|"expect"|"actual"|"protected"
+%x 						MULTICOM
+
 %%
-{scientific}            { fprintf(stderr, "%s:%d: error: Scientific Notation '%s' is not supported by K0 \n", yytoken.filename, yylineno, yytext); exit(1);}
-{int_literal}           { set_token(IntegerLiteral, yytext); return IntegerLiteral;}
-{float_literal}         { set_token(FloatLiteral, yytext); return FloatLiteral;}
-{hex_literal}           { set_token(FloatLiteral, yytext); return FloatLiteral;}
-{LineComment}           { }
-{DelimitedComment}      { }
-{char_literals}         { set_token(CharacterLiteral, yytext); return CharacterLiteral; }
-{line_string_literals}  { set_token(stringLiteral, yytext); return stringLiteral; }
-{multiline_string_literals}     { set_token(stringLiteral, yytext); return stringLiteral; }
-{boolean_literal}       { set_token(BooleanLiteral, yytext); return BooleanLiteral; }
-{escaped}       { set_token(EscapedIdentifier, yytext); return EscapedIdentifier; }
-"+"             { set_token(ADD, yytext); return ADD; }
-"-"             { set_token(SUB, yytext); return SUB; }
-"/"             { set_token(DIV, yytext); return DIV; }
-"*"             { set_token(MULT, yytext); return MULT; }
-"%"             { set_token(MOD, yytext); return MOD; }
-"="             { set_token(ASSIGNMENT, yytext); return ASSIGNMENT; }
-"+="            { set_token(ADD_ASSIGNMENT, yytext); return ADD_ASSIGNMENT; }
-"-="            { set_token(SUB_ASSIGNMENT, yytext); return SUB_ASSIGNMENT; }
-"*="            { set_token(MULT_ASSIGNMENT, yytext); return MULT_ASSIGNMENT; }
-"/="            { set_token(DIV_ASSIGNMENT, yytext); return DIV_ASSIGNMENT; }
-"%="            { set_token(MOD_ASSIGNMENT, yytext); return MOD_ASSIGNMENT; }
-"{"             { set_token(LCURL, yytext); return LCURL; }
-"}"             { set_token(RCURL, yytext); return RCURL; }
-"]"             { set_token(RSQUARE, yytext); return RSQUARE; }
-"["             { set_token(LSQUARE, yytext); return LSQUARE; }
-"("             { set_token(LPAREN, yytext); return LPAREN; }
-")"             { set_token(RPAREN, yytext); return RPAREN; }
-","             { set_token(COMMA, yytext); return COMMA;}
-"."             { set_token(DOT, yytext); return DOT;}
-"++"            { set_token(INCR, yytext); return INCR;}
-"--"            { set_token(DECR, yytext); return DECR;}
-"&&"            { set_token(CONJ, yytext); return CONJ;}
-"||"            { set_token(DISJ, yytext); return DISJ;}
-"!"             { set_token(EXCL_NO_WS, yytext); return EXCL_NO_WS;}
-"!!"            { set_token(DOUBLE_BANG, yytext); return DOUBLE_BANG;}
-":"             { set_token(COLON, yytext); return COLON;}
-";"             { set_token(SEMICOLON, yytext); return SEMICOLON;}
-".."            { set_token(RANGE, yytext); return RANGE;}
-"?"{hidden}     { set_token(QUEST_WS, yytext); return QUEST_WS;}
-"?"             { set_token(QUEST_NO_WS, yytext); return QUEST_NO_WS;}
-"?."            { set_token(QUEST_DOT, yytext); return QUEST_DOT;}
-"?:"            { set_token(QUEST_COLON, yytext); return QUEST_COLON;}
-"<"             { set_token(LANGLE, yytext); return LANGLE;}
-">"             { set_token(RANGLE, yytext); return RANGLE;}
-"<="            { set_token(LE, yytext); return LE;}
-">="            { set_token(GE, yytext); return GE;}
-"!="            { set_token(EXCL_EQ, yytext); return EXCL_EQ;}
-"!=="           { set_token(EXCL_EQEQ, yytext); return EXCL_EQEQ;}
-"=="            { set_token(EQEQ, yytext); return EQEQ;}
-"==="           { set_token(EQEQEQ, yytext); return EQEQEQ;}
-"\'"            { set_token(SINGLE_QUOTE, yytext); return SINGLE_QUOTE;}
-"if"            { set_token(IF, yytext); return IF;}
-"else"          { set_token(ELSE, yytext); return ELSE;}
-"when"          { set_token(WHEN, yytext); return WHEN;}
-"while"         { set_token(WHILE, yytext); return WHILE;}
-"for"           { set_token(FOR, yytext); return FOR;}
-"do"            { set_token(DO, yytext); return DO;}
-"break"         { set_token(BREAK, yytext); return BREAK;}
-"continue"      { set_token(CONTINUE, yytext); return CONTINUE;}
-"in"            { set_token(IN, yytext); return IN;}
-"return"        { set_token(RETURN, yytext); return RETURN;}
-"fun"           { set_token(FUN, yytext); return FUN;}
-"var"           { set_token(VAR, yytext); return VAR;}
-"val"           { set_token(VAL, yytext); return VAL;}
-"import"        { set_token(IMPORT, yytext); return IMPORT;}
-"const"         { set_token(CONST, yytext); return CONST;}
-"interface"     { set_token(INTERFACE, yytext); return INTERFACE;} 
-"null"          { set_token(NullLiteral, yytext); return NullLiteral;}
-"Int"|"Short"|"Long"    { set_token(INT, yytext); return INT;}
-"Float"|"Double"        { set_token(FLOAT, yytext); return FLOAT;}
-"Boolean"       { set_token(BOOLEAN, yytext); return BOOLEAN;}
-"String"        { set_token(STRING, yytext); return STRING;}
-"Char"          { set_token(CHAR, yytext); return CHAR;}
-"Byte"          { set_token(BYTE, yytext); return BYTE;}
-\'[A-Za-z0-9]+\'        { fprintf(stderr, "%s:%d: error:'%s' char literal cannot have more than 1 character\n", yytoken.filename, yylineno, yytext); exit(1);}
-{unsupported}   { fprintf(stderr, "%s:%d: error: the reserved word '%s' is not supported by K0 \n", yytoken.filename, yylineno, yytext); exit(1);}
-{unsupported_op}        { fprintf(stderr, "%s:%d: error: punctuation '%s' is not supported by K0 \n", yytoken.filename, yylineno, yytext); exit(1); }
-{unsupported_bit}       { fprintf(stderr, "%s:%d: error: the operator '%s' is not supported by K0 \n", yytoken.filename, yylineno, yytext); exit(1);}
-{unsupported_word}      { fprintf(stderr, "%s:%d: error: the keyword '%s' is not supported by K0 \n", yytoken.filename, yylineno, yytext); exit(1);}
-\n		{ line++; }
-{WS}            { }
-[A-Za-z0-9]+	{ set_token(Identifier, yytext); return Identifier;}
-.		{ fprintf(stderr, "%s:%d: error: '%s' is not a K0 reserved word\n", yytoken.filename, yylineno, yytext); exit(1); }
+\n			        {}
+\r 			        {}
+'#!'[^{LF}{CR}]+	        {}
+{DelimitedComment}	        {}
+{LineComment}                   {} 
+{multiline_string_literals}     { return STRING_LITERAL; }
+{WS}			        {}
+{NL}			        {}
+"..."                                           { return RESERVED; }
+"."					        { return DOT; }
+","						{ return COMMA; }
+"("						{ return LPAREN; }
+")"						{ return RPAREN; }
+"["						{ return LSQUARE; }
+"]"						{ return RSQUARE; }
+"{"						{ return LCURL; }
+"}"						{ return RCURL; }
+"*"						{ return MULT; }
+"%"						{ return MOD; }
+"/"						{ return DIV; }
+"+"						{ return ADD; }
+"-"						{ return SUB; }
+"++"					{ return INCR; }
+"--"					{ return DECR; }
+"&&"					{ return CONJ; }
+"||"					{ return DISJ; }
+"!"						{ return EXCL_NO_WS; }
+":"						{ return COLON; }
+";"						{ return SEMICOLON; }
+"="						{ return ASSIGNMENT; }
+"+="					{ return ADD_ASSIGNMENT; }
+"-="					{ return SUB_ASSIGNMENT; }
+"*="					{ return MULT_ASSIGNMENT; }
+"/="					{ return DIV_ASSIGNMENT; }
+"%="					{ return MOD_ASSIGNMENT; }
+".."					{ return RANGE; }
+"?"{Hidden}				{ return QUEST_WS;}
+"?"					{ return QUEST_NO_WS; }
+"?."                                    {return QUEST_DOT;}
+"?:"                                    { return QUEST_COLON;}
+"<"					{ return LANGLE; }
+">"					{ return RANGLE; }
+"<="					{ return LE; }
+">="					{ return GE; }
+"!="					{ return EXCL_EQ; }
+"!=="					{ return EXCL_EQEQ; }
+"=="					{ return EQEQ; }
+"==="					{ return EQEQEQ; }
+"\'"					{ return SINGLE_QUOTE; } 
+"if"                    { return IF;}
+"else"                  { return ELSE;}
+"when"                  { return WHEN;}
+"while"                 { return WHILE;}
+"for"                   { return FOR;}
+"do"                    { return DO;}
+"break"                 { return BREAK;}
+"continue"              { return CONTINUE;}
+"in"                    { return IN;}
+"return"                { return RETURN;}
+"fun"                   { return FUN;}
+"var"                   { return VAR;}
+"val"                   { return VAL;}
+"import"                { return IMPORT;}
+"const"                 { return CONST;}
+"interface"             { return INTERFACE;} 
+"Int"|"Short"|"Long"    { return INT;}
+"Float"|"Double"        { return FLOAT;}
+"Boolean"               { return BOOLEAN;}
+"String"                { return STRING;}
+"Char"                  { return CHAR;}
+"Byte"                  { return BYTE;}
+{FloatLiteral}							{ return FLOAT_LITERAL;}
+{DoubleLiteral}							{ return FLOAT_LITERAL;}
+{IntegerLiteral}                                                { return INTEGER_LITERAL;}  
+{HexLiteral}                                                    { return INTEGER_LITERAL;} 
+([{IntegerLiteral}{HexLiteral}{BinLiteral}])'L'	                { return INTEGER_LITERAL;}
+"true"|"false"						        { return BOOLEAN_LITERAL;}
+"null"							        { return NULL_LITERAL;}
+["][^"]*["]				                        { return STRING_LITERAL;}
+\'({EscapeSeq}|[^\r\n'\\]+)\'                                   { return CHARACTER_LITERAL; }
+{unsupported}                           { fprintf(stderr, ":%d: error: the reserved word '%s' is not supported by K0 \n", yylineno, yytext); }
+{unsupported_op}                        { fprintf(stderr, ":%d: error: punctuation '%s' is not supported by K0 \n", yylineno, yytext);  }
+{unsupported_bit}                       { fprintf(stderr, ":%d: error: the operator '%s' is not supported by K0 \n", yylineno, yytext); }
+{unsupported_word}                      { fprintf(stderr, ":%d: error: the keyword '%s' is not supported by K0 \n", yylineno, yytext); }
+{unsupported_mod}                      { fprintf(stderr, ":%d: error: the keyword '%s' is not supported by K0 \n", yylineno, yytext); }
+"return@"{Identifier}                   { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
+"continue@"{Identifier}                 { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
+"break@"{Identifier}                    { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
+"this@"{Identifier}                     { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
+"super@"{Identifier}                    { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext);}
+[a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"	{ return IDENTIFIER; }
+.             			        { fprintf(stderr, "Unrecognized token: %s\n", yytext); }
 %%
