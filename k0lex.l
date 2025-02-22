@@ -3,12 +3,12 @@
 %option nounput
 %option yylineno 
 %{
-#include "token.h"
-double yylval;
-int yyival;
-double yydval;
-char *yysval;
-char* removeSeparators(char* yytext);
+    #include "token.h"
+    double yylval;
+    int yyival;
+    double yydval;
+    char *yysval;
+    char* removeSeparators(char* yytext);
 %}
 
 spaces_and_tabs         [ \t]+
@@ -19,31 +19,31 @@ DecDigitNoZero          [1-9]
 DecDigit                [0-9]
 DecDigitOrSeparator     [{DecDigit}_]
 NL                      \n|(\r\n?)
-WS			[ \t\x0c]
-Hidden			[{DelimitedComment}{LineComment}{WS}]
-DecDigits		{DecDigit}{DecDigitOrSeparator}*{DecDigit}|{DecDigit}
+WS			            [ \t\x0c]
+Hidden			        [{DelimitedComment}{LineComment}{WS}]
+DecDigits		        {DecDigit}{DecDigitOrSeparator}*{DecDigit}|{DecDigit}
 DoubleExponent          [eE][+-]?{DecDigits}
-FloatLiteral		{DoubleLiteral}['f''F']|{DecDigits}['f''F']	
-DoubleLiteral		({DecDigits}?"."{DecDigits}{DoubleExponent}?)|{DecDigits}{DoubleExponent}
+FloatLiteral		    {DoubleLiteral}['f''F']|{DecDigits}['f''F']	
+DoubleLiteral		    ({DecDigits}?"."{DecDigits}{DoubleExponent}?)|{DecDigits}{DoubleExponent}
 HexDigit                [0-9a-fA-F]
-HexDigitOrSeparator	{HexDigit}|"_"
-BinDigit		0|1
-BinDigitOrSeparator	{BinDigit}|'_'
-IntegerLiteral		{DecDigitNoZero}{DecDigitOrSeparator}*{DecDigit}|{DecDigit}*
-HexLiteral           	"0"(['x''X']){HexDigit}{HexDigitOrSeparator}*{HexDigit}|"0"(['x''X']){HexDigit}
-BinLiteral           	"0"(['b''B']){BinDigit}{BinDigitOrSeparator}*{BinDigit}|"0"(['b''B']){BinDigit}
-UniCharacterLiteral	'\''u'{HexDigit}{HexDigit}{HexDigit}{HexDigit}
-EscapeSeq		{UniCharacterLiteral}|{EscapedIdentifier}
-LineStrEscapedChar	{EscapedIdentifier}|{UniCharacterLiteral}
-Letter			[A-Za-z]
-UnicodeDigit		[0-9]
-QuotedSymbol		[^\r\n']
-Identifier		[a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"
-LineStrText		[^\\"$]*|"$"
+HexDigitOrSeparator	    {HexDigit}|"_"
+BinDigit		        [01]
+BinDigitOrSeparator	    {BinDigit}|"_"
+IntegerLiteral		    {DecDigitNoZero}{DecDigitOrSeparator}*{DecDigit}|{DecDigit}*
+HexLiteral           	"0"([xX]){HexDigit}{HexDigitOrSeparator}*{HexDigit}|"0"([xX]){HexDigit}
+BinLiteral           	"0"([bB]){BinDigit}{BinDigitOrSeparator}*{BinDigit}|"0"([bB]){BinDigit}
+UniCharacterLiteral	    '\''u'{HexDigit}{HexDigit}{HexDigit}{HexDigit}
+EscapeSeq		        {UniCharacterLiteral}|{EscapedIdentifier}
+LineStrEscapedChar	    {EscapedIdentifier}|{UniCharacterLiteral}
+Letter			        [A-Za-z]
+UnicodeDigit		    [0-9]
+QuotedSymbol		    [^\r\n']
+Identifier		        [a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"
+LineStrText		        [^\\"$]*|"$"
 multiline_string_literals     \"\"\"([^"]|\n|\"[^"]|\"\"[^"])*\"\"\" 
-EscapedIdentifier	\\[tbrn'\\$] 
-ineStringExpression	"${"{NL}*{expression}{NL}*'}'
-lineStringContent	{LineStrText}|{LineStrEscapedChar}|{IDENTIFIER}
+EscapedIdentifier	    \\[tbrn'\\$] 
+ineStringExpression	    "${"{NL}*{expression}{NL}*'}'
+lineStringContent	    {LineStrText}|{LineStrEscapedChar}|{IDENTIFIER}
 unsupported             "as?"|"as"|"class"|"!in"|"is"|"!is"|"object"|"package"|"super"|"this"|"throw"|"typealias"|"try"|"typeof"|"field"|"it"
 unsupported_op          "@"|"$"|"$"|"`"|"\\"|"#"|"::"|"->"|"=>"|";;"
 unsupported_bit         "~"|">>"|"<<"|"&="|"|="|"^="|">>="|"<<="|"&"|"|"|"^"
@@ -52,16 +52,16 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 %x 						MULTICOM
 
 %%
-\n			        {}
-\r 			        {}
+\n			                {}
+\r 			                {}
 '#!'[^{LF}{CR}]+	        {}
 {DelimitedComment}	        {}
-{LineComment}                   {} 
+{LineComment}               {} 
 {multiline_string_literals}     { return STRING_LITERAL; }
-{WS}			        {}
-{NL}			        {}
-"..."                                           { return RESERVED; }
-"."					        { return DOT; }
+{WS}			            {}
+{NL}			            {}
+"..."                   { return RESERVED; }
+"."					    { return DOT; }
 ","						{ return COMMA; }
 "("						{ return LPAREN; }
 ")"						{ return RPAREN; }
@@ -89,11 +89,11 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "%="					{ return MOD_ASSIGNMENT; }
 ".."					{ return RANGE; }
 "?"{Hidden}				{ return QUEST_WS;}
-"?"					{ return QUEST_NO_WS; }
-"?."                                    {return QUEST_DOT;}
-"?:"                                    { return QUEST_COLON;}
-"<"					{ return LANGLE; }
-">"					{ return RANGLE; }
+"?"					    { return QUEST_NO_WS; }
+"?."                    { return QUEST_DOT;}
+"?:"                    { return QUEST_COLON;}
+"<"					    { return LANGLE; }
+">"					    { return RANGLE; }
 "<="					{ return LE; }
 ">="					{ return GE; }
 "!="					{ return EXCL_EQ; }
@@ -123,25 +123,26 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "String"                { return STRING;}
 "Char"                  { return CHAR;}
 "Byte"                  { return BYTE;}
-{FloatLiteral}							{ return FLOAT_LITERAL;}
-{DoubleLiteral}							{ return FLOAT_LITERAL;}
-{IntegerLiteral}                                                { return INTEGER_LITERAL;}  
-{HexLiteral}                                                    { return INTEGER_LITERAL;} 
+{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return FLOAT_LITERAL;}
+{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return FLOAT_LITERAL;}
+{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return INTEGER_LITERAL;}  
+{HexLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext), NULL, 16); return INTEGER_LITERAL;} 
+{BinLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext+2), NULL, 2); return INTEGER_LITERAL;}
 ([{IntegerLiteral}{HexLiteral}{BinLiteral}])'L'	                { return INTEGER_LITERAL;}
-"true"|"false"						        { return BOOLEAN_LITERAL;}
-"null"							        { return NULL_LITERAL;}
-["][^"]*["]				                        { return STRING_LITERAL;}
+"true"|"false"						                            { return BOOLEAN_LITERAL;}
+"null"							                                { return NULL_LITERAL;}
+["][^"]*["]				                                        { return STRING_LITERAL;}
 \'({EscapeSeq}|[^\r\n'\\]+)\'                                   { return CHARACTER_LITERAL; }
 {unsupported}                           { fprintf(stderr, ":%d: error: the reserved word '%s' is not supported by K0 \n", yylineno, yytext); }
 {unsupported_op}                        { fprintf(stderr, ":%d: error: punctuation '%s' is not supported by K0 \n", yylineno, yytext);  }
 {unsupported_bit}                       { fprintf(stderr, ":%d: error: the operator '%s' is not supported by K0 \n", yylineno, yytext); }
 {unsupported_word}                      { fprintf(stderr, ":%d: error: the keyword '%s' is not supported by K0 \n", yylineno, yytext); }
-{unsupported_mod}                      { fprintf(stderr, ":%d: error: the keyword '%s' is not supported by K0 \n", yylineno, yytext); }
+{unsupported_mod}                       { fprintf(stderr, ":%d: error: the keyword '%s' is not supported by K0 \n", yylineno, yytext); }
 "return@"{Identifier}                   { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
 "continue@"{Identifier}                 { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
 "break@"{Identifier}                    { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
 "this@"{Identifier}                     { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
 "super@"{Identifier}                    { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext);}
 [a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"	{ return IDENTIFIER; }
-.             			        { fprintf(stderr, "Unrecognized token: %s\n", yytext); }
+.             			                { fprintf(stderr, "Unrecognized token: %s\n", yytext); }
 %%
