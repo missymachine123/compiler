@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "k0gram.tab.h": "c"
+        "k0gram.tab.h": "c",
+        "stdlib.h": "c"
     }
 }

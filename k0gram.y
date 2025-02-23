@@ -2,7 +2,12 @@
     extern int yylex(void);
     extern int yyerror(char *s);
     #define YYDEBUG 1
+    #include "tree.h"
 %}
+
+%union {
+   struct tree *treeptr;
+}
 
 %token RESERVED DOT COMMA LPAREN RPAREN LSQUARE RSQUARE LCURL RCURL MULT MOD DIV ADD SUB INCR DECR CONJ DISJ EXCL_WS EXCL_NO_WS
 %token COLON SEMICOLON ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT MULT_ASSIGNMENT DIV_ASSIGNMENT MOD_ASSIGNMENT ARROW DOUBLE_ARROW
@@ -66,8 +71,13 @@ expression:
     ;
 
 variable_declaration:
-    VAR IDENTIFIER type_hint ASSIGNMENT expression
-  | VAL IDENTIFIER type_hint ASSIGNMENT expression
+    VAR IDENTIFIER optional_type_hint ASSIGNMENT expression
+  | VAL IDENTIFIER optional_type_hint ASSIGNMENT expression
+    ;
+
+optional_type_hint:
+    /* empty */
+  | type_hint
     ;
 
 literal_constant:

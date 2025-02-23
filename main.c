@@ -2,17 +2,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include "k0gram.tab.h" 
+#include "tree.h"
 
 
 extern FILE *yyin;
 extern int yyparse(void);
 extern char *yytext;
 extern int yylineno;
-extern int ival;
-extern double dval;
-extern char *sval;
+extern YYSTYPE yylval;
+extern int yyival;
+extern double yydval;
+extern char *yysval;
 extern int yylex_destroy();
 extern int yydebug;
+struct token yytoken;
+char *filename;
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -25,37 +29,148 @@ struct token {
                    /*    the string (less quotes and after escapes) here */
 }token;
 
-
-
 int yyerror(char *s) {
     fprintf(stderr, "Syntax error: %s at line %d, near token '%s'\n", s, yylineno, yytext);
     exit(1);
+    
 }
 
-char *appendstring(char *s, char c)
-{
+char *appendstring(char *s, char c) {
     int i = strlen(s);
-    s = realloc(s, i+2);
+    s = realloc(s, i + 2);
     s[i] = c;
-    s[i+1] = '\0';
+    s[i + 1] = '\0';
     return s;
 }
+char *descape(const char* yytext) {
+    char *sval;
 
-struct token *create_token(int category, const char *text, int lineno, const char *filename, int ival, double dval, const char *sval) {
-        struct token *new_token = (struct token *)malloc(sizeof(struct token));
-        new_token -> category = category;
-        new_token -> text = strdup(text);
-        new_token -> lineno =  lineno;
-        new_token -> filename = strdup(filename);
-        new_token -> ival = ival;
-        new_token -> dval = dval;
-        if (sval) {
-            new_token->sval = strdup(sval);
-        } else {
-            new_token->sval = NULL;
+    if (yytext[0] == '"') {
+        sval = strdup("");
+        for (int i = 1; yytext[i] != '\0'; i++) {
+            if (yytext[i] == '\\') {
+                switch (yytext[++i]) {
+                    case 'n':
+                        sval = appendstring(sval, '\n');
+                        break;
+                    case 't':
+                        sval = appendstring(sval, '\t');
+                        break;
+                    case 'r':
+                        sval = appendstring(sval, '\r');
+                        break;
+                    case '\\':
+                        sval = appendstring(sval, '\\');
+                        break;
+                    case '"':
+                        sval = appendstring(sval, '"');
+                        break;
+                    default:
+                        sval = appendstring(sval, yytext[i]);
+                        break;
+                }
+            } else if (yytext[i] == '"') {
+                continue;  // Skip the ending double-quote
+            } else {
+                sval = appendstring(sval, yytext[i]);
+            }
         }
-        return new_token;
-};
+    } else {
+        sval = NULL;
+    }
+
+    return sval;
+}
+int alctoken(int category) {
+    // Allocate memory for the tree node
+    yylval.treeptr = malloc(sizeof(struct tree));
+    if (yylval.treeptr == NULL) {
+        fprintf(stderr, "Error: Out of memory while allocating tree node\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialize the tree node fields
+    yylval.treeptr->prodrule = category;
+    yylval.treeptr->nkids = 0;
+    yylval.treeptr->leaf = malloc(sizeof(struct token));
+    if (yylval.treeptr->leaf == NULL) {
+        fprintf(stderr, "Error: Out of memory while allocating token\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialize the token fields
+    yylval.treeptr->leaf->category = category;
+    yylval.treeptr->leaf->text = strdup(yytext);
+    yylval.treeptr->leaf->lineno = yylineno;
+    yylval.treeptr->leaf->filename = strdup(filename); // Replace with actual file name if needed
+    yylval.treeptr->leaf->ival = yyival;
+    yylval.treeptr->leaf->dval = yydval;
+    if (yysval) {
+        yylval.treeptr->leaf->sval = strdup(yysval);
+        free(yysval);  // Free yysval here after copying it
+        yysval = NULL;
+    } else {
+        yylval.treeptr->leaf->sval = NULL;
+    }
+
+    // Print debugging information
+    printf("Token created:\t"
+           "category = %d\t"
+           "text = %s\t"
+           "lineno = %d\t"
+           "filename = %s\t"
+           "ival = %d\t"
+           "dval = %f\t"
+           "sval = %s\n",
+           yylval.treeptr->leaf->category,
+           yylval.treeptr->leaf->text,
+           yylval.treeptr->leaf->lineno,
+           yylval.treeptr->leaf->filename,
+           yylval.treeptr->leaf->ival,
+           yylval.treeptr->leaf->dval,
+           yylval.treeptr->leaf->sval ? yylval.treeptr->leaf->sval : "NULL");
+
+    yydval = 0.0;
+    yyival = 0;
+    return category;
+}
+
+
+// int alctoken(int category){
+//     yylval.treeptr = malloc(sizeof (struct tree));
+//     // Initialize the tree node fields
+//     yylval.treeptr->prodrule = category;
+//     yylval.treeptr->nkids = 0;
+//     yylval.treeptr->leaf = malloc(sizeof(struct token));
+
+//     // Allocate and initialize the token
+//     yylval.treeptr->leaf->category = category;
+//     yylval.treeptr->leaf->text = strdup(yytext);
+//     yylval.treeptr->leaf->lineno = yylineno;
+//     yylval.treeptr->leaf->filename = strdup(filename);
+//     yylval.treeptr->leaf->ival = yyival;
+//     yylval.treeptr->leaf->dval = yydval;
+//     yylval.treeptr->leaf->sval = strdup(yysval);
+
+//     return category;
+
+// }
+
+// struct token *create_token(int category, const char *text, int lineno, const char *filename, int ival, double dval, const char *sval) {
+//         struct token *new_token = (struct token *)malloc(sizeof(struct token));
+//         new_token -> category = category;
+//         new_token -> text = strdup(text);
+//         new_token -> lineno =  lineno;
+//         new_token -> filename = strdup(filename);
+//         new_token -> ival = ival;
+//         new_token -> dval = dval;
+//         if (sval) {
+//             new_token->sval = strdup(sval);
+//         } else {
+//             new_token->sval = NULL;
+//         }
+//         return new_token;
+// };
 
 
 
@@ -80,28 +195,13 @@ char* removeSeparators(char* yytext) {
     return cleanText;
 }
 
-void print_token(struct token *t) {
-    printf("%d\t\t%s\t\t%d\t%s\t", 
-           t->category, t->text, t->lineno, t->filename);
-    
-    if (t->ival != 0) {
-        printf("%d ", t->ival);
-    } else if (t->dval != 0.0) {
-        printf("%f ", t->dval);
-    } else if (t->sval != NULL) {
-        printf("%s ", t->sval);
-    }
-
-    printf("\n");
-}
-
 int main(int argc, char **argv) {
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
         return 1;
     }
 
-    char *filename = kt_extension(argv[1]);
+    filename = kt_extension(argv[1]);
     yyin = fopen(filename, "r");
     if (!yyin) {
         perror(filename);
