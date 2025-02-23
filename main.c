@@ -81,6 +81,39 @@ char *descape(const char* yytext) {
 
     return sval;
 }
+
+void printnode(struct tree *t) {
+    if (t == NULL) {
+        printf("Tree node is NULL\n");
+        return;
+    }
+
+    if (t->leaf != NULL) {
+        printf("Leaf node:\n");
+        printf("\tprodrule = %d\n", t->prodrule);
+        printf("\tsymbolname = %s\n", t->symbolname ? t->symbolname : "NULL");
+        printf("\tnkids = %d\n", t->nkids);
+        printf("\tToken information:\n");
+        printf("\t\tcategory = %d\n", t->leaf->category);
+        printf("\t\ttext = %s\n", t->leaf->text);
+        printf("\t\tlineno = %d\n", t->leaf->lineno);
+        printf("\t\tfilename = %s\n", t->leaf->filename);
+        printf("\t\tival = %d\n", t->leaf->ival);
+        printf("\t\tdval = %f\n", t->leaf->dval);
+        printf("\t\tsval = %s\n", t->leaf->sval ? t->leaf->sval : "NULL");
+    } else {
+        printf("Internal node:\n");
+        printf("\tprodrule = %d\n", t->prodrule);
+        printf("\tsymbolname = %s\n", t->symbolname ? t->symbolname : "NULL");
+        printf("\tnkids = %d\n", t->nkids);
+        printf("\tChildren:\n");
+        for (int i = 0; i < t->nkids; i++) {
+            printf("\t\tChild %d: %p\n", i + 1, (void *)t->kids[i]);
+        }
+    }
+}
+
+
 int alctoken(int category) {
     // Allocate memory for the tree node
     yylval.treeptr = malloc(sizeof(struct tree));
@@ -114,21 +147,7 @@ int alctoken(int category) {
     }
 
     // Print debugging information
-    printf("Token created:\t"
-           "category = %d\t"
-           "text = %s\t"
-           "lineno = %d\t"
-           "filename = %s\t"
-           "ival = %d\t"
-           "dval = %f\t"
-           "sval = %s\n",
-           yylval.treeptr->leaf->category,
-           yylval.treeptr->leaf->text,
-           yylval.treeptr->leaf->lineno,
-           yylval.treeptr->leaf->filename,
-           yylval.treeptr->leaf->ival,
-           yylval.treeptr->leaf->dval,
-           yylval.treeptr->leaf->sval ? yylval.treeptr->leaf->sval : "NULL");
+    printnode(yylval.treeptr);
 
     yydval = 0.0;
     yyival = 0;
@@ -190,12 +209,13 @@ int main(int argc, char **argv) {
     }
     
     // Call the parser
-    yydebug = 1; // Enable debugging
+    // yydebug = 1; // Enable debugging
     int result = yyparse();
     printf("yyparse returns %d\n", result);
 
     // Close the input file
     fclose(yyin);
+    free(filename);
 
     return 0;
     

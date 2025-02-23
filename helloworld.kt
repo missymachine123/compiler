@@ -1,5 +1,5 @@
 // Hello World Program
 
 fun main() {
-    println("Hello,\t World!");
+    println("Hello,\t World!")
 }

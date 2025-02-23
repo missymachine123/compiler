@@ -65,7 +65,7 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 {multiline_string_literals}     { yysval = descape(yytext);return alctoken(STRING_LITERAL); }
 {WS}			            {}
 {NL}			            {}
-"..."                   { return alctoken( RESERVED); }
+"..."                   { return alctoken(RESERVED); }
 "."					    { return alctoken(DOT); }
 ","						{ return alctoken(COMMA); }
 "("						{ return alctoken(LPAREN); }
