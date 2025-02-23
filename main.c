@@ -136,26 +136,6 @@ int alctoken(int category) {
 }
 
 
-// int alctoken(int category){
-//     yylval.treeptr = malloc(sizeof (struct tree));
-//     // Initialize the tree node fields
-//     yylval.treeptr->prodrule = category;
-//     yylval.treeptr->nkids = 0;
-//     yylval.treeptr->leaf = malloc(sizeof(struct token));
-
-//     // Allocate and initialize the token
-//     yylval.treeptr->leaf->category = category;
-//     yylval.treeptr->leaf->text = strdup(yytext);
-//     yylval.treeptr->leaf->lineno = yylineno;
-//     yylval.treeptr->leaf->filename = strdup(filename);
-//     yylval.treeptr->leaf->ival = yyival;
-//     yylval.treeptr->leaf->dval = yydval;
-//     yylval.treeptr->leaf->sval = strdup(yysval);
-
-//     return category;
-
-// }
-
 // struct token *create_token(int category, const char *text, int lineno, const char *filename, int ival, double dval, const char *sval) {
 //         struct token *new_token = (struct token *)malloc(sizeof(struct token));
 //         new_token -> category = category;
@@ -210,7 +190,7 @@ int main(int argc, char **argv) {
     }
     
     // Call the parser
-    // yydebug = 1; // Enable debugging
+    yydebug = 1; // Enable debugging
     int result = yyparse();
     printf("yyparse returns %d\n", result);
 

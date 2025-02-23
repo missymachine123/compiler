@@ -24,104 +24,156 @@
 %left MULT DIV MOD
 %left AND OR
 
-%start function_declaration
+%nonassoc ELSE
+%nonassoc LOWER_THAN_ELSE
 
+%start program
 %%
 
+/* Program Structure */
+program:
+    topLevelObjects
+;
 
-function_declaration:
-    FUN IDENTIFIER LPAREN parameter_list RPAREN function_body
-  | FUN IDENTIFIER LPAREN parameter_list RPAREN type_hint function_body
-    ;
+topLevelObjects:
+    topLevelObject
+  | topLevelObjects topLevelObject
+;
 
-function_body:
-    block
-    ;
+topLevelObject:
+    functionDeclaration
+  | classDeclaration
+  | objectDeclaration
+;
 
-block:
-    LCURL statements RCURL
-  | LCURL RCURL
-    ;
+/* Function Declaration */
+functionDeclaration:
+    FUN IDENTIFIER LPAREN functionParameters RPAREN functionBody
+  | FUN IDENTIFIER LPAREN functionParameters RPAREN COLON type functionBody
+;
 
-statements:
-    statement
-  | statements statement
-    ;
-
-assignment_statement:
-    IDENTIFIER ASSIGNMENT expression
-    ;
-
-statement:
-    variable_declaration
-  | expression
-  | control_structure
-  | assignment_statement
-  | loop_statement         // Add loop_statement here
-    ;
-
-expression:
-    IDENTIFIER LPAREN parameter_list RPAREN
-  | IDENTIFIER DOT IDENTIFIER
-  | literal_constant
-  | expression ADD expression
-  | expression SUB expression
-  | expression MULT expression
-  | expression DIV expression
-    ;
-
-variable_declaration:
-    VAR IDENTIFIER optional_type_hint ASSIGNMENT expression
-  | VAL IDENTIFIER optional_type_hint ASSIGNMENT expression
-    ;
-
-optional_type_hint:
+/* Function Parameters */
+functionParameters:
     /* empty */
-  | type_hint
-    ;
+  | functionParameter
+  | functionParameters COMMA functionParameter
+;
 
-literal_constant:
-    INTEGER_LITERAL
+functionParameter:
+    IDENTIFIER COLON type
+;
+
+/* Type */
+type:
+    IDENTIFIER
+  | INTEGER_LITERAL
+  | DOUBLE_LITERAL
   | BOOLEAN_LITERAL
   | STRING_LITERAL
-  | FLOAT_LITERAL
-    ;
+  | NULL_LITERAL
+;
 
-type:
-  INTEGER_LITERAL
-  |IDENTIFIER
-  |IDENTIFIER LANGLE IDENTIFIER RANGLE
-  ;
-type_hint:
-    COLON type
-    ;
-
-parameter:
-    IDENTIFIER
-  | IDENTIFIER type_hint
-  | literal_constant
-    ;
-
-parameter_list:
-    /* empty */
-  | parameter
-  | parameter_list COMMA parameter
-    ;
-
-control_structure:
-    IF LPAREN expression RPAREN control_structure_body
-  | IF LPAREN expression RPAREN statement ELSE control_structure_body
-    ;
-
-loop_statement:
-    FOR LPAREN expression RPAREN control_structure_body
-  | WHILE LPAREN expression RPAREN control_structure_body
-  | DO control_structure_body WHILE LPAREN expression RPAREN
-    ;
-
-control_structure_body:
+/* Function Body */
+functionBody:
     block
-    ;
+  | ASSIGNMENT expression SEMICOLON
+;
 
-%% 
+/* Block of Code */
+block:
+    LCURL statements RCURL
+;
 
+/* Statements */
+statements:
+    /* empty */
+  | statements statement SEMICOLON
+  | statements statement
+;
+
+statement:
+    variableDeclaration SEMICOLON
+  | assignment SEMICOLON
+  | assignment
+  | expression
+  | expression SEMICOLON
+  | loopStatement
+  | controlStructure
+  | returnStatement
+;
+
+/* Variable Declaration */
+variableDeclaration:
+    IDENTIFIER COLON type
+;
+
+/* Assignment */
+assignment:
+    IDENTIFIER ASSIGNMENT expression SEMICOLON
+;
+
+/* Function Call */
+functionCall:
+    IDENTIFIER LPAREN functionArguments RPAREN
+;
+
+/* Function Arguments */
+functionArguments:
+    /* empty */
+  | expression
+  | functionArguments COMMA expression
+;
+
+/* Loops */
+loopStatement:
+    WHILE LPAREN expression RPAREN block
+  | FOR LPAREN IDENTIFIER IN expression RPAREN block
+;
+
+/* Control Structures */
+controlStructure:
+    IF LPAREN expression RPAREN block %prec LOWER_THAN_ELSE
+  | IF LPAREN expression RPAREN block ELSE block
+;
+
+/* Return Statement */
+returnStatement:
+    RETURN expression SEMICOLON
+;
+
+/* Class Declaration */
+classDeclaration:
+    CLASS IDENTIFIER classBody
+;
+
+classBody:
+    LCURL classMembers RCURL
+;
+
+classMembers:
+    /* empty */
+  | classMembers classMember
+;
+
+classMember:
+    functionDeclaration
+  | variableDeclaration
+;
+
+/* Object Declaration */
+objectDeclaration:
+    OBJECT IDENTIFIER objectBody
+;
+
+objectBody:
+    LCURL classMembers RCURL
+;
+
+/* Expressions */
+expression:
+    functionCall
+  | IDENTIFIER
+  | STRING_LITERAL
+  | INTEGER_LITERAL
+;
+%%
