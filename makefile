@@ -1,21 +1,32 @@
+# Compiler and flags
 CC = gcc
-CFLAGS = -Wall
-LFLAGS = -lfl
-LEX = flex
+CFLAGS = -Wall -g
 
-all: k0
+# Files
+OBJS = main.o lex.yy.o k0gram.tab.o
 
-k0: main.o lex.yy.o
-	$(CC) $(CFLAGS) main.o lex.yy.o -o k0 $(LFLAGS)
+# Targets
+all: my_program
 
-lex.yy.c: k0lex.l
-	$(LEX) k0lex.l 
+my_program: $(OBJS)
+	$(CC) $(CFLAGS) -DYYDEBUG -o k0 $(OBJS) -lfl
 
-main.o: main.c token.h
-	$(CC) $(CFLAGS) -c main.c 
+main.o: main.c k0gram.tab.h
+	$(CC) $(CFLAGS) -c main.c
 
-lex.yy.o: lex.yy.c token.h
-	$(CC) $(CFLAGS) -c lex.yy.c $(LFLAGS)
+lex.yy.o: lex.yy.c k0gram.tab.h
+	$(CC) $(CFLAGS) -c lex.yy.c
+
+k0gram.tab.o: k0gram.tab.c
+	$(CC) $(CFLAGS) -c k0gram.tab.c
+
+k0gram.tab.c k0gram.tab.h: k0gram.y
+	bison -d k0gram.y
+
+lex.yy.c: k0lex.l k0gram.tab.h
+	flex k0lex.l
 
 clean:
-	rm -f k0 lex.yy.c *.o
+	rm -f $(OBJS) k0 lex.yy.c k0gram.tab.c k0gram.tab.h
+
+.PHONY: clean

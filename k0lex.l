@@ -3,12 +3,12 @@
 %option nounput
 %option yylineno 
 %{
-    #include "token.h"
-    double yylval;
+	#include "k0gram.tab.h"
     int yyival;
     double yydval;
     char *yysval;
     char* removeSeparators(char* yytext);
+    int yyerror(char *s);
 %}
 
 spaces_and_tabs         [ \t]+
@@ -145,4 +145,5 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "super@"{Identifier}                    { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext);}
 [a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"	{ return IDENTIFIER; }
 .             			                { fprintf(stderr, "Unrecognized token: %s\n", yytext); }
+
 %%

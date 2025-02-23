@@ -1,7 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "token.h"
+#include "k0gram.tab.h" 
+
+
+extern FILE *yyin;
+extern int yyparse(void);
+extern char *yytext;
+extern int yylineno;
+extern int ival;
+extern double dval;
+extern char *sval;
+extern int yylex_destroy();
+extern int yydebug;
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -14,18 +25,12 @@ struct token {
                    /*    the string (less quotes and after escapes) here */
 }token;
 
-extern FILE *yyin;
-extern int yylex();
-extern char *yytext;
-extern int yylineno;
-extern int yyival;
-extern double yydval;
-extern char *yysval;
-extern int yylex_destroy();
-struct tokenlist {
-      struct token *t;
-      struct tokenlist *next;
-};
+
+
+int yyerror(char *s) {
+    fprintf(stderr, "Syntax error: %s at line %d, near token '%s'\n", s, yylineno, yytext);
+    exit(1);
+}
 
 char *appendstring(char *s, char c)
 {
@@ -52,12 +57,6 @@ struct token *create_token(int category, const char *text, int lineno, const cha
         return new_token;
 };
 
-struct tokenlist *create_tokenlist(struct token *t) {
-    struct tokenlist *new_node = (struct tokenlist *)malloc(sizeof(struct tokenlist));
-    new_node->t = t;
-    new_node->next = NULL;
-    return new_node;
-}
 
 
 char* kt_extension(const char* filename) {
@@ -69,40 +68,6 @@ char* kt_extension(const char* filename) {
     return new_filename;
 }
 
-void free_tokens(struct tokenlist *head) {
-    struct tokenlist *current = head;
-    while (current != NULL) {
-        struct tokenlist *temp = current;
-        current = current->next;
-        free(temp->t->text);
-        free(temp->t->filename);
-        if (temp->t->sval){ 
-            free(temp->t->sval);}
-        free(temp->t);
-        free(temp);
-    }
-}
-
-void print_tokens(struct tokenlist *head) {
-    struct tokenlist *current = head;
-    printf("Category\tText\t\tLineno\tFilename\t\tValues\n");
-    printf("--------------------------------------------------------------------------\n");
-    while (current != NULL) {
-        printf("%d\t\t%s\t\t%d\t%s\t", 
-               current->t->category, current->t->text, current->t->lineno, current->t->filename);
-        
-        if (current->t->ival != 0) {
-            printf("%d ", current->t->ival);
-        }else if (current->t->dval != 0.0) {
-            printf("%f ", current->t->dval);
-        } else if (current->t->sval != NULL) {
-            printf("%s ", current->t->sval);
-        }
-
-        printf("\n");
-        current = current->next;
-    }
-}
 char* removeSeparators(char* yytext) {
     static char cleanText[256];
     int j = 0;
@@ -131,78 +96,27 @@ void print_token(struct token *t) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
         return 1;
     }
 
     char *filename = kt_extension(argv[1]);
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        perror("fopen");
+    yyin = fopen(filename, "r");
+    if (!yyin) {
+        perror(filename);
         free(filename);
         return 1;
     }
-    struct tokenlist *head = NULL, *current = NULL;
-    yyin = file;
-    int category;
     
-    while ((category = yylex()) != 0) {
-        
-        if (yytext[0] == '"') {
-            yysval = strdup("");
-            for (int i = 1; yytext[i] != '\0'; i++) {
-                if (yytext[i] == '\\') {
-                    switch (yytext[++i]) {
-                        case 'n':
-                            yysval = appendstring(yysval, '\n');
-                            break;
-                        case 't':
-                            yysval = appendstring(yysval, '\t');
-                            break;
-                        case 'r':
-                            yysval = appendstring(yysval, '\r');
-                            break;
-                        case '\\':
-                            yysval = appendstring(yysval, '\\');
-                            break;
-                        case '"':
-                            yysval = appendstring(yysval, '"');
-                            break;
-                        default:
-                            yysval = appendstring(yysval, yytext[i]);
-                            break;
-                    }
-                } else if (yytext[i] == '"') {
-                    continue;  // Skip the ending double-quote
-                } else {
-                    yysval = appendstring(yysval, yytext[i]);
-                }
-            }
-        } else {
-            yysval = NULL;
-            }
-        struct token *new_token = create_token(category, yytext, yylineno, filename, yyival, yydval, yysval);    
-        struct tokenlist *new_node = create_tokenlist(new_token);
-        if (head == NULL) {
-            head = new_node;
-            current = head;
-        } else {
-            current->next = new_node;
-            current = current->next;
-        }    
-        print_token(new_token); // Print each token as it's processed
-        free(yysval);
-        yyival = 0;
-        yydval = 0.0; 
-        
-    }
-    
+    // Call the parser
+    // yydebug = 1; // Enable debugging
+    int result = yyparse();
+    printf("yyparse returns %d\n", result);
 
-    fclose(file); 
-    print_tokens(head);
-    yylex_destroy();
-    free_tokens(head); 
-    free(filename);
+    // Close the input file
+    fclose(yyin);
+
     return 0;
+    
 }
