@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "k0gram.tab.h" 
 #include "tree.h"
 
@@ -17,6 +18,8 @@ extern int yylex_destroy();
 extern int yydebug;
 struct token yytoken;
 char *filename;
+extern struct tree *root;
+
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -98,9 +101,13 @@ void printnode(struct tree *t) {
         printf("\t\ttext = %s\n", t->leaf->text);
         printf("\t\tlineno = %d\n", t->leaf->lineno);
         printf("\t\tfilename = %s\n", t->leaf->filename);
-        printf("\t\tival = %d\n", t->leaf->ival);
-        printf("\t\tdval = %f\n", t->leaf->dval);
-        printf("\t\tsval = %s\n", t->leaf->sval ? t->leaf->sval : "NULL");
+        if (t->leaf->sval != NULL) {
+            printf("\t\tsval = %s\n", t->leaf->sval);
+        } else if (t->leaf->ival != 0) {
+            printf("\t\tival = %d\n", t->leaf->ival);
+        } else if (t->leaf->dval != 0.0) {
+            printf("\t\tdval = %f\n", t->leaf->dval);
+        }
     } else {
         printf("Internal node:\n");
         printf("\tprodrule = %d\n", t->prodrule);
@@ -112,7 +119,6 @@ void printnode(struct tree *t) {
         }
     }
 }
-
 
 int alctoken(int category) {
     // Allocate memory for the tree node
@@ -138,39 +144,82 @@ int alctoken(int category) {
     yylval.treeptr->leaf->filename = strdup(filename); // Replace with actual file name if needed
     yylval.treeptr->leaf->ival = yyival;
     yylval.treeptr->leaf->dval = yydval;
+    yylval.treeptr->leaf->sval = NULL; // Initialize sval to NULL
+    
     if (yysval) {
         yylval.treeptr->leaf->sval = strdup(yysval);
-        free(yysval);  // Free yysval here after copying it
+        free(yysval); // Free yysval here after copying it
         yysval = NULL;
-    } else {
-        yylval.treeptr->leaf->sval = NULL;
     }
-
-    // Print debugging information
-    printnode(yylval.treeptr);
-
+    
     yydval = 0.0;
     yyival = 0;
+    
     return category;
 }
 
 
-// struct token *create_token(int category, const char *text, int lineno, const char *filename, int ival, double dval, const char *sval) {
-//         struct token *new_token = (struct token *)malloc(sizeof(struct token));
-//         new_token -> category = category;
-//         new_token -> text = strdup(text);
-//         new_token -> lineno =  lineno;
-//         new_token -> filename = strdup(filename);
-//         new_token -> ival = ival;
-//         new_token -> dval = dval;
-//         if (sval) {
-//             new_token->sval = strdup(sval);
-//         } else {
-//             new_token->sval = NULL;
-//         }
-//         return new_token;
-// };
+struct tree *alctree(int prodrule, const char *symbolname, int nkids, ...) {
+    int i;
+    va_list ap;
+    struct tree *ptr = malloc(sizeof(struct tree) + (nkids-1)*sizeof(struct tree *));
 
+    if (ptr == NULL) {
+        fprintf(stderr, "alctree out of memory\n");
+        exit(1);
+    }
+    ptr->prodrule = prodrule;
+    ptr->symbolname = strdup(symbolname);
+    ptr->nkids = nkids;
+    va_start(ap, nkids);
+    for(i=0; i < nkids; i++)
+        ptr->kids[i] = va_arg(ap, struct tree *);
+    va_end(ap);
+    return ptr;
+}
+
+
+void humanreadable(struct tree *t) {
+    if (t->symbolname == NULL) {
+        printf("%d: %s", t->leaf->category, t->leaf->text);
+    } else {
+        printf("%s: %d", t->symbolname, t->nkids);
+    }
+}
+
+void treeprint(struct tree *t, int depth) {
+    if (t == NULL) {
+        return;
+    }
+    printf("%*s", depth * 2, " ");
+    humanreadable(t);
+    printf("\n");
+    
+    for (int i = 0; i < t->nkids; i++) {
+        treeprint(t->kids[i], depth + 1);
+    }
+}
+
+
+void freetree(struct tree *t) {
+    if (t == NULL) {
+        return;
+    }
+    
+    for (int i = 0; i < t->nkids; i++) {
+        freetree(t->kids[i]);
+    }
+    
+    if (t->leaf) {
+        free(t->leaf->text);
+        free(t->leaf->filename);
+        if (t->leaf->sval) {
+            free(t->leaf->sval);
+        }
+        free(t->leaf);
+    }
+    free(t);
+}
 
 
 char* kt_extension(const char* filename) {
@@ -210,8 +259,10 @@ int main(int argc, char **argv) {
     
     // Call the parser
     // yydebug = 1; // Enable debugging
+    printf("Printing from inside yyparse():\n\n");
     int result = yyparse();
     printf("yyparse returns %d\n", result);
+    treeprint(root,1);
 
     // Close the input file
     fclose(yyin);
