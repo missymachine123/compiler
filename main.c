@@ -122,7 +122,7 @@ void printnode(struct tree *t) {
 
 int alctoken(int category) {
     // Allocate memory for the tree node
-    yylval.treeptr = malloc(sizeof(struct tree));
+    yylval.treeptr = calloc(1, sizeof(struct tree));
     if (yylval.treeptr == NULL) {
         fprintf(stderr, "Error: Out of memory while allocating tree node\n");
         exit(EXIT_FAILURE);
