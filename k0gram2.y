@@ -6,9 +6,7 @@
     void printnode();
     struct tree *root;
     void treeprint(struct tree *t, int depth);
-    extern void eat_to_newline(void);
     struct tree *alctree(int prodrule, const char *symbolname, int nkids, ...);
-    #define BAD_TOKEN 257  // Define BAD_TOKEN with the appropriate value
 %}
 
 %union {
@@ -17,26 +15,19 @@
 
 %token <treeptr> RESERVED DOT COMMA LPAREN RPAREN LSQUARE RSQUARE LCURL RCURL INCR DECR CONJ DISJ EXCL_WS EXCL_NO_WS
 %token <treeptr> COLON SEMICOLON ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT MULT_ASSIGNMENT DIV_ASSIGNMENT MOD_ASSIGNMENT ARROW DOUBLE_ARROW
-%token <treeptr> RANGE COLONCOLON DOUBLE_SEMICOLON HASH AT_NO_WS AT_POST_WS AT_PRE_WS AT_BOTH_WS QUEST_WS QUEST_NO_WS LANGLE RANGLE LE GE QUEST_DOT
+%token <treeptr> RANGE COLONCOLON DOUBLE_SEMICOLON HASH  AT_NO_WS AT_POST_WS AT_PRE_WS AT_BOTH_WS QUEST_WS QUEST_NO_WS LANGLE RANGLE LE GE QUEST_DOT
 %token <treeptr> EXCL_EQ EXCL_EQEQ AS_SAFE EQEQ EQEQEQ SINGLE_QUOTE RETURN_AT CONTINUE_AT BREAK_AT THIS_AT SUPER_AT FILES FIELD PROPERTY GET QUEST_COLON
 %token <treeptr> SET RECEIVER PARAM SETPARAM DELEGATE PACKAGE IMPORT CLASS INTERFACE FUN OBJECT VAL VAR TYPEALIAS CONSTRUCTOR BY COMPANION
-%token <treeptr> INIT THIS SUPER TYPEOF WHERE IF ELSE WHEN TRY CATCH FINALLY FOR DO WHILE THROW RETURN CONTINUE BREAK AS IS IN OUT DYNAMIC PUBLIC
+%token <treeptr> INIT  TYPELITERAL THIS SUPER TYPEOF WHERE IF ELSE WHEN TRY CATCH FINALLY FOR DO WHILE THROW RETURN CONTINUE BREAK AS IS IN OUT DYNAMIC PUBLIC
 %token <treeptr> PRIVATE PROTECTED INTERNAL ENUM SEALED ANNOTATION DATA INNER TAILREC OPERATOR INLINE INFIX EXTERNAL SUSPEND OVERRIDE ABSTRACT NULL_LITERAL
 %token <treeptr> FINAL OPEN CONST LATEINIT VARARG NOINLINE CROSSINLINE REIFIED EXPECT ACTUAL REAL_LITERAL FLOAT_LITERAL DOUBLE_LITERAL INTEGER_LITERAL CHARACTER_LITERAL
-%token <treeptr> HEX_LITERAL BIN_LITERAL UNSIGNED_LITERAL LONG_LITERAL  BOOLEAN_LITERAL STRING_LITERAL INT FLOAT BOOLEAN CHAR STRING BYTE T_EOF TYPELITERAL 
+%token <treeptr> HEX_LITERAL BIN_LITERAL UNSIGNED_LITERAL LONG_LITERAL BOOLEAN_LITERAL STRING_LITERAL INT FLOAT BOOLEAN CHAR STRING BYTE T_EOF
 %token <treeptr> MULT MOD DIV ADD SUB
 %token <treeptr> IDENTIFIER
 %debug 
 
-%type <treeptr> program topLevelObjects topLevelObject functionDeclaration  type functionBody block statements statement variableDeclaration assignment functionCall functionArguments 
-%type <treeptr> loopStatement  expression  disjunction  conjunction equality comparison genericCallLikeComparison elvisExpression rangeExpression primaryExpression
-%type <treeptr>  declaration opt_typeParameters opt_comma typeParameters typeParameter multi_typeParameter simpleIdentifier classDeclaration semis_statement optional_statement_sequence parameter  rangeTest 
-%type <treeptr> functionValueParameter functionValueParameters opt_functionValueParameter multi_comma_functionParameter opt_functionBody opt_eq_exp receiverType parenthesizedType 
-%type <treeptr> typeRef_parenthesizedType nullableType multi_quest userType multi_dot_simpleUserType simpleUserType opt_modifier val_var multivariable_variableDeclaration parenthesizedExpression propertyDeclaration navigationSuffix identifier_expression_class
-%type <treeptr> memberAccessOperator typeArguments directlyAssignableExpression parenthesizedDirectlyAssignableExpression multi_postfixUnarySuffix postfixUnaryExpression postfixUnarySuffix postfixUnaryOperator multi_comma_expression callSuffix controlStructureBody 
-%type <treeptr>  control_structure_body_or_comma semis variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration multi_comma_variableDeclaration
-%type <treeptr> directly_assign classMembers objectBody classBody classMember opt_colon_type objectDeclaration assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
-%type <treeptr> collectionLiteral comparison_operator additiveExpression multiplicativeExpression jumpExpression  
+%type <treeptr> opt_semis  declaration  opt_typeParameters opt_comma typeParameters typeParameter  multi_typeParameter simpleIdentifier classDeclaration  semis_statement optional_statement_sequence program topLevelObjects topLevelObject functionDeclaration  type functionBody block statements statement  assignment functionCall functionArguments loopStatement  returnStatement  classBody classMembers classMember objectDeclaration objectBody expression
+%type <treeptr>  parameter common_literal literalConstant jumpExpression multi_whenEntry whenExpression ifExpression collectionLiteral  whenSubject multi_comma_whenCondition whenEntry whenCondition rangeTest functionValueParameter functionValueParameters opt_functionValueParameter multi_comma_functionParameter opt_functionBody  opt_eq_exp receiverType parenthesizedType typeRef_parenthesizedType nullableType multi_quest userType multi_dot_simpleUserType  simpleUserType  opt_modifier val_var multivariable_variableDeclaration  parenthesizedExpression propertyDeclaration navigationSuffix identifier_expression_class memberAccessOperator typeArguments directlyAssignableExpression parenthesizedDirectlyAssignableExpression multi_postfixUnarySuffix postfixUnaryExpression postfixUnarySuffix postfixUnaryOperator multi_comma_expression  callSuffix controlStructureBody opt_controStructureBody  control_structure_body_or_comma variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration variableDeclaration multi_comma_variableDeclaration  directly_assign  assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection primaryExpression
 %left ADD SUB
 %left MULT DIV MOD
 %left AND OR
@@ -49,7 +40,7 @@
 
 /* Program Structure */
 program:
-    topLevelObjects {root = $1;treeprint(root, 1);}
+    topLevelObjects {root = $1;}
 ;
 
 topLevelObjects:
@@ -68,15 +59,10 @@ opt_functionBody:
   | /* empty */ {$$ = NULL;}
   ;
 
-opt_colon_type:
-  COLON type {$$ = alctree(1003, "opt_colon_type", 2, $1, $2);}
-  | /* empty */ {$$ = NULL;}
-  ;
-
 /* Function Declaration */
 functionDeclaration:
-    FUN opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody {$$ = alctree(1003, "functionDeclaration", 8, $1, $2, $3, $4, $5, $6, $7, $8);}
-    | FUN opt_typeParameters simpleIdentifier functionValueParameters opt_colon_type opt_functionBody {$$ = alctree(1003, "functionDeclaration",6, $1, $2, $3, $4, $5, $6);}
+    FUN opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters opt_functionBody {$$ = alctree(1003, "functionDeclaration", 7, $1, $2, $3, $4, $5,$6,$7);}
+    | FUN opt_typeParameters  simpleIdentifier functionValueParameters opt_functionBody {$$ = alctree(1003, "functionDeclaration", 5, $1, $2, $3, $4, $5);}
 
 ;
 
@@ -106,7 +92,8 @@ opt_functionValueParameter:
 /* Type */
 type:
   nullableType {$$ = alctree(1006, "type", 1, $1);}
-  |TYPELITERAL {$$ = $1;}
+  | TYPELITERAL
+
 ;
 
 /* Function Body */
@@ -120,28 +107,25 @@ block:
     LCURL statements RCURL  {$$ = alctree(1008, "block", 3, $1, $2, $3);  }
 ;
 
-
-semis:
-  SEMICOLON
+opt_semis:
+    SEMICOLON {$$ = $1;}
   | {$$ = NULL;}
-  ; 
+  ;
 
 semis_statement:
-  semis_statement semis statement {$$ = alctree(2000, "semis_statement", 3, $1, $2, $3);}
+ 	semis_statement SEMICOLON statement {$$ = alctree(2000, "semis_statement", 3, $1, $2, $3);}
+  |semis_statement  statement {$$ = alctree(2000, "semis_statement", 2, $1, $2);}
 	|  {$$ = NULL;}
 	;
- 
 
 optional_statement_sequence:
      statement semis_statement  {$$ = alctree(2001, "optional_statement_sequence", 2, $1, $2);}
-	|   {$$ = NULL;}
+	|  {$$ = NULL;}
 	;
 
 statements:
 	optional_statement_sequence SEMICOLON {$$ = alctree(1009, "statements", 2, $1, $2);}
   |optional_statement_sequence  {$$ = alctree(1009, "statements", 1, $1);}
-   
-
 	;
 
 /* Statement */
@@ -151,7 +135,6 @@ statement:
   | assignment  {$$ = alctree(1010, "statement", 1, $1);}
   | expression  {$$ = alctree(1010, "statement", 1, $1); }
   | loopStatement {$$ = alctree(1010, "statement", 1, $1);}
-  | error SEMICOLON {$$ = alctree(1010, "statement", 1, $2);}
 ;
 
 declaration:
@@ -223,9 +206,10 @@ multivariable_variableDeclaration:
   ;
 
 propertyDeclaration:
-    opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1012, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
-  | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1012, "propertyDeclaration", 6, $1, $2, $3, $4, $5, $6);}
+  opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1012, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
+  |  opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1012, "propertyDeclaration", 6, $1, $2, $3, $4, $5, $6);}
   | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp {$$ = alctree(1012, "propertyDeclaration", 5, $1, $2, $3, $4, $5 );}
+
   ;
   
 
@@ -276,11 +260,6 @@ multi_comma_variableDeclaration:
   | { /* epsilon production */ }
   ;
 
-
-
-classBody:
-    LCURL classMembers RCURL  {$$ = alctree(1019, "classBody", 3, $1, $2, $3);}
-;
 
 
 assignmentAndOperator:
@@ -434,22 +413,71 @@ parenthesizedExpression:
     LPAREN expression RPAREN  {$$ = alctree(1011, "parenthesizedExpression", 3, $1, $2, $3);}
     ;
 
-  
 
-//     | callableReference {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | functionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | collectionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | thisExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | superExpression {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | ifExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | whenExpression   {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | tryExpression {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
-//     ;
+jumpExpression:
+  RETURN expression {alctree(1011, "jumpExpression", 2, $1, $2);}
+  | RETURN
+  | CONTINUE
+  | BREAK
+  ;
+
+
+ifExpression:
+    IF LPAREN expression RPAREN ELSE SEMICOLON controlStructureBody {$$ = alctree(1011, "ifExpression", 7, $1, $2, $3, $4, $5, $6,$7);}
+  | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody  {$$ = alctree(1011, "ifExpression", 7, $1, $2, $3, $4, $5, $6,$7);}
+  | IF LPAREN expression RPAREN controlStructureBody SEMICOLON ELSE controlStructureBody  {$$ = alctree(1011, "ifExpression", 8, $1, $2, $3, $4, $5, $6,$7,$8);}
+  | IF LPAREN expression RPAREN SEMICOLON ELSE controlStructureBody  {$$ = alctree(1011, "ifExpression", 7, $1, $2, $3, $4, $5, $6,$7);}
+  | IF LPAREN expression RPAREN controlStructureBody  {$$ = alctree(1011, "ifExpression", 5, $1, $2, $3, $4, $5);}
+  | IF LPAREN expression RPAREN SEMICOLON
+  ;
+
+collectionLiteral:
+  LPAREN RPAREN {$$ = alctree(1011, "collectionLiteral", 2, $1, $2);}
+  | LPAREN expression COMMA RPAREN {$$ = alctree(1011, "collectionLiteral", 4, $1, $2, $3, $4);}
+  | LPAREN expression multi_comma_expression RPAREN {$$ = alctree(1011, "collectionLiteral", 4, $1, $2, $3, $4);}
+  | LSQUARE expression multi_comma_expression COMMA RSQUARE {$$ = alctree(1011, "collectionLiteral", 5, $1, $2, $3, $4, $5);}
+  ;
+
+
+
+multi_whenEntry:
+  multi_whenEntry whenEntry {$$ = alctree(1011, "multi_whenEntry", 2, $1, $2);}
+  | { /* epsilon production */ }  {$$ = NULL;}
+  ;
+
+whenExpression:
+  WHEN whenSubject LCURL multi_whenEntry RCURL {$$ = alctree(1011, "whenExpression", 5, $1, $2, $3, $4, $5);}
+  | WHEN LCURL multi_whenEntry RCURL {$$ = alctree(1011, "whenExpression", 4, $1, $2, $3, $4);}
+   ;
+
+whenSubject:
+  LPAREN expression RPAREN {$$ = alctree(1011, "whenSubject", 3, $1, $2, $3);}
+  |  LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN {$$ = alctree(1011, "whenSubject", 6, $1, $2, $3, $4, $5, $6);}
+
+multi_comma_whenCondition:
+  multi_comma_whenCondition COMMA whenCondition {$$ = alctree(1011, "multi_comma_whenCondition", 3, $1, $2, $3);}
+  | { /* epsilon production */ }  {$$ = NULL;}
+  ;
+
+whenEntry:
+  whenCondition multi_comma_whenCondition ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
+  | whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 5, $1, $2, $3, $4, $5);}
+  | ELSE ARROW controlStructureBody SEMICOLON {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
+  | ELSE ARROW controlStructureBody   {$$ = alctree(1011, "whenEntry", 3, $1, $2, $3);}
+  ;
+
+whenCondition:
+  expression {$$ = alctree(1011, "whenCondition", 1, $1);}
+  | rangeTest {$$ = alctree(1011, "whenCondition", 1, $1);}
+  ;
+
+rangeTest:
+  IN expression {$$ = alctree(1011, "rangeTest", 2, $1, $2);}
+  ;
+   
 /* Function Call */
 functionCall:
     IDENTIFIER LPAREN functionArguments RPAREN  {$$ = alctree(1013, "functionCall", 4, $1, $2, $3,$4);}
-    
 ;
 
 /* Function Arguments */
@@ -471,57 +499,33 @@ control_structure_body_or_comma:
 /* Loops */
 loopStatement:
     WHILE LPAREN expression RPAREN control_structure_body_or_comma  {$$ = alctree(1015,"loopStatement", 5 ,$1, $2, $3, $4,$5);}
-    | FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody  {$$ = alctree(1015,"loopStatement", 7 ,$1, $2, $3, $4,$5,$6,$7);}
+  | FOR LPAREN variable_multivariable IN expression RPAREN opt_controStructureBody  {$$ = alctree(1015,"loopStatement", 6 ,$1, $2, $3, $4,$5,$6);}
 ;
 
+
+opt_controStructureBody:
+  controlStructureBody  {$$ = alctree(1017, "opt_controStructureBody", 1, $1);}
+  | {$$ = NULL;}
+  ;
 
 controlStructureBody:
   block  {$$ = alctree(1017, "controlStructureBody", 1, $1);}
   | statement {$$ = alctree(1017, "controlStructureBody", 1, $1);}
   ;
- 
 
-jumpExpression:
-  RETURN expression {alctree(1011, "jumpExpression", 2, $1, $2);}
-  | RETURN
-  | CONTINUE
-  | BREAK
-  ;
+/* Return Statement */
+returnStatement:
+    RETURN expression SEMICOLON {$$ = alctree(1017, "returnStatement", 3, $1, $2, $3);}
+;
 
-// multi_whenEntry:
-//   multi_whenEntry whenEntry {$$ = alctree(1011, "multi_whenEntry", 2, $1, $2);}
-//   |   {$$ = NULL;}
-//   ;
+/* Class Declaration */
+classDeclaration:
+    CLASS IDENTIFIER classBody  {$$ = alctree(1018, "classDeclaration", 3, $1, $2, $3);}
+;
 
-// whenExpression:
-//   WHEN whenSubject LCURL multi_whenEntry RCURL {$$ = alctree(1011, "whenExpression", 5, $1, $2, $3, $4, $5);}
-//   | WHEN LCURL multi_whenEntry RCURL {$$ = alctree(1011, "whenExpression", 4, $1, $2, $3, $4);}
-//    ;
-
-// whenSubject:
-//   LPAREN expression RPAREN {$$ = alctree(1011, "whenSubject", 3, $1, $2, $3);}
-//   |  LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN {$$ = alctree(1011, "whenSubject", 6, $1, $2, $3, $4, $5, $6);}
-
-// multi_comma_whenCondition:
-//   multi_comma_whenCondition COMMA whenCondition {$$ = alctree(1011, "multi_comma_whenCondition", 3, $1, $2, $3);}
-//   | { /* epsilon production */ }  {$$ = NULL;}
-//   ;
-
-// whenEntry:
-//   whenCondition multi_comma_whenCondition ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
-//   | whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 5, $1, $2, $3, $4, $5);}
-//   | ELSE ARROW controlStructureBody SEMICOLON {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
-//   | ELSE ARROW controlStructureBody   {$$ = alctree(1011, "whenEntry", 3, $1, $2, $3);}
-//   ;
-
-// whenCondition:
-//   expression {$$ = alctree(1011, "whenCondition", 1, $1);}
-//   | rangeTest {$$ = alctree(1011, "whenCondition", 1, $1);}
-//   ;
-
-rangeTest:
-  IN expression {$$ = alctree(1011, "rangeTest", 2, $1, $2);}
-  ;
+classBody:
+    LCURL classMembers RCURL  {$$ = alctree(1019, "classBody", 3, $1, $2, $3);}
+;
 
 classMembers:
     /* empty */ {$$ = NULL;}
@@ -542,97 +546,32 @@ objectBody:
     LCURL classMembers RCURL  {$$ = alctree(1023, "objectBody", 3, $1, $2, $3);}
 ;
 
+common_literal:
+  INTEGER_LITERAL
+  |STRING_LITERAL
+  |FLOAT_LITERAL
 /* Expressions */
 expression:
-  disjunction {$$ = alctree(1024, "expression", 1, $1);}
+    functionCall  {$$ = alctree(1024, "expression", 1, $1);}
+  | IDENTIFIER    {$$ = $1; }
+  | common_literal {$$ = alctree(1024, "expression", 1, $1);}
 ;
 
-disjunction:
-  conjunction {$$ = alctree(1025, "disjuction", 1, $1);}
-  | disjunction DISJ conjunction {$$ = alctree(1024, "disjuction", 3, $1, $2, $3);}
+literalConstant:
+  BOOLEAN_LITERAL
+  | common_literal  {$$ = alctree(1011, "literalConstant", 1, $1);}
+  | FLOAT_LITERAL
+  | NULL_LITERAL
+  | CHARACTER_LITERAL
   ;
-
-conjunction: 
-  equality {$$ = alctree(1026, "conjuction", 1, $1);}
-  | conjunction CONJ equality {$$ = alctree(1027, "conjuction", 3, $1, $2, $3);}
-  ;
-
-equality:
-  comparison {$$ = alctree(1028, "equality", 1, $1);}
-    | equality equality_operator comparison {$$ = alctree(1028, "equality", 3, $1, $2, $3);}
-    ;
-
-comparison
-    : genericCallLikeComparison {$$ = alctree(1029, "comparison", 1, $1);}
-    | comparison comparison_operator genericCallLikeComparison {$$ = alctree(1028, "comparison", 3, $1, $2, $3);}
-    ;
-
-genericCallLikeComparison
-    : elvisExpression {$$ = alctree(1029, "genericCallLikeComparison", 1, $1);}
-    | elvisExpression IN elvisExpression {$$ = alctree(1029, "genericCallLikeComparison", 3, $1, $2, $3);}
-    ;
-
-elvisExpression
-    : rangeExpression {$$ = alctree(1030, "elvisExpression", 1, $1);}
-    | elvisExpression QUEST_COLON rangeExpression  {$$ = alctree(1030, "elvisExpression", 3, $1, $2, $3);}
-    ;
-
-rangeExpression
-    : additiveExpression {$$ = alctree(1031, "rangeExpression", 1, $1);}
-    | rangeExpression RANGE additiveExpression {$$ = alctree(1031, "rangeExpression", 3, $1, $2, $3);}
-    ;
-
-additiveExpression: 
-    multiplicativeExpression {$$ = alctree(1032, "additiveExpression", 1, $1);}
-    | additiveExpression ADD multiplicativeExpression {$$ = alctree(1032, "additiveExpression", 3, $1, $2, $3);}
-    | additiveExpression SUB multiplicativeExpression {$$ = alctree(1032, "additiveExpression", 3, $1, $2, $3);}
-    ;
-
-multiplicativeExpression:
-  postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 1, $1);}
-  | multiplicativeExpression MULT postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 3, $1, $2, $3);}
-  | multiplicativeExpression DIV postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 3, $1, $2, $3);}
-  | multiplicativeExpression MOD postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 3, $1, $2, $3);}
-  ; 
 
 primaryExpression:
-  parenthesizedExpression { $$ = alctree(1035, "primaryExpression", 1, $1);}
-    | IDENTIFIER 
-    | functionCall { $$ = alctree(1035, "primaryExpression", 1, $1);}
-    | INTEGER_LITERAL 
-    | STRING_LITERAL 
-    | FLOAT_LITERAL
-    | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
-    | collectionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
-    ;
-
-collectionLiteral:
-  LSQUARE RSQUARE {$$ = alctree(1011, "collectionLiteral", 2, $1, $2);}
-  | LSQUARE expression COMMA RSQUARE {$$ = alctree(1011, "collectionLiteral", 4, $1, $2, $3, $4);}
-  | LSQUARE expression RSQUARE {$$ = alctree(1011, "collectionLiteral", 3, $1, $2, $3);}
-  | LSQUARE expression multi_comma_expression RSQUARE {$$ = alctree(1011, "collectionLiteral", 4, $1, $2, $3, $4);}
-  | LSQUARE expression multi_comma_expression COMMA RSQUARE {$$ = alctree(1011, "collectionLiteral", 5, $1, $2, $3, $4, $5);}
-  ;
-
-
-comparison_operator: 
-  LANGLE 
-  |RANGLE 
-  |LE 
-  |GE 
-  ;
-
-equality_operator:
-  EQEQ
-  |EQEQEQ
-  ;
-  
-postfix_unary_operator: 
-  INCR
-  | DECR
+  simpleIdentifier {$$ = alctree(1011, "primaryExpression", 1, $1);}
+  | literalConstant {$$ = alctree(1011, "primaryExpression", 1, $1);}
+  | parenthesizedExpression {$$ = alctree(1011, "primaryExpression", 1, $1);}
+  | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
+  | collectionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
+  | ifExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
+  | whenExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
   ;
 %%
-const char *yyname(int sym)
-{ 
-   return yytname[sym-RESERVED+3];
-}

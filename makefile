@@ -21,7 +21,7 @@ k0gram.tab.o: k0gram.tab.c tree.h
 	$(CC) $(CFLAGS) -c k0gram.tab.c
 
 k0gram.tab.c k0gram.tab.h: k0gram.y
-	bison -d k0gram.y
+	bison -d -v k0gram.y
 
 lex.yy.c: k0lex.l k0gram.tab.h tree.h
 
