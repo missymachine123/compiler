@@ -3,12 +3,17 @@
 %option nounput
 %option yylineno 
 %{
-    #include "token.h"
-    double yylval;
+	#include "k0gram.tab.h"
+    #include "tree.h"
+
+    extern struct token yytoken;
+    char *descape(const char* yytext);
+    int alctoken(int category);
     int yyival;
     double yydval;
     char *yysval;
     char* removeSeparators(char* yytext);
+    int yyerror(char *s);
 %}
 
 spaces_and_tabs         [ \t]+
@@ -45,7 +50,7 @@ EscapedIdentifier	    \\[tbrn'\\$]
 ineStringExpression	    "${"{NL}*{expression}{NL}*'}'
 lineStringContent	    {LineStrText}|{LineStrEscapedChar}|{IDENTIFIER}
 unsupported             "as?"|"as"|"class"|"!in"|"is"|"!is"|"object"|"package"|"super"|"this"|"throw"|"typealias"|"try"|"typeof"|"field"|"it"
-unsupported_op          "@"|"$"|"$"|"`"|"\\"|"#"|"::"|"->"|"=>"|";;"
+unsupported_op          "@"|"$"|"$"|"`"|"\\"|"#"|"::"|"=>"|";;"
 unsupported_bit         "~"|">>"|"<<"|"&="|"|="|"^="|">>="|"<<="|"&"|"|"|"^"
 unsupported_word        "by"|"catch"|"constructor"|"delegate"|"dynamic"|"file"|"finally"|"get"|"init"|"param"|"property"|"reciever"|"set"|"setparam"|"value"|"where"
 unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"sealed"|"annotation"|"data"|"inner"|"tailrec"|"operator"|"inline"|"infix"|"external"|"override"|"abstract"|"final"|"open"|"lateinit"|"vararg"|"noinline"|"crossinline"|"reified"|"expect"|"actual"|"protected"
@@ -57,82 +62,78 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 '#!'[^{LF}{CR}]+	        {}
 {DelimitedComment}	        {}
 {LineComment}               {} 
-{multiline_string_literals}     { return STRING_LITERAL; }
+{multiline_string_literals}     { yysval = descape(yytext);return alctoken(STRING_LITERAL); }
 {WS}			            {}
 {NL}			            {}
-"..."                   { return RESERVED; }
-"."					    { return DOT; }
-","						{ return COMMA; }
-"("						{ return LPAREN; }
-")"						{ return RPAREN; }
-"["						{ return LSQUARE; }
-"]"						{ return RSQUARE; }
-"{"						{ return LCURL; }
-"}"						{ return RCURL; }
-"*"						{ return MULT; }
-"%"						{ return MOD; }
-"/"						{ return DIV; }
-"+"						{ return ADD; }
-"-"						{ return SUB; }
-"++"					{ return INCR; }
-"--"					{ return DECR; }
-"&&"					{ return CONJ; }
-"||"					{ return DISJ; }
-"!"						{ return EXCL_NO_WS; }
-":"						{ return COLON; }
-";"						{ return SEMICOLON; }
-"="						{ return ASSIGNMENT; }
-"+="					{ return ADD_ASSIGNMENT; }
-"-="					{ return SUB_ASSIGNMENT; }
-"*="					{ return MULT_ASSIGNMENT; }
-"/="					{ return DIV_ASSIGNMENT; }
-"%="					{ return MOD_ASSIGNMENT; }
-".."					{ return RANGE; }
-"?"{Hidden}				{ return QUEST_WS;}
-"?"					    { return QUEST_NO_WS; }
-"?."                    { return QUEST_DOT;}
-"?:"                    { return QUEST_COLON;}
-"<"					    { return LANGLE; }
-">"					    { return RANGLE; }
-"<="					{ return LE; }
-">="					{ return GE; }
-"!="					{ return EXCL_EQ; }
-"!=="					{ return EXCL_EQEQ; }
-"=="					{ return EQEQ; }
-"==="					{ return EQEQEQ; }
-"\'"					{ return SINGLE_QUOTE; } 
-"if"                    { return IF;}
-"else"                  { return ELSE;}
-"when"                  { return WHEN;}
-"while"                 { return WHILE;}
-"for"                   { return FOR;}
-"do"                    { return DO;}
-"break"                 { return BREAK;}
-"continue"              { return CONTINUE;}
-"in"                    { return IN;}
-"return"                { return RETURN;}
-"fun"                   { return FUN;}
-"var"                   { return VAR;}
-"val"                   { return VAL;}
-"import"                { return IMPORT;}
-"const"                 { return CONST;}
-"interface"             { return INTERFACE;} 
-"Int"|"Short"|"Long"    { return INT;}
-"Float"|"Double"        { return FLOAT;}
-"Boolean"               { return BOOLEAN;}
-"String"                { return STRING;}
-"Char"                  { return CHAR;}
-"Byte"                  { return BYTE;}
-{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return FLOAT_LITERAL;}
-{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return FLOAT_LITERAL;}
-{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return INTEGER_LITERAL;}  
-{HexLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext), NULL, 16); return INTEGER_LITERAL;} 
-{BinLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext+2), NULL, 2); return INTEGER_LITERAL;}
-([{IntegerLiteral}{HexLiteral}{BinLiteral}])'L'	                { return INTEGER_LITERAL;}
-"true"|"false"						                            { return BOOLEAN_LITERAL;}
-"null"							                                { return NULL_LITERAL;}
-["][^"]*["]				                                        { return STRING_LITERAL;}
-\'({EscapeSeq}|[^\r\n'\\]+)\'                                   { return CHARACTER_LITERAL; }
+"..."                   { return alctoken(RESERVED); }
+"."					    { return alctoken(DOT); }
+"->"                    { return alctoken(ARROW); }
+","						{ return alctoken(COMMA); }
+"("						{ return alctoken(LPAREN); }
+")"						{ return alctoken(RPAREN); }
+"["						{ return alctoken(LSQUARE); }
+"]"						{ return alctoken(RSQUARE); }
+"{"						{ return alctoken(LCURL); }
+"}"						{ return alctoken(RCURL); }
+"*"						{ return alctoken(MULT); }
+"%"						{ return alctoken(MOD); }
+"/"						{ return alctoken(DIV); }
+"+"						{ return alctoken(ADD); }
+"-"						{ return alctoken(SUB); }
+"++"					{ return alctoken(INCR); }
+"--"					{ return alctoken(DECR); }
+"&&"					{ return alctoken(CONJ); }
+"||"					{ return alctoken(DISJ); }
+"!"						{ return alctoken(EXCL_NO_WS); }
+":"						{ return alctoken(COLON); }
+";"						{ return alctoken(SEMICOLON); }
+"="						{ return alctoken(ASSIGNMENT); }
+"+="					{ return alctoken(ADD_ASSIGNMENT); }
+"-="					{ return alctoken(SUB_ASSIGNMENT); }
+"*="					{ return alctoken(MULT_ASSIGNMENT); }
+"/="					{ return alctoken(DIV_ASSIGNMENT); }
+"%="					{ return alctoken(MOD_ASSIGNMENT); }
+".."					{ return alctoken(RANGE); }
+"?"{Hidden}				{ return alctoken(QUEST_WS);}
+"?"					    { return alctoken(QUEST_NO_WS); }
+"?."                    { return alctoken(QUEST_DOT);}
+"?:"                    { return alctoken(QUEST_COLON);}
+"<"					    { return alctoken(LANGLE); }
+">"					    { return alctoken(RANGLE); }
+"<="					{ return alctoken(LE); }
+">="					{ return alctoken(GE); }
+"!="					{ return alctoken(EXCL_EQ); }
+"!=="					{ return alctoken(EXCL_EQEQ); }
+"=="					{ return alctoken(EQEQ); }
+"==="					{ return alctoken(EQEQEQ); }
+"\'"					{ return alctoken(SINGLE_QUOTE); } 
+"if"                    { return alctoken(IF);}
+"else"                  { return alctoken(ELSE);}
+"when"                  { return alctoken(WHEN);}
+"while"                 { return alctoken(WHILE);}
+"for"                   { return alctoken(FOR);}
+"do"                    { return alctoken(DO);}
+"break"                 { return alctoken(BREAK);}
+"continue"              { return alctoken(CONTINUE);}
+"in"                    { return alctoken(IN);}
+"return"                { return alctoken(RETURN);}
+"fun"                   { return alctoken(FUN);}
+"var"                   { return alctoken(VAR);}
+"val"                   { return alctoken(VAL);}
+"import"                { return alctoken(IMPORT);}
+"const"                 { return alctoken(CONST);}
+"interface"             { return alctoken(INTERFACE);} 
+"Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"String"|"Char"|"Byte"    { return alctoken(TYPELITERAL);} 
+{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
+{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
+{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return alctoken(INTEGER_LITERAL);}  
+{HexLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext), NULL, 16); return alctoken(INTEGER_LITERAL);} 
+{BinLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext+2), NULL, 2); return alctoken(INTEGER_LITERAL);}
+([{IntegerLiteral}{HexLiteral}{BinLiteral}])'L'	                { return alctoken(INTEGER_LITERAL);}
+"true"|"false"						                            { return alctoken(BOOLEAN_LITERAL);}
+"null"							                                { return alctoken(NULL_LITERAL);}
+["][^"]*["]				                                        { yysval = descape(yytext);return alctoken(STRING_LITERAL);}
+\'({EscapeSeq}|[^\r\n'\\]+)\'                                   { return alctoken(CHARACTER_LITERAL); }
 {unsupported}                           { fprintf(stderr, ":%d: error: the reserved word '%s' is not supported by K0 \n", yylineno, yytext); }
 {unsupported_op}                        { fprintf(stderr, ":%d: error: punctuation '%s' is not supported by K0 \n", yylineno, yytext);  }
 {unsupported_bit}                       { fprintf(stderr, ":%d: error: the operator '%s' is not supported by K0 \n", yylineno, yytext); }
@@ -143,6 +144,7 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "break@"{Identifier}                    { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
 "this@"{Identifier}                     { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext); }
 "super@"{Identifier}                    { fprintf(stderr, ":%d: error: '%s' is not supported by K0 \n", yylineno, yytext);}
-[a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"	{ return IDENTIFIER; }
+[a-zA-Z_][a-zA-Z0-9_]*|"`"[^`\r\n]+"`"	{ return alctoken(IDENTIFIER); }
 .             			                { fprintf(stderr, "Unrecognized token: %s\n", yytext); }
+
 %%

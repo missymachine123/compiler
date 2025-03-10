@@ -1,0 +1,4924 @@
+Nonterminals useless in grammar
+
+    rangeTest
+    postfix_unary_operator
+
+
+Terminals unused in grammar
+
+    RESERVED
+    EXCL_WS
+    ARROW
+    DOUBLE_ARROW
+    COLONCOLON
+    DOUBLE_SEMICOLON
+    HASH
+    AT_NO_WS
+    AT_POST_WS
+    AT_PRE_WS
+    AT_BOTH_WS
+    QUEST_WS
+    QUEST_DOT
+    EXCL_EQ
+    EXCL_EQEQ
+    AS_SAFE
+    SINGLE_QUOTE
+    RETURN_AT
+    CONTINUE_AT
+    BREAK_AT
+    THIS_AT
+    SUPER_AT
+    FILES
+    FIELD
+    PROPERTY
+    GET
+    SET
+    RECEIVER
+    PARAM
+    SETPARAM
+    DELEGATE
+    PACKAGE
+    INTERFACE
+    TYPEALIAS
+    CONSTRUCTOR
+    BY
+    COMPANION
+    INIT
+    THIS
+    SUPER
+    TYPEOF
+    WHERE
+    IF
+    ELSE
+    WHEN
+    TRY
+    CATCH
+    FINALLY
+    DO
+    THROW
+    AS
+    IS
+    OUT
+    DYNAMIC
+    PUBLIC
+    PRIVATE
+    PROTECTED
+    INTERNAL
+    ENUM
+    SEALED
+    ANNOTATION
+    DATA
+    INNER
+    TAILREC
+    OPERATOR
+    INLINE
+    INFIX
+    EXTERNAL
+    SUSPEND
+    OVERRIDE
+    ABSTRACT
+    NULL_LITERAL
+    FINAL
+    OPEN
+    LATEINIT
+    VARARG
+    NOINLINE
+    CROSSINLINE
+    REIFIED
+    EXPECT
+    ACTUAL
+    REAL_LITERAL
+    DOUBLE_LITERAL
+    CHARACTER_LITERAL
+    HEX_LITERAL
+    BIN_LITERAL
+    UNSIGNED_LITERAL
+    LONG_LITERAL
+    BOOLEAN_LITERAL
+    INT
+    FLOAT
+    BOOLEAN
+    CHAR
+    STRING
+    BYTE
+    T_EOF
+    AND
+    OR
+    LOWER_THAN_ELSE
+
+
+Rules useless in grammar
+
+  220 rangeTest: IN expression
+
+  221 postfix_unary_operator: INCR
+  222                       | DECR
+
+
+State 44 conflicts: 1 shift/reduce
+State 90 conflicts: 9 shift/reduce
+State 100 conflicts: 9 shift/reduce
+State 106 conflicts: 1 shift/reduce
+State 112 conflicts: 1 shift/reduce
+State 113 conflicts: 1 shift/reduce
+State 114 conflicts: 2 shift/reduce
+State 115 conflicts: 4 shift/reduce
+State 117 conflicts: 2 shift/reduce
+State 118 conflicts: 1 shift/reduce
+State 119 conflicts: 2 shift/reduce
+State 120 conflicts: 3 shift/reduce
+State 127 conflicts: 9 shift/reduce
+State 131 conflicts: 1 shift/reduce
+State 151 conflicts: 2 shift/reduce
+State 160 conflicts: 2 shift/reduce
+State 181 conflicts: 7 shift/reduce
+State 186 conflicts: 9 shift/reduce
+State 192 conflicts: 1 shift/reduce
+State 223 conflicts: 1 shift/reduce
+State 224 conflicts: 2 shift/reduce
+State 225 conflicts: 4 shift/reduce
+State 227 conflicts: 1 shift/reduce
+State 228 conflicts: 1 shift/reduce
+State 229 conflicts: 2 shift/reduce
+State 236 conflicts: 1 shift/reduce
+State 256 conflicts: 9 shift/reduce
+State 278 conflicts: 1 shift/reduce
+State 281 conflicts: 9 shift/reduce
+State 307 conflicts: 1 shift/reduce
+State 311 conflicts: 1 shift/reduce
+State 315 conflicts: 9 shift/reduce
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: topLevelObjects
+
+    2 topLevelObjects: topLevelObject
+    3                | topLevelObjects topLevelObject
+
+    4 topLevelObject: functionDeclaration
+    5               | classDeclaration
+    6               | objectDeclaration
+
+    7 opt_functionBody: functionBody
+    8                 | ε
+
+    9 opt_colon_type: COLON type
+   10               | ε
+
+   11 functionDeclaration: FUN opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+   12                    | FUN opt_typeParameters simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+
+   13 functionValueParameters: LPAREN opt_functionValueParameter RPAREN
+
+   14 functionValueParameter: parameter opt_eq_exp
+
+   15 parameter: simpleIdentifier COLON type
+
+   16 multi_comma_functionParameter: multi_comma_functionParameter COMMA functionValueParameter
+   17                              | ε
+
+   18 opt_functionValueParameter: functionValueParameter multi_comma_functionParameter COMMA
+   19                           | functionValueParameter multi_comma_functionParameter
+   20                           | ε
+
+   21 type: nullableType
+   22     | TYPELITERAL
+
+   23 functionBody: block
+   24             | ASSIGNMENT expression SEMICOLON
+
+   25 block: LCURL statements RCURL
+
+   26 semis: SEMICOLON
+   27      | ε
+
+   28 semis_statement: semis_statement semis statement
+   29                | ε
+
+   30 optional_statement_sequence: statement semis_statement
+   31                            | ε
+
+   32 statements: optional_statement_sequence SEMICOLON
+   33           | optional_statement_sequence
+
+   34 statement: declaration
+   35          | assignment
+   36          | expression
+   37          | loopStatement
+   38          | error SEMICOLON
+
+   39 declaration: classDeclaration
+   40            | functionDeclaration
+   41            | propertyDeclaration
+
+   42 val_var: VAR
+   43        | VAL
+
+   44 opt_modifier: CONST
+
+   45 $@1: ε
+
+   46 opt_modifier: $@1
+
+   47 receiverType: nullableType
+
+   48 parenthesizedType: LPAREN type RPAREN
+
+   49 multi_dot_simpleUserType: multi_dot_simpleUserType DOT simpleUserType
+
+   50 $@2: ε
+
+   51 multi_dot_simpleUserType: $@2
+
+   52 userType: simpleUserType multi_dot_simpleUserType
+
+   53 simpleUserType: simpleIdentifier typeArguments
+   54               | simpleIdentifier
+
+   55 multi_quest: multi_quest QUEST_NO_WS
+
+   56 $@3: ε
+
+   57 multi_quest: $@3
+
+   58 nullableType: typeRef_parenthesizedType multi_quest
+
+   59 typeRef_parenthesizedType: parenthesizedType
+   60                          | userType
+
+   61 opt_eq_exp: ASSIGNMENT expression
+
+   62 $@4: ε
+
+   63 opt_eq_exp: $@4
+
+   64 multivariable_variableDeclaration: variableDeclaration
+   65                                  | multiVariableDeclaration
+
+   66 propertyDeclaration: opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   67                    | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   68                    | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp
+
+   69 opt_typeParameters: typeParameters
+   70                   | ε
+
+   71 opt_comma: COMMA
+   72          | ε
+
+   73 typeParameters: LANGLE typeParameter multi_typeParameter opt_comma RANGLE
+
+   74 typeParameter: simpleIdentifier
+
+   75 multi_typeParameter: multi_typeParameter COMMA typeParameter
+   76                    | ε
+
+   77 simpleIdentifier: IDENTIFIER
+   78                 | IMPORT
+   79                 | CONST
+
+   80 classDeclaration: CONST CLASS simpleIdentifier opt_typeParameters classBody
+   81                 | CLASS simpleIdentifier opt_typeParameters classBody
+
+   82 variableDeclaration: type COLON type
+   83                    | type
+
+   84 multiVariableDeclaration: LPAREN variableDeclaration multi_comma_variableDeclaration opt_comma RPAREN
+
+   85 multi_comma_variableDeclaration: multi_comma_variableDeclaration COMMA variableDeclaration
+   86                                | ε
+
+   87 classBody: LCURL classMembers RCURL
+
+   88 assignmentAndOperator: ADD_ASSIGNMENT
+   89                      | SUB_ASSIGNMENT
+   90                      | MULT_ASSIGNMENT
+   91                      | DIV_ASSIGNMENT
+   92                      | MOD_ASSIGNMENT
+
+   93 assignableExpression: prefixUnaryExpression
+   94                     | parenthesizedAssignableExpression
+
+   95 multi_unaryPrefix: multi_unaryPrefix prefixUnaryOperator
+
+   96 $@5: ε
+
+   97 multi_unaryPrefix: $@5
+
+   98 prefixUnaryOperator: ADD
+   99                    | SUB
+  100                    | INCR
+  101                    | DECR
+  102                    | EXCL_NO_WS EXCL_NO_WS
+
+  103 prefixUnaryExpression: multi_unaryPrefix postfixUnaryExpression
+
+  104 parenthesizedAssignableExpression: LPAREN assignableExpression RPAREN
+
+  105 assignment: directly_assign expression
+
+  106 directly_assign: directlyAssignableExpression ASSIGNMENT
+  107                | assignableExpression assignmentAndOperator
+
+  108 assignableSuffix: indexingSuffix
+  109                 | typeArguments
+
+  110 typeArguments: LANGLE typeProjection multi_comma_typeProjection opt_comma RANGLE
+
+  111 multi_comma_typeProjection: multi_comma_typeProjection COMMA typeProjection
+
+  112 $@6: ε
+
+  113 multi_comma_typeProjection: $@6
+
+  114 typeProjection: type
+  115               | MULT
+
+  116 directlyAssignableExpression: postfixUnaryExpression assignableSuffix
+  117                             | simpleIdentifier
+  118                             | parenthesizedDirectlyAssignableExpression
+
+  119 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression RPAREN
+
+  120 multi_postfixUnarySuffix: multi_postfixUnarySuffix postfixUnarySuffix
+
+  121 $@7: ε
+
+  122 multi_postfixUnarySuffix: $@7
+
+  123 postfixUnaryExpression: primaryExpression multi_postfixUnarySuffix
+
+  124 postfixUnarySuffix: postfixUnaryOperator
+  125                   | indexingSuffix
+  126                   | callSuffix
+  127                   | navigationSuffix
+
+  128 identifier_expression_class: simpleIdentifier
+  129                            | parenthesizedExpression
+  130                            | CLASS
+
+  131 navigationSuffix: memberAccessOperator identifier_expression_class
+
+  132 memberAccessOperator: DOT
+  133                     | QUEST_NO_WS DOT
+
+  134 postfixUnaryOperator: INCR
+  135                     | DECR
+  136                     | EXCL_NO_WS EXCL_NO_WS
+
+  137 multi_comma_expression: multi_comma_expression COMMA expression
+
+  138 $@8: ε
+
+  139 multi_comma_expression: $@8
+
+  140 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma RSQUARE
+
+  141 callSuffix: valueArguments
+
+  142 multi_comma_valueArgument: multi_comma_valueArgument COMMA valueArgument
+
+  143 $@9: ε
+
+  144 multi_comma_valueArgument: $@9
+
+  145 opt_valueArgument: valueArgument multi_comma_valueArgument opt_comma
+
+  146 $@10: ε
+
+  147 opt_valueArgument: $@10
+
+  148 valueArguments: LPAREN opt_valueArgument RPAREN
+
+  149 opt_simpleIdentifier_EQ: simpleIdentifier ASSIGNMENT
+
+  150 $@11: ε
+
+  151 opt_simpleIdentifier_EQ: $@11
+
+  152 opt_Multi: MULT
+
+  153 $@12: ε
+
+  154 opt_Multi: $@12
+
+  155 valueArgument: opt_simpleIdentifier_EQ opt_Multi expression
+
+  156 parenthesizedExpression: LPAREN expression RPAREN
+
+  157 functionCall: IDENTIFIER LPAREN functionArguments RPAREN
+
+  158 functionArguments: expression
+  159                  | functionArguments COMMA expression
+  160                  | ε
+
+  161 variable_multivariable: variableDeclaration
+  162                       | multiVariableDeclaration
+
+  163 control_structure_body_or_comma: controlStructureBody
+  164                                | COMMA
+
+  165 loopStatement: WHILE LPAREN expression RPAREN control_structure_body_or_comma
+  166              | FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody
+
+  167 controlStructureBody: block
+  168                     | statement
+
+  169 jumpExpression: RETURN expression
+  170               | RETURN
+  171               | CONTINUE
+  172               | BREAK
+
+  173 classMembers: ε
+  174             | classMembers classMember
+
+  175 classMember: functionDeclaration
+  176            | variableDeclaration
+
+  177 objectDeclaration: OBJECT IDENTIFIER objectBody
+
+  178 objectBody: LCURL classMembers RCURL
+
+  179 expression: disjunction
+
+  180 disjunction: conjunction
+  181            | disjunction DISJ conjunction
+
+  182 conjunction: equality
+  183            | conjunction CONJ equality
+
+  184 equality: comparison
+  185         | equality equality_operator comparison
+
+  186 comparison: genericCallLikeComparison
+  187           | comparison comparison_operator genericCallLikeComparison
+
+  188 genericCallLikeComparison: elvisExpression
+  189                          | elvisExpression IN elvisExpression
+
+  190 elvisExpression: rangeExpression
+  191                | elvisExpression QUEST_COLON rangeExpression
+
+  192 rangeExpression: additiveExpression
+  193                | rangeExpression RANGE additiveExpression
+
+  194 additiveExpression: multiplicativeExpression
+  195                   | additiveExpression ADD multiplicativeExpression
+  196                   | additiveExpression SUB multiplicativeExpression
+
+  197 multiplicativeExpression: postfixUnaryExpression
+  198                         | multiplicativeExpression MULT postfixUnaryExpression
+  199                         | multiplicativeExpression DIV postfixUnaryExpression
+  200                         | multiplicativeExpression MOD postfixUnaryExpression
+
+  201 primaryExpression: parenthesizedExpression
+  202                  | IDENTIFIER
+  203                  | functionCall
+  204                  | INTEGER_LITERAL
+  205                  | STRING_LITERAL
+  206                  | FLOAT_LITERAL
+  207                  | jumpExpression
+  208                  | collectionLiteral
+
+  209 collectionLiteral: LSQUARE RSQUARE
+  210                  | LSQUARE expression COMMA RSQUARE
+  211                  | LSQUARE expression RSQUARE
+  212                  | LSQUARE expression multi_comma_expression RSQUARE
+  213                  | LSQUARE expression multi_comma_expression COMMA RSQUARE
+
+  214 comparison_operator: LANGLE
+  215                    | RANGLE
+  216                    | LE
+  217                    | GE
+
+  218 equality_operator: EQEQ
+  219                  | EQEQEQ
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256) 38
+    RESERVED <treeptr> (258)
+    DOT <treeptr> (259) 11 49 66 132 133
+    COMMA <treeptr> (260) 16 18 71 75 85 111 137 142 159 164 210 213
+    LPAREN <treeptr> (261) 13 48 84 104 119 148 156 157 165 166
+    RPAREN <treeptr> (262) 13 48 84 104 119 148 156 157 165 166
+    LSQUARE <treeptr> (263) 140 209 210 211 212 213
+    RSQUARE <treeptr> (264) 140 209 210 211 212 213
+    LCURL <treeptr> (265) 25 87 178
+    RCURL <treeptr> (266) 25 87 178
+    INCR <treeptr> (267) 100 134
+    DECR <treeptr> (268) 101 135
+    CONJ <treeptr> (269) 183
+    DISJ <treeptr> (270) 181
+    EXCL_WS <treeptr> (271)
+    EXCL_NO_WS <treeptr> (272) 102 136
+    COLON <treeptr> (273) 9 15 82
+    SEMICOLON <treeptr> (274) 24 26 32 38 66 67
+    ASSIGNMENT <treeptr> (275) 24 61 106 149
+    ADD_ASSIGNMENT <treeptr> (276) 88
+    SUB_ASSIGNMENT <treeptr> (277) 89
+    MULT_ASSIGNMENT <treeptr> (278) 90
+    DIV_ASSIGNMENT <treeptr> (279) 91
+    MOD_ASSIGNMENT <treeptr> (280) 92
+    ARROW <treeptr> (281)
+    DOUBLE_ARROW <treeptr> (282)
+    RANGE <treeptr> (283) 193
+    COLONCOLON <treeptr> (284)
+    DOUBLE_SEMICOLON <treeptr> (285)
+    HASH <treeptr> (286)
+    AT_NO_WS <treeptr> (287)
+    AT_POST_WS <treeptr> (288)
+    AT_PRE_WS <treeptr> (289)
+    AT_BOTH_WS <treeptr> (290)
+    QUEST_WS <treeptr> (291)
+    QUEST_NO_WS <treeptr> (292) 55 133
+    LANGLE <treeptr> (293) 73 110 214
+    RANGLE <treeptr> (294) 73 110 215
+    LE <treeptr> (295) 216
+    GE <treeptr> (296) 217
+    QUEST_DOT <treeptr> (297)
+    EXCL_EQ <treeptr> (298)
+    EXCL_EQEQ <treeptr> (299)
+    AS_SAFE <treeptr> (300)
+    EQEQ <treeptr> (301) 218
+    EQEQEQ <treeptr> (302) 219
+    SINGLE_QUOTE <treeptr> (303)
+    RETURN_AT <treeptr> (304)
+    CONTINUE_AT <treeptr> (305)
+    BREAK_AT <treeptr> (306)
+    THIS_AT <treeptr> (307)
+    SUPER_AT <treeptr> (308)
+    FILES <treeptr> (309)
+    FIELD <treeptr> (310)
+    PROPERTY <treeptr> (311)
+    GET <treeptr> (312)
+    QUEST_COLON <treeptr> (313) 191
+    SET <treeptr> (314)
+    RECEIVER <treeptr> (315)
+    PARAM <treeptr> (316)
+    SETPARAM <treeptr> (317)
+    DELEGATE <treeptr> (318)
+    PACKAGE <treeptr> (319)
+    IMPORT <treeptr> (320) 78
+    CLASS <treeptr> (321) 80 81 130
+    INTERFACE <treeptr> (322)
+    FUN <treeptr> (323) 11 12
+    OBJECT <treeptr> (324) 177
+    VAL <treeptr> (325) 43
+    VAR <treeptr> (326) 42
+    TYPEALIAS <treeptr> (327)
+    CONSTRUCTOR <treeptr> (328)
+    BY <treeptr> (329)
+    COMPANION <treeptr> (330)
+    INIT <treeptr> (331)
+    THIS <treeptr> (332)
+    SUPER <treeptr> (333)
+    TYPEOF <treeptr> (334)
+    WHERE <treeptr> (335)
+    IF <treeptr> (336)
+    ELSE <treeptr> (337)
+    WHEN <treeptr> (338)
+    TRY <treeptr> (339)
+    CATCH <treeptr> (340)
+    FINALLY <treeptr> (341)
+    FOR <treeptr> (342) 166
+    DO <treeptr> (343)
+    WHILE <treeptr> (344) 165
+    THROW <treeptr> (345)
+    RETURN <treeptr> (346) 169 170
+    CONTINUE <treeptr> (347) 171
+    BREAK <treeptr> (348) 172
+    AS <treeptr> (349)
+    IS <treeptr> (350)
+    IN <treeptr> (351) 166 189
+    OUT <treeptr> (352)
+    DYNAMIC <treeptr> (353)
+    PUBLIC <treeptr> (354)
+    PRIVATE <treeptr> (355)
+    PROTECTED <treeptr> (356)
+    INTERNAL <treeptr> (357)
+    ENUM <treeptr> (358)
+    SEALED <treeptr> (359)
+    ANNOTATION <treeptr> (360)
+    DATA <treeptr> (361)
+    INNER <treeptr> (362)
+    TAILREC <treeptr> (363)
+    OPERATOR <treeptr> (364)
+    INLINE <treeptr> (365)
+    INFIX <treeptr> (366)
+    EXTERNAL <treeptr> (367)
+    SUSPEND <treeptr> (368)
+    OVERRIDE <treeptr> (369)
+    ABSTRACT <treeptr> (370)
+    NULL_LITERAL <treeptr> (371)
+    FINAL <treeptr> (372)
+    OPEN <treeptr> (373)
+    CONST <treeptr> (374) 44 79 80
+    LATEINIT <treeptr> (375)
+    VARARG <treeptr> (376)
+    NOINLINE <treeptr> (377)
+    CROSSINLINE <treeptr> (378)
+    REIFIED <treeptr> (379)
+    EXPECT <treeptr> (380)
+    ACTUAL <treeptr> (381)
+    REAL_LITERAL <treeptr> (382)
+    FLOAT_LITERAL <treeptr> (383) 206
+    DOUBLE_LITERAL <treeptr> (384)
+    INTEGER_LITERAL <treeptr> (385) 204
+    CHARACTER_LITERAL <treeptr> (386)
+    HEX_LITERAL <treeptr> (387)
+    BIN_LITERAL <treeptr> (388)
+    UNSIGNED_LITERAL <treeptr> (389)
+    LONG_LITERAL <treeptr> (390)
+    BOOLEAN_LITERAL <treeptr> (391)
+    STRING_LITERAL <treeptr> (392) 205
+    INT <treeptr> (393)
+    FLOAT <treeptr> (394)
+    BOOLEAN <treeptr> (395)
+    CHAR <treeptr> (396)
+    STRING <treeptr> (397)
+    BYTE <treeptr> (398)
+    T_EOF <treeptr> (399)
+    TYPELITERAL <treeptr> (400) 22
+    MULT <treeptr> (401) 115 152 198
+    MOD <treeptr> (402) 200
+    DIV <treeptr> (403) 199
+    ADD <treeptr> (404) 98 195
+    SUB <treeptr> (405) 99 196
+    IDENTIFIER <treeptr> (406) 77 157 177 202
+    AND (407)
+    OR (408)
+    LOWER_THAN_ELSE (409)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (155)
+        on left: 0
+    program <treeptr> (156)
+        on left: 1
+        on right: 0
+    topLevelObjects <treeptr> (157)
+        on left: 2 3
+        on right: 1 3
+    topLevelObject <treeptr> (158)
+        on left: 4 5 6
+        on right: 2 3
+    opt_functionBody <treeptr> (159)
+        on left: 7 8
+        on right: 11 12
+    opt_colon_type <treeptr> (160)
+        on left: 9 10
+        on right: 11 12
+    functionDeclaration <treeptr> (161)
+        on left: 11 12
+        on right: 4 40 175
+    functionValueParameters <treeptr> (162)
+        on left: 13
+        on right: 11 12
+    functionValueParameter <treeptr> (163)
+        on left: 14
+        on right: 16 18 19
+    parameter <treeptr> (164)
+        on left: 15
+        on right: 14
+    multi_comma_functionParameter <treeptr> (165)
+        on left: 16 17
+        on right: 16 18 19
+    opt_functionValueParameter <treeptr> (166)
+        on left: 18 19 20
+        on right: 13
+    type <treeptr> (167)
+        on left: 21 22
+        on right: 9 15 48 82 83 114
+    functionBody <treeptr> (168)
+        on left: 23 24
+        on right: 7
+    block <treeptr> (169)
+        on left: 25
+        on right: 23 167
+    semis <treeptr> (170)
+        on left: 26 27
+        on right: 28
+    semis_statement <treeptr> (171)
+        on left: 28 29
+        on right: 28 30
+    optional_statement_sequence <treeptr> (172)
+        on left: 30 31
+        on right: 32 33
+    statements <treeptr> (173)
+        on left: 32 33
+        on right: 25
+    statement <treeptr> (174)
+        on left: 34 35 36 37 38
+        on right: 28 30 168
+    declaration <treeptr> (175)
+        on left: 39 40 41
+        on right: 34
+    val_var <treeptr> (176)
+        on left: 42 43
+        on right: 66 67 68
+    opt_modifier <treeptr> (177)
+        on left: 44 46
+        on right: 66 67 68
+    $@1 (178)
+        on left: 45
+        on right: 46
+    receiverType <treeptr> (179)
+        on left: 47
+        on right: 11 66
+    parenthesizedType <treeptr> (180)
+        on left: 48
+        on right: 59
+    multi_dot_simpleUserType <treeptr> (181)
+        on left: 49 51
+        on right: 49 52
+    $@2 (182)
+        on left: 50
+        on right: 51
+    userType <treeptr> (183)
+        on left: 52
+        on right: 60
+    simpleUserType <treeptr> (184)
+        on left: 53 54
+        on right: 49 52
+    multi_quest <treeptr> (185)
+        on left: 55 57
+        on right: 55 58
+    $@3 (186)
+        on left: 56
+        on right: 57
+    nullableType <treeptr> (187)
+        on left: 58
+        on right: 21 47
+    typeRef_parenthesizedType <treeptr> (188)
+        on left: 59 60
+        on right: 58
+    opt_eq_exp <treeptr> (189)
+        on left: 61 63
+        on right: 14 66 67 68
+    $@4 (190)
+        on left: 62
+        on right: 63
+    multivariable_variableDeclaration <treeptr> (191)
+        on left: 64 65
+        on right: 66 67 68
+    propertyDeclaration <treeptr> (192)
+        on left: 66 67 68
+        on right: 41
+    opt_typeParameters <treeptr> (193)
+        on left: 69 70
+        on right: 11 12 66 67 68 80 81
+    opt_comma <treeptr> (194)
+        on left: 71 72
+        on right: 73 84 110 140 145
+    typeParameters <treeptr> (195)
+        on left: 73
+        on right: 69
+    typeParameter <treeptr> (196)
+        on left: 74
+        on right: 73 75
+    multi_typeParameter <treeptr> (197)
+        on left: 75 76
+        on right: 73 75
+    simpleIdentifier <treeptr> (198)
+        on left: 77 78 79
+        on right: 11 12 15 53 54 74 80 81 117 128 149
+    classDeclaration <treeptr> (199)
+        on left: 80 81
+        on right: 5 39
+    variableDeclaration <treeptr> (200)
+        on left: 82 83
+        on right: 64 84 85 161 176
+    multiVariableDeclaration <treeptr> (201)
+        on left: 84
+        on right: 65 162
+    multi_comma_variableDeclaration <treeptr> (202)
+        on left: 85 86
+        on right: 84 85
+    classBody <treeptr> (203)
+        on left: 87
+        on right: 80 81
+    assignmentAndOperator <treeptr> (204)
+        on left: 88 89 90 91 92
+        on right: 107
+    assignableExpression <treeptr> (205)
+        on left: 93 94
+        on right: 104 107 119
+    multi_unaryPrefix <treeptr> (206)
+        on left: 95 97
+        on right: 95 103
+    $@5 (207)
+        on left: 96
+        on right: 97
+    prefixUnaryOperator <treeptr> (208)
+        on left: 98 99 100 101 102
+        on right: 95
+    prefixUnaryExpression <treeptr> (209)
+        on left: 103
+        on right: 93
+    parenthesizedAssignableExpression <treeptr> (210)
+        on left: 104
+        on right: 94
+    assignment <treeptr> (211)
+        on left: 105
+        on right: 35
+    directly_assign <treeptr> (212)
+        on left: 106 107
+        on right: 105
+    assignableSuffix <treeptr> (213)
+        on left: 108 109
+        on right: 116
+    typeArguments <treeptr> (214)
+        on left: 110
+        on right: 53 109
+    multi_comma_typeProjection <treeptr> (215)
+        on left: 111 113
+        on right: 110 111
+    $@6 (216)
+        on left: 112
+        on right: 113
+    typeProjection <treeptr> (217)
+        on left: 114 115
+        on right: 110 111
+    directlyAssignableExpression <treeptr> (218)
+        on left: 116 117 118
+        on right: 106
+    parenthesizedDirectlyAssignableExpression <treeptr> (219)
+        on left: 119
+        on right: 118
+    multi_postfixUnarySuffix <treeptr> (220)
+        on left: 120 122
+        on right: 120 123
+    $@7 (221)
+        on left: 121
+        on right: 122
+    postfixUnaryExpression <treeptr> (222)
+        on left: 123
+        on right: 103 116 197 198 199 200
+    postfixUnarySuffix <treeptr> (223)
+        on left: 124 125 126 127
+        on right: 120
+    identifier_expression_class <treeptr> (224)
+        on left: 128 129 130
+        on right: 131
+    navigationSuffix <treeptr> (225)
+        on left: 131
+        on right: 127
+    memberAccessOperator <treeptr> (226)
+        on left: 132 133
+        on right: 131
+    postfixUnaryOperator <treeptr> (227)
+        on left: 134 135 136
+        on right: 124
+    multi_comma_expression <treeptr> (228)
+        on left: 137 139
+        on right: 137 140 212 213
+    $@8 (229)
+        on left: 138
+        on right: 139
+    indexingSuffix <treeptr> (230)
+        on left: 140
+        on right: 108 125
+    callSuffix <treeptr> (231)
+        on left: 141
+        on right: 126
+    multi_comma_valueArgument <treeptr> (232)
+        on left: 142 144
+        on right: 142 145
+    $@9 (233)
+        on left: 143
+        on right: 144
+    opt_valueArgument <treeptr> (234)
+        on left: 145 147
+        on right: 148
+    $@10 (235)
+        on left: 146
+        on right: 147
+    valueArguments <treeptr> (236)
+        on left: 148
+        on right: 141
+    opt_simpleIdentifier_EQ <treeptr> (237)
+        on left: 149 151
+        on right: 155
+    $@11 (238)
+        on left: 150
+        on right: 151
+    opt_Multi <treeptr> (239)
+        on left: 152 154
+        on right: 155
+    $@12 (240)
+        on left: 153
+        on right: 154
+    valueArgument <treeptr> (241)
+        on left: 155
+        on right: 142 145
+    parenthesizedExpression <treeptr> (242)
+        on left: 156
+        on right: 129 201
+    functionCall <treeptr> (243)
+        on left: 157
+        on right: 203
+    functionArguments <treeptr> (244)
+        on left: 158 159 160
+        on right: 157 159
+    variable_multivariable <treeptr> (245)
+        on left: 161 162
+        on right: 166
+    control_structure_body_or_comma <treeptr> (246)
+        on left: 163 164
+        on right: 165
+    loopStatement <treeptr> (247)
+        on left: 165 166
+        on right: 37
+    controlStructureBody <treeptr> (248)
+        on left: 167 168
+        on right: 163 166
+    jumpExpression <treeptr> (249)
+        on left: 169 170 171 172
+        on right: 207
+    classMembers <treeptr> (250)
+        on left: 173 174
+        on right: 87 174 178
+    classMember <treeptr> (251)
+        on left: 175 176
+        on right: 174
+    objectDeclaration <treeptr> (252)
+        on left: 177
+        on right: 6
+    objectBody <treeptr> (253)
+        on left: 178
+        on right: 177
+    expression <treeptr> (254)
+        on left: 179
+        on right: 24 36 61 105 137 140 155 156 158 159 165 166 169 210 211 212 213
+    disjunction <treeptr> (255)
+        on left: 180 181
+        on right: 179 181
+    conjunction <treeptr> (256)
+        on left: 182 183
+        on right: 180 181 183
+    equality <treeptr> (257)
+        on left: 184 185
+        on right: 182 183 185
+    comparison <treeptr> (258)
+        on left: 186 187
+        on right: 184 185 187
+    genericCallLikeComparison <treeptr> (259)
+        on left: 188 189
+        on right: 186 187
+    elvisExpression <treeptr> (260)
+        on left: 190 191
+        on right: 188 189 191
+    rangeExpression <treeptr> (261)
+        on left: 192 193
+        on right: 190 191 193
+    additiveExpression <treeptr> (262)
+        on left: 194 195 196
+        on right: 192 193 195 196
+    multiplicativeExpression <treeptr> (263)
+        on left: 197 198 199 200
+        on right: 194 195 196 198 199 200
+    primaryExpression <treeptr> (264)
+        on left: 201 202 203 204 205 206 207 208
+        on right: 123
+    collectionLiteral <treeptr> (265)
+        on left: 209 210 211 212 213
+        on right: 208
+    comparison_operator <treeptr> (266)
+        on left: 214 215 216 217
+        on right: 187
+    equality_operator <treeptr> (267)
+        on left: 218 219
+        on right: 185
+
+
+State 0
+
+    0 $accept: • program $end
+
+    CLASS   shift, and go to state 1
+    FUN     shift, and go to state 2
+    OBJECT  shift, and go to state 3
+    CONST   shift, and go to state 4
+
+    program              go to state 5
+    topLevelObjects      go to state 6
+    topLevelObject       go to state 7
+    functionDeclaration  go to state 8
+    classDeclaration     go to state 9
+    objectDeclaration    go to state 10
+
+
+State 1
+
+   81 classDeclaration: CLASS • simpleIdentifier opt_typeParameters classBody
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    simpleIdentifier  go to state 14
+
+
+State 2
+
+   11 functionDeclaration: FUN • opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+   12                    | FUN • opt_typeParameters simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+
+    LANGLE  shift, and go to state 15
+
+    $default  reduce using rule 70 (opt_typeParameters)
+
+    opt_typeParameters  go to state 16
+    typeParameters      go to state 17
+
+
+State 3
+
+  177 objectDeclaration: OBJECT • IDENTIFIER objectBody
+
+    IDENTIFIER  shift, and go to state 18
+
+
+State 4
+
+   80 classDeclaration: CONST • CLASS simpleIdentifier opt_typeParameters classBody
+
+    CLASS  shift, and go to state 19
+
+
+State 5
+
+    0 $accept: program • $end
+
+    $end  shift, and go to state 20
+
+
+State 6
+
+    1 program: topLevelObjects •
+    3 topLevelObjects: topLevelObjects • topLevelObject
+
+    CLASS   shift, and go to state 1
+    FUN     shift, and go to state 2
+    OBJECT  shift, and go to state 3
+    CONST   shift, and go to state 4
+
+    $default  reduce using rule 1 (program)
+
+    topLevelObject       go to state 21
+    functionDeclaration  go to state 8
+    classDeclaration     go to state 9
+    objectDeclaration    go to state 10
+
+
+State 7
+
+    2 topLevelObjects: topLevelObject •
+
+    $default  reduce using rule 2 (topLevelObjects)
+
+
+State 8
+
+    4 topLevelObject: functionDeclaration •
+
+    $default  reduce using rule 4 (topLevelObject)
+
+
+State 9
+
+    5 topLevelObject: classDeclaration •
+
+    $default  reduce using rule 5 (topLevelObject)
+
+
+State 10
+
+    6 topLevelObject: objectDeclaration •
+
+    $default  reduce using rule 6 (topLevelObject)
+
+
+State 11
+
+   78 simpleIdentifier: IMPORT •
+
+    $default  reduce using rule 78 (simpleIdentifier)
+
+
+State 12
+
+   79 simpleIdentifier: CONST •
+
+    $default  reduce using rule 79 (simpleIdentifier)
+
+
+State 13
+
+   77 simpleIdentifier: IDENTIFIER •
+
+    $default  reduce using rule 77 (simpleIdentifier)
+
+
+State 14
+
+   81 classDeclaration: CLASS simpleIdentifier • opt_typeParameters classBody
+
+    LANGLE  shift, and go to state 15
+
+    $default  reduce using rule 70 (opt_typeParameters)
+
+    opt_typeParameters  go to state 22
+    typeParameters      go to state 17
+
+
+State 15
+
+   73 typeParameters: LANGLE • typeParameter multi_typeParameter opt_comma RANGLE
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    typeParameter     go to state 23
+    simpleIdentifier  go to state 24
+
+
+State 16
+
+   11 functionDeclaration: FUN opt_typeParameters • receiverType DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+   12                    | FUN opt_typeParameters • simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+
+    LPAREN      shift, and go to state 25
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    receiverType               go to state 26
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 30
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 32
+
+
+State 17
+
+   69 opt_typeParameters: typeParameters •
+
+    $default  reduce using rule 69 (opt_typeParameters)
+
+
+State 18
+
+  177 objectDeclaration: OBJECT IDENTIFIER • objectBody
+
+    LCURL  shift, and go to state 33
+
+    objectBody  go to state 34
+
+
+State 19
+
+   80 classDeclaration: CONST CLASS • simpleIdentifier opt_typeParameters classBody
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    simpleIdentifier  go to state 35
+
+
+State 20
+
+    0 $accept: program $end •
+
+    $default  accept
+
+
+State 21
+
+    3 topLevelObjects: topLevelObjects topLevelObject •
+
+    $default  reduce using rule 3 (topLevelObjects)
+
+
+State 22
+
+   81 classDeclaration: CLASS simpleIdentifier opt_typeParameters • classBody
+
+    LCURL  shift, and go to state 36
+
+    classBody  go to state 37
+
+
+State 23
+
+   73 typeParameters: LANGLE typeParameter • multi_typeParameter opt_comma RANGLE
+
+    $default  reduce using rule 76 (multi_typeParameter)
+
+    multi_typeParameter  go to state 38
+
+
+State 24
+
+   74 typeParameter: simpleIdentifier •
+
+    $default  reduce using rule 74 (typeParameter)
+
+
+State 25
+
+   48 parenthesizedType: LPAREN • type RPAREN
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                       go to state 40
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+
+
+State 26
+
+   11 functionDeclaration: FUN opt_typeParameters receiverType • DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+
+    DOT  shift, and go to state 43
+
+
+State 27
+
+   59 typeRef_parenthesizedType: parenthesizedType •
+
+    $default  reduce using rule 59 (typeRef_parenthesizedType)
+
+
+State 28
+
+   60 typeRef_parenthesizedType: userType •
+
+    $default  reduce using rule 60 (typeRef_parenthesizedType)
+
+
+State 29
+
+   52 userType: simpleUserType • multi_dot_simpleUserType
+
+    $default  reduce using rule 50 ($@2)
+
+    multi_dot_simpleUserType  go to state 44
+    $@2                       go to state 45
+
+
+State 30
+
+   47 receiverType: nullableType •
+
+    $default  reduce using rule 47 (receiverType)
+
+
+State 31
+
+   58 nullableType: typeRef_parenthesizedType • multi_quest
+
+    $default  reduce using rule 56 ($@3)
+
+    multi_quest  go to state 46
+    $@3          go to state 47
+
+
+State 32
+
+   12 functionDeclaration: FUN opt_typeParameters simpleIdentifier • functionValueParameters opt_colon_type opt_functionBody
+   53 simpleUserType: simpleIdentifier • typeArguments
+   54               | simpleIdentifier •
+
+    LPAREN  shift, and go to state 48
+    LANGLE  shift, and go to state 49
+
+    $default  reduce using rule 54 (simpleUserType)
+
+    functionValueParameters  go to state 50
+    typeArguments            go to state 51
+
+
+State 33
+
+  178 objectBody: LCURL • classMembers RCURL
+
+    $default  reduce using rule 173 (classMembers)
+
+    classMembers  go to state 52
+
+
+State 34
+
+  177 objectDeclaration: OBJECT IDENTIFIER objectBody •
+
+    $default  reduce using rule 177 (objectDeclaration)
+
+
+State 35
+
+   80 classDeclaration: CONST CLASS simpleIdentifier • opt_typeParameters classBody
+
+    LANGLE  shift, and go to state 15
+
+    $default  reduce using rule 70 (opt_typeParameters)
+
+    opt_typeParameters  go to state 53
+    typeParameters      go to state 17
+
+
+State 36
+
+   87 classBody: LCURL • classMembers RCURL
+
+    $default  reduce using rule 173 (classMembers)
+
+    classMembers  go to state 54
+
+
+State 37
+
+   81 classDeclaration: CLASS simpleIdentifier opt_typeParameters classBody •
+
+    $default  reduce using rule 81 (classDeclaration)
+
+
+State 38
+
+   73 typeParameters: LANGLE typeParameter multi_typeParameter • opt_comma RANGLE
+   75 multi_typeParameter: multi_typeParameter • COMMA typeParameter
+
+    COMMA  shift, and go to state 55
+
+    $default  reduce using rule 72 (opt_comma)
+
+    opt_comma  go to state 56
+
+
+State 39
+
+   22 type: TYPELITERAL •
+
+    $default  reduce using rule 22 (type)
+
+
+State 40
+
+   48 parenthesizedType: LPAREN type • RPAREN
+
+    RPAREN  shift, and go to state 57
+
+
+State 41
+
+   21 type: nullableType •
+
+    $default  reduce using rule 21 (type)
+
+
+State 42
+
+   53 simpleUserType: simpleIdentifier • typeArguments
+   54               | simpleIdentifier •
+
+    LANGLE  shift, and go to state 49
+
+    $default  reduce using rule 54 (simpleUserType)
+
+    typeArguments  go to state 51
+
+
+State 43
+
+   11 functionDeclaration: FUN opt_typeParameters receiverType DOT • simpleIdentifier functionValueParameters opt_colon_type opt_functionBody
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    simpleIdentifier  go to state 58
+
+
+State 44
+
+   49 multi_dot_simpleUserType: multi_dot_simpleUserType • DOT simpleUserType
+   52 userType: simpleUserType multi_dot_simpleUserType •
+
+    DOT  shift, and go to state 59
+
+    DOT       [reduce using rule 52 (userType)]
+    $default  reduce using rule 52 (userType)
+
+
+State 45
+
+   51 multi_dot_simpleUserType: $@2 •
+
+    $default  reduce using rule 51 (multi_dot_simpleUserType)
+
+
+State 46
+
+   55 multi_quest: multi_quest • QUEST_NO_WS
+   58 nullableType: typeRef_parenthesizedType multi_quest •
+
+    QUEST_NO_WS  shift, and go to state 60
+
+    $default  reduce using rule 58 (nullableType)
+
+
+State 47
+
+   57 multi_quest: $@3 •
+
+    $default  reduce using rule 57 (multi_quest)
+
+
+State 48
+
+   13 functionValueParameters: LPAREN • opt_functionValueParameter RPAREN
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    $default  reduce using rule 20 (opt_functionValueParameter)
+
+    functionValueParameter      go to state 61
+    parameter                   go to state 62
+    opt_functionValueParameter  go to state 63
+    simpleIdentifier            go to state 64
+
+
+State 49
+
+  110 typeArguments: LANGLE • typeProjection multi_comma_typeProjection opt_comma RANGLE
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    MULT         shift, and go to state 65
+    IDENTIFIER   shift, and go to state 13
+
+    type                       go to state 66
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+    typeProjection             go to state 67
+
+
+State 50
+
+   12 functionDeclaration: FUN opt_typeParameters simpleIdentifier functionValueParameters • opt_colon_type opt_functionBody
+
+    COLON  shift, and go to state 68
+
+    $default  reduce using rule 10 (opt_colon_type)
+
+    opt_colon_type  go to state 69
+
+
+State 51
+
+   53 simpleUserType: simpleIdentifier typeArguments •
+
+    $default  reduce using rule 53 (simpleUserType)
+
+
+State 52
+
+  174 classMembers: classMembers • classMember
+  178 objectBody: LCURL classMembers • RCURL
+
+    LPAREN       shift, and go to state 25
+    RCURL        shift, and go to state 70
+    IMPORT       shift, and go to state 11
+    FUN          shift, and go to state 2
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    functionDeclaration        go to state 71
+    type                       go to state 72
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+    variableDeclaration        go to state 73
+    classMember                go to state 74
+
+
+State 53
+
+   80 classDeclaration: CONST CLASS simpleIdentifier opt_typeParameters • classBody
+
+    LCURL  shift, and go to state 36
+
+    classBody  go to state 75
+
+
+State 54
+
+   87 classBody: LCURL classMembers • RCURL
+  174 classMembers: classMembers • classMember
+
+    LPAREN       shift, and go to state 25
+    RCURL        shift, and go to state 76
+    IMPORT       shift, and go to state 11
+    FUN          shift, and go to state 2
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    functionDeclaration        go to state 71
+    type                       go to state 72
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+    variableDeclaration        go to state 73
+    classMember                go to state 74
+
+
+State 55
+
+   71 opt_comma: COMMA •
+   75 multi_typeParameter: multi_typeParameter COMMA • typeParameter
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    $default  reduce using rule 71 (opt_comma)
+
+    typeParameter     go to state 77
+    simpleIdentifier  go to state 24
+
+
+State 56
+
+   73 typeParameters: LANGLE typeParameter multi_typeParameter opt_comma • RANGLE
+
+    RANGLE  shift, and go to state 78
+
+
+State 57
+
+   48 parenthesizedType: LPAREN type RPAREN •
+
+    $default  reduce using rule 48 (parenthesizedType)
+
+
+State 58
+
+   11 functionDeclaration: FUN opt_typeParameters receiverType DOT simpleIdentifier • functionValueParameters opt_colon_type opt_functionBody
+
+    LPAREN  shift, and go to state 48
+
+    functionValueParameters  go to state 79
+
+
+State 59
+
+   49 multi_dot_simpleUserType: multi_dot_simpleUserType DOT • simpleUserType
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    simpleUserType    go to state 80
+    simpleIdentifier  go to state 42
+
+
+State 60
+
+   55 multi_quest: multi_quest QUEST_NO_WS •
+
+    $default  reduce using rule 55 (multi_quest)
+
+
+State 61
+
+   18 opt_functionValueParameter: functionValueParameter • multi_comma_functionParameter COMMA
+   19                           | functionValueParameter • multi_comma_functionParameter
+
+    $default  reduce using rule 17 (multi_comma_functionParameter)
+
+    multi_comma_functionParameter  go to state 81
+
+
+State 62
+
+   14 functionValueParameter: parameter • opt_eq_exp
+
+    ASSIGNMENT  shift, and go to state 82
+
+    $default  reduce using rule 62 ($@4)
+
+    opt_eq_exp  go to state 83
+    $@4         go to state 84
+
+
+State 63
+
+   13 functionValueParameters: LPAREN opt_functionValueParameter • RPAREN
+
+    RPAREN  shift, and go to state 85
+
+
+State 64
+
+   15 parameter: simpleIdentifier • COLON type
+
+    COLON  shift, and go to state 86
+
+
+State 65
+
+  115 typeProjection: MULT •
+
+    $default  reduce using rule 115 (typeProjection)
+
+
+State 66
+
+  114 typeProjection: type •
+
+    $default  reduce using rule 114 (typeProjection)
+
+
+State 67
+
+  110 typeArguments: LANGLE typeProjection • multi_comma_typeProjection opt_comma RANGLE
+
+    $default  reduce using rule 112 ($@6)
+
+    multi_comma_typeProjection  go to state 87
+    $@6                         go to state 88
+
+
+State 68
+
+    9 opt_colon_type: COLON • type
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                       go to state 89
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+
+
+State 69
+
+   12 functionDeclaration: FUN opt_typeParameters simpleIdentifier functionValueParameters opt_colon_type • opt_functionBody
+
+    LCURL       shift, and go to state 90
+    ASSIGNMENT  shift, and go to state 91
+
+    $default  reduce using rule 8 (opt_functionBody)
+
+    opt_functionBody  go to state 92
+    functionBody      go to state 93
+    block             go to state 94
+
+
+State 70
+
+  178 objectBody: LCURL classMembers RCURL •
+
+    $default  reduce using rule 178 (objectBody)
+
+
+State 71
+
+  175 classMember: functionDeclaration •
+
+    $default  reduce using rule 175 (classMember)
+
+
+State 72
+
+   82 variableDeclaration: type • COLON type
+   83                    | type •
+
+    COLON  shift, and go to state 95
+
+    $default  reduce using rule 83 (variableDeclaration)
+
+
+State 73
+
+  176 classMember: variableDeclaration •
+
+    $default  reduce using rule 176 (classMember)
+
+
+State 74
+
+  174 classMembers: classMembers classMember •
+
+    $default  reduce using rule 174 (classMembers)
+
+
+State 75
+
+   80 classDeclaration: CONST CLASS simpleIdentifier opt_typeParameters classBody •
+
+    $default  reduce using rule 80 (classDeclaration)
+
+
+State 76
+
+   87 classBody: LCURL classMembers RCURL •
+
+    $default  reduce using rule 87 (classBody)
+
+
+State 77
+
+   75 multi_typeParameter: multi_typeParameter COMMA typeParameter •
+
+    $default  reduce using rule 75 (multi_typeParameter)
+
+
+State 78
+
+   73 typeParameters: LANGLE typeParameter multi_typeParameter opt_comma RANGLE •
+
+    $default  reduce using rule 73 (typeParameters)
+
+
+State 79
+
+   11 functionDeclaration: FUN opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters • opt_colon_type opt_functionBody
+
+    COLON  shift, and go to state 68
+
+    $default  reduce using rule 10 (opt_colon_type)
+
+    opt_colon_type  go to state 96
+
+
+State 80
+
+   49 multi_dot_simpleUserType: multi_dot_simpleUserType DOT simpleUserType •
+
+    $default  reduce using rule 49 (multi_dot_simpleUserType)
+
+
+State 81
+
+   16 multi_comma_functionParameter: multi_comma_functionParameter • COMMA functionValueParameter
+   18 opt_functionValueParameter: functionValueParameter multi_comma_functionParameter • COMMA
+   19                           | functionValueParameter multi_comma_functionParameter •
+
+    COMMA  shift, and go to state 97
+
+    $default  reduce using rule 19 (opt_functionValueParameter)
+
+
+State 82
+
+   61 opt_eq_exp: ASSIGNMENT • expression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 111
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 83
+
+   14 functionValueParameter: parameter opt_eq_exp •
+
+    $default  reduce using rule 14 (functionValueParameter)
+
+
+State 84
+
+   63 opt_eq_exp: $@4 •
+
+    $default  reduce using rule 63 (opt_eq_exp)
+
+
+State 85
+
+   13 functionValueParameters: LPAREN opt_functionValueParameter RPAREN •
+
+    $default  reduce using rule 13 (functionValueParameters)
+
+
+State 86
+
+   15 parameter: simpleIdentifier COLON • type
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                       go to state 123
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+
+
+State 87
+
+  110 typeArguments: LANGLE typeProjection multi_comma_typeProjection • opt_comma RANGLE
+  111 multi_comma_typeProjection: multi_comma_typeProjection • COMMA typeProjection
+
+    COMMA  shift, and go to state 124
+
+    $default  reduce using rule 72 (opt_comma)
+
+    opt_comma  go to state 125
+
+
+State 88
+
+  113 multi_comma_typeProjection: $@6 •
+
+    $default  reduce using rule 113 (multi_comma_typeProjection)
+
+
+State 89
+
+    9 opt_colon_type: COLON type •
+
+    $default  reduce using rule 9 (opt_colon_type)
+
+
+State 90
+
+   25 block: LCURL • statements RCURL
+
+    error            shift, and go to state 126
+    LPAREN           shift, and go to state 127
+    LSQUARE          shift, and go to state 99
+    IMPORT           shift, and go to state 11
+    CLASS            shift, and go to state 1
+    FUN              shift, and go to state 2
+    FOR              shift, and go to state 128
+    WHILE            shift, and go to state 129
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    CONST            shift, and go to state 130
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 131
+
+    LPAREN           [reduce using rule 96 ($@5)]
+    LSQUARE          [reduce using rule 96 ($@5)]
+    RCURL            reduce using rule 31 (optional_statement_sequence)
+    INCR             reduce using rule 96 ($@5)
+    DECR             reduce using rule 96 ($@5)
+    EXCL_NO_WS       reduce using rule 96 ($@5)
+    SEMICOLON        reduce using rule 31 (optional_statement_sequence)
+    VAL              reduce using rule 45 ($@1)
+    VAR              reduce using rule 45 ($@1)
+    RETURN           [reduce using rule 96 ($@5)]
+    CONTINUE         [reduce using rule 96 ($@5)]
+    BREAK            [reduce using rule 96 ($@5)]
+    FLOAT_LITERAL    [reduce using rule 96 ($@5)]
+    INTEGER_LITERAL  [reduce using rule 96 ($@5)]
+    STRING_LITERAL   [reduce using rule 96 ($@5)]
+    ADD              reduce using rule 96 ($@5)
+    SUB              reduce using rule 96 ($@5)
+    IDENTIFIER       [reduce using rule 96 ($@5)]
+
+    functionDeclaration                        go to state 132
+    optional_statement_sequence                go to state 133
+    statements                                 go to state 134
+    statement                                  go to state 135
+    declaration                                go to state 136
+    opt_modifier                               go to state 137
+    $@1                                        go to state 138
+    propertyDeclaration                        go to state 139
+    simpleIdentifier                           go to state 140
+    classDeclaration                           go to state 141
+    assignableExpression                       go to state 142
+    multi_unaryPrefix                          go to state 143
+    $@5                                        go to state 144
+    prefixUnaryExpression                      go to state 145
+    parenthesizedAssignableExpression          go to state 146
+    assignment                                 go to state 147
+    directly_assign                            go to state 148
+    directlyAssignableExpression               go to state 149
+    parenthesizedDirectlyAssignableExpression  go to state 150
+    postfixUnaryExpression                     go to state 151
+    parenthesizedExpression                    go to state 108
+    functionCall                               go to state 109
+    loopStatement                              go to state 152
+    jumpExpression                             go to state 110
+    expression                                 go to state 153
+    disjunction                                go to state 112
+    conjunction                                go to state 113
+    equality                                   go to state 114
+    comparison                                 go to state 115
+    genericCallLikeComparison                  go to state 116
+    elvisExpression                            go to state 117
+    rangeExpression                            go to state 118
+    additiveExpression                         go to state 119
+    multiplicativeExpression                   go to state 120
+    primaryExpression                          go to state 121
+    collectionLiteral                          go to state 122
+
+
+State 91
+
+   24 functionBody: ASSIGNMENT • expression SEMICOLON
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 154
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 92
+
+   12 functionDeclaration: FUN opt_typeParameters simpleIdentifier functionValueParameters opt_colon_type opt_functionBody •
+
+    $default  reduce using rule 12 (functionDeclaration)
+
+
+State 93
+
+    7 opt_functionBody: functionBody •
+
+    $default  reduce using rule 7 (opt_functionBody)
+
+
+State 94
+
+   23 functionBody: block •
+
+    $default  reduce using rule 23 (functionBody)
+
+
+State 95
+
+   82 variableDeclaration: type COLON • type
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                       go to state 155
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+
+
+State 96
+
+   11 functionDeclaration: FUN opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters opt_colon_type • opt_functionBody
+
+    LCURL       shift, and go to state 90
+    ASSIGNMENT  shift, and go to state 91
+
+    $default  reduce using rule 8 (opt_functionBody)
+
+    opt_functionBody  go to state 156
+    functionBody      go to state 93
+    block             go to state 94
+
+
+State 97
+
+   16 multi_comma_functionParameter: multi_comma_functionParameter COMMA • functionValueParameter
+   18 opt_functionValueParameter: functionValueParameter multi_comma_functionParameter COMMA •
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    $default  reduce using rule 18 (opt_functionValueParameter)
+
+    functionValueParameter  go to state 157
+    parameter               go to state 62
+    simpleIdentifier        go to state 64
+
+
+State 98
+
+  156 parenthesizedExpression: LPAREN • expression RPAREN
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 158
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 99
+
+  209 collectionLiteral: LSQUARE • RSQUARE
+  210                  | LSQUARE • expression COMMA RSQUARE
+  211                  | LSQUARE • expression RSQUARE
+  212                  | LSQUARE • expression multi_comma_expression RSQUARE
+  213                  | LSQUARE • expression multi_comma_expression COMMA RSQUARE
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RSQUARE          shift, and go to state 159
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 160
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 100
+
+  169 jumpExpression: RETURN • expression
+  170               | RETURN •
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    LPAREN           [reduce using rule 170 (jumpExpression)]
+    LSQUARE          [reduce using rule 170 (jumpExpression)]
+    RETURN           [reduce using rule 170 (jumpExpression)]
+    CONTINUE         [reduce using rule 170 (jumpExpression)]
+    BREAK            [reduce using rule 170 (jumpExpression)]
+    FLOAT_LITERAL    [reduce using rule 170 (jumpExpression)]
+    INTEGER_LITERAL  [reduce using rule 170 (jumpExpression)]
+    STRING_LITERAL   [reduce using rule 170 (jumpExpression)]
+    IDENTIFIER       [reduce using rule 170 (jumpExpression)]
+    $default         reduce using rule 170 (jumpExpression)
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 161
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 101
+
+  171 jumpExpression: CONTINUE •
+
+    $default  reduce using rule 171 (jumpExpression)
+
+
+State 102
+
+  172 jumpExpression: BREAK •
+
+    $default  reduce using rule 172 (jumpExpression)
+
+
+State 103
+
+  206 primaryExpression: FLOAT_LITERAL •
+
+    $default  reduce using rule 206 (primaryExpression)
+
+
+State 104
+
+  204 primaryExpression: INTEGER_LITERAL •
+
+    $default  reduce using rule 204 (primaryExpression)
+
+
+State 105
+
+  205 primaryExpression: STRING_LITERAL •
+
+    $default  reduce using rule 205 (primaryExpression)
+
+
+State 106
+
+  157 functionCall: IDENTIFIER • LPAREN functionArguments RPAREN
+  202 primaryExpression: IDENTIFIER •
+
+    LPAREN  shift, and go to state 162
+
+    LPAREN    [reduce using rule 202 (primaryExpression)]
+    $default  reduce using rule 202 (primaryExpression)
+
+
+State 107
+
+  197 multiplicativeExpression: postfixUnaryExpression •
+
+    $default  reduce using rule 197 (multiplicativeExpression)
+
+
+State 108
+
+  201 primaryExpression: parenthesizedExpression •
+
+    $default  reduce using rule 201 (primaryExpression)
+
+
+State 109
+
+  203 primaryExpression: functionCall •
+
+    $default  reduce using rule 203 (primaryExpression)
+
+
+State 110
+
+  207 primaryExpression: jumpExpression •
+
+    $default  reduce using rule 207 (primaryExpression)
+
+
+State 111
+
+   61 opt_eq_exp: ASSIGNMENT expression •
+
+    $default  reduce using rule 61 (opt_eq_exp)
+
+
+State 112
+
+  179 expression: disjunction •
+  181 disjunction: disjunction • DISJ conjunction
+
+    DISJ  shift, and go to state 163
+
+    DISJ      [reduce using rule 179 (expression)]
+    $default  reduce using rule 179 (expression)
+
+
+State 113
+
+  180 disjunction: conjunction •
+  183 conjunction: conjunction • CONJ equality
+
+    CONJ  shift, and go to state 164
+
+    CONJ      [reduce using rule 180 (disjunction)]
+    $default  reduce using rule 180 (disjunction)
+
+
+State 114
+
+  182 conjunction: equality •
+  185 equality: equality • equality_operator comparison
+
+    EQEQ    shift, and go to state 165
+    EQEQEQ  shift, and go to state 166
+
+    EQEQ      [reduce using rule 182 (conjunction)]
+    EQEQEQ    [reduce using rule 182 (conjunction)]
+    $default  reduce using rule 182 (conjunction)
+
+    equality_operator  go to state 167
+
+
+State 115
+
+  184 equality: comparison •
+  187 comparison: comparison • comparison_operator genericCallLikeComparison
+
+    LANGLE  shift, and go to state 168
+    RANGLE  shift, and go to state 169
+    LE      shift, and go to state 170
+    GE      shift, and go to state 171
+
+    LANGLE    [reduce using rule 184 (equality)]
+    RANGLE    [reduce using rule 184 (equality)]
+    LE        [reduce using rule 184 (equality)]
+    GE        [reduce using rule 184 (equality)]
+    $default  reduce using rule 184 (equality)
+
+    comparison_operator  go to state 172
+
+
+State 116
+
+  186 comparison: genericCallLikeComparison •
+
+    $default  reduce using rule 186 (comparison)
+
+
+State 117
+
+  188 genericCallLikeComparison: elvisExpression •
+  189                          | elvisExpression • IN elvisExpression
+  191 elvisExpression: elvisExpression • QUEST_COLON rangeExpression
+
+    QUEST_COLON  shift, and go to state 173
+    IN           shift, and go to state 174
+
+    QUEST_COLON  [reduce using rule 188 (genericCallLikeComparison)]
+    IN           [reduce using rule 188 (genericCallLikeComparison)]
+    $default     reduce using rule 188 (genericCallLikeComparison)
+
+
+State 118
+
+  190 elvisExpression: rangeExpression •
+  193 rangeExpression: rangeExpression • RANGE additiveExpression
+
+    RANGE  shift, and go to state 175
+
+    RANGE     [reduce using rule 190 (elvisExpression)]
+    $default  reduce using rule 190 (elvisExpression)
+
+
+State 119
+
+  192 rangeExpression: additiveExpression •
+  195 additiveExpression: additiveExpression • ADD multiplicativeExpression
+  196                   | additiveExpression • SUB multiplicativeExpression
+
+    ADD  shift, and go to state 176
+    SUB  shift, and go to state 177
+
+    ADD       [reduce using rule 192 (rangeExpression)]
+    SUB       [reduce using rule 192 (rangeExpression)]
+    $default  reduce using rule 192 (rangeExpression)
+
+
+State 120
+
+  194 additiveExpression: multiplicativeExpression •
+  198 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
+  199                         | multiplicativeExpression • DIV postfixUnaryExpression
+  200                         | multiplicativeExpression • MOD postfixUnaryExpression
+
+    MULT  shift, and go to state 178
+    MOD   shift, and go to state 179
+    DIV   shift, and go to state 180
+
+    MULT      [reduce using rule 194 (additiveExpression)]
+    MOD       [reduce using rule 194 (additiveExpression)]
+    DIV       [reduce using rule 194 (additiveExpression)]
+    $default  reduce using rule 194 (additiveExpression)
+
+
+State 121
+
+  123 postfixUnaryExpression: primaryExpression • multi_postfixUnarySuffix
+
+    $default  reduce using rule 121 ($@7)
+
+    multi_postfixUnarySuffix  go to state 181
+    $@7                       go to state 182
+
+
+State 122
+
+  208 primaryExpression: collectionLiteral •
+
+    $default  reduce using rule 208 (primaryExpression)
+
+
+State 123
+
+   15 parameter: simpleIdentifier COLON type •
+
+    $default  reduce using rule 15 (parameter)
+
+
+State 124
+
+   71 opt_comma: COMMA •
+  111 multi_comma_typeProjection: multi_comma_typeProjection COMMA • typeProjection
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    MULT         shift, and go to state 65
+    IDENTIFIER   shift, and go to state 13
+
+    $default  reduce using rule 71 (opt_comma)
+
+    type                       go to state 66
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+    typeProjection             go to state 183
+
+
+State 125
+
+  110 typeArguments: LANGLE typeProjection multi_comma_typeProjection opt_comma • RANGLE
+
+    RANGLE  shift, and go to state 184
+
+
+State 126
+
+   38 statement: error • SEMICOLON
+
+    SEMICOLON  shift, and go to state 185
+
+
+State 127
+
+  104 parenthesizedAssignableExpression: LPAREN • assignableExpression RPAREN
+  119 parenthesizedDirectlyAssignableExpression: LPAREN • assignableExpression RPAREN
+  156 parenthesizedExpression: LPAREN • expression RPAREN
+
+    LPAREN           shift, and go to state 186
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    LPAREN           [reduce using rule 96 ($@5)]
+    LSQUARE          [reduce using rule 96 ($@5)]
+    RETURN           [reduce using rule 96 ($@5)]
+    CONTINUE         [reduce using rule 96 ($@5)]
+    BREAK            [reduce using rule 96 ($@5)]
+    FLOAT_LITERAL    [reduce using rule 96 ($@5)]
+    INTEGER_LITERAL  [reduce using rule 96 ($@5)]
+    STRING_LITERAL   [reduce using rule 96 ($@5)]
+    IDENTIFIER       [reduce using rule 96 ($@5)]
+    $default         reduce using rule 96 ($@5)
+
+    assignableExpression               go to state 187
+    multi_unaryPrefix                  go to state 143
+    $@5                                go to state 144
+    prefixUnaryExpression              go to state 145
+    parenthesizedAssignableExpression  go to state 146
+    postfixUnaryExpression             go to state 107
+    parenthesizedExpression            go to state 108
+    functionCall                       go to state 109
+    jumpExpression                     go to state 110
+    expression                         go to state 158
+    disjunction                        go to state 112
+    conjunction                        go to state 113
+    equality                           go to state 114
+    comparison                         go to state 115
+    genericCallLikeComparison          go to state 116
+    elvisExpression                    go to state 117
+    rangeExpression                    go to state 118
+    additiveExpression                 go to state 119
+    multiplicativeExpression           go to state 120
+    primaryExpression                  go to state 121
+    collectionLiteral                  go to state 122
+
+
+State 128
+
+  166 loopStatement: FOR • LPAREN variable_multivariable IN expression RPAREN controlStructureBody
+
+    LPAREN  shift, and go to state 188
+
+
+State 129
+
+  165 loopStatement: WHILE • LPAREN expression RPAREN control_structure_body_or_comma
+
+    LPAREN  shift, and go to state 189
+
+
+State 130
+
+   44 opt_modifier: CONST •
+   79 simpleIdentifier: CONST •
+   80 classDeclaration: CONST • CLASS simpleIdentifier opt_typeParameters classBody
+
+    CLASS  shift, and go to state 19
+
+    ASSIGNMENT  reduce using rule 79 (simpleIdentifier)
+    $default    reduce using rule 44 (opt_modifier)
+
+
+State 131
+
+   77 simpleIdentifier: IDENTIFIER •
+  157 functionCall: IDENTIFIER • LPAREN functionArguments RPAREN
+  202 primaryExpression: IDENTIFIER •
+
+    LPAREN  shift, and go to state 162
+
+    LPAREN      [reduce using rule 202 (primaryExpression)]
+    ASSIGNMENT  reduce using rule 77 (simpleIdentifier)
+    $default    reduce using rule 202 (primaryExpression)
+
+
+State 132
+
+   40 declaration: functionDeclaration •
+
+    $default  reduce using rule 40 (declaration)
+
+
+State 133
+
+   32 statements: optional_statement_sequence • SEMICOLON
+   33           | optional_statement_sequence •
+
+    SEMICOLON  shift, and go to state 190
+
+    $default  reduce using rule 33 (statements)
+
+
+State 134
+
+   25 block: LCURL statements • RCURL
+
+    RCURL  shift, and go to state 191
+
+
+State 135
+
+   30 optional_statement_sequence: statement • semis_statement
+
+    $default  reduce using rule 29 (semis_statement)
+
+    semis_statement  go to state 192
+
+
+State 136
+
+   34 statement: declaration •
+
+    $default  reduce using rule 34 (statement)
+
+
+State 137
+
+   66 propertyDeclaration: opt_modifier • val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   67                    | opt_modifier • val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   68                    | opt_modifier • val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp
+
+    VAL  shift, and go to state 193
+    VAR  shift, and go to state 194
+
+    val_var  go to state 195
+
+
+State 138
+
+   46 opt_modifier: $@1 •
+
+    $default  reduce using rule 46 (opt_modifier)
+
+
+State 139
+
+   41 declaration: propertyDeclaration •
+
+    $default  reduce using rule 41 (declaration)
+
+
+State 140
+
+  117 directlyAssignableExpression: simpleIdentifier •
+
+    $default  reduce using rule 117 (directlyAssignableExpression)
+
+
+State 141
+
+   39 declaration: classDeclaration •
+
+    $default  reduce using rule 39 (declaration)
+
+
+State 142
+
+  107 directly_assign: assignableExpression • assignmentAndOperator
+
+    ADD_ASSIGNMENT   shift, and go to state 196
+    SUB_ASSIGNMENT   shift, and go to state 197
+    MULT_ASSIGNMENT  shift, and go to state 198
+    DIV_ASSIGNMENT   shift, and go to state 199
+    MOD_ASSIGNMENT   shift, and go to state 200
+
+    assignmentAndOperator  go to state 201
+
+
+State 143
+
+   95 multi_unaryPrefix: multi_unaryPrefix • prefixUnaryOperator
+  103 prefixUnaryExpression: multi_unaryPrefix • postfixUnaryExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    INCR             shift, and go to state 202
+    DECR             shift, and go to state 203
+    EXCL_NO_WS       shift, and go to state 204
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    ADD              shift, and go to state 205
+    SUB              shift, and go to state 206
+    IDENTIFIER       shift, and go to state 106
+
+    prefixUnaryOperator      go to state 207
+    postfixUnaryExpression   go to state 208
+    parenthesizedExpression  go to state 108
+    functionCall             go to state 109
+    jumpExpression           go to state 110
+    primaryExpression        go to state 121
+    collectionLiteral        go to state 122
+
+
+State 144
+
+   97 multi_unaryPrefix: $@5 •
+
+    $default  reduce using rule 97 (multi_unaryPrefix)
+
+
+State 145
+
+   93 assignableExpression: prefixUnaryExpression •
+
+    $default  reduce using rule 93 (assignableExpression)
+
+
+State 146
+
+   94 assignableExpression: parenthesizedAssignableExpression •
+
+    $default  reduce using rule 94 (assignableExpression)
+
+
+State 147
+
+   35 statement: assignment •
+
+    $default  reduce using rule 35 (statement)
+
+
+State 148
+
+  105 assignment: directly_assign • expression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 209
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 149
+
+  106 directly_assign: directlyAssignableExpression • ASSIGNMENT
+
+    ASSIGNMENT  shift, and go to state 210
+
+
+State 150
+
+  118 directlyAssignableExpression: parenthesizedDirectlyAssignableExpression •
+
+    $default  reduce using rule 118 (directlyAssignableExpression)
+
+
+State 151
+
+  116 directlyAssignableExpression: postfixUnaryExpression • assignableSuffix
+  197 multiplicativeExpression: postfixUnaryExpression •
+
+    LSQUARE  shift, and go to state 211
+    LANGLE   shift, and go to state 49
+
+    LSQUARE   [reduce using rule 197 (multiplicativeExpression)]
+    LANGLE    [reduce using rule 197 (multiplicativeExpression)]
+    $default  reduce using rule 197 (multiplicativeExpression)
+
+    assignableSuffix  go to state 212
+    typeArguments     go to state 213
+    indexingSuffix    go to state 214
+
+
+State 152
+
+   37 statement: loopStatement •
+
+    $default  reduce using rule 37 (statement)
+
+
+State 153
+
+   36 statement: expression •
+
+    $default  reduce using rule 36 (statement)
+
+
+State 154
+
+   24 functionBody: ASSIGNMENT expression • SEMICOLON
+
+    SEMICOLON  shift, and go to state 215
+
+
+State 155
+
+   82 variableDeclaration: type COLON type •
+
+    $default  reduce using rule 82 (variableDeclaration)
+
+
+State 156
+
+   11 functionDeclaration: FUN opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody •
+
+    $default  reduce using rule 11 (functionDeclaration)
+
+
+State 157
+
+   16 multi_comma_functionParameter: multi_comma_functionParameter COMMA functionValueParameter •
+
+    $default  reduce using rule 16 (multi_comma_functionParameter)
+
+
+State 158
+
+  156 parenthesizedExpression: LPAREN expression • RPAREN
+
+    RPAREN  shift, and go to state 216
+
+
+State 159
+
+  209 collectionLiteral: LSQUARE RSQUARE •
+
+    $default  reduce using rule 209 (collectionLiteral)
+
+
+State 160
+
+  210 collectionLiteral: LSQUARE expression • COMMA RSQUARE
+  211                  | LSQUARE expression • RSQUARE
+  212                  | LSQUARE expression • multi_comma_expression RSQUARE
+  213                  | LSQUARE expression • multi_comma_expression COMMA RSQUARE
+
+    COMMA    shift, and go to state 217
+    RSQUARE  shift, and go to state 218
+
+    COMMA    [reduce using rule 138 ($@8)]
+    RSQUARE  [reduce using rule 138 ($@8)]
+
+    multi_comma_expression  go to state 219
+    $@8                     go to state 220
+
+
+State 161
+
+  169 jumpExpression: RETURN expression •
+
+    $default  reduce using rule 169 (jumpExpression)
+
+
+State 162
+
+  157 functionCall: IDENTIFIER LPAREN • functionArguments RPAREN
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    $default  reduce using rule 160 (functionArguments)
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    functionArguments          go to state 221
+    jumpExpression             go to state 110
+    expression                 go to state 222
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 163
+
+  181 disjunction: disjunction DISJ • conjunction
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    conjunction                go to state 223
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 164
+
+  183 conjunction: conjunction CONJ • equality
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    equality                   go to state 224
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 165
+
+  218 equality_operator: EQEQ •
+
+    $default  reduce using rule 218 (equality_operator)
+
+
+State 166
+
+  219 equality_operator: EQEQEQ •
+
+    $default  reduce using rule 219 (equality_operator)
+
+
+State 167
+
+  185 equality: equality equality_operator • comparison
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    comparison                 go to state 225
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 168
+
+  214 comparison_operator: LANGLE •
+
+    $default  reduce using rule 214 (comparison_operator)
+
+
+State 169
+
+  215 comparison_operator: RANGLE •
+
+    $default  reduce using rule 215 (comparison_operator)
+
+
+State 170
+
+  216 comparison_operator: LE •
+
+    $default  reduce using rule 216 (comparison_operator)
+
+
+State 171
+
+  217 comparison_operator: GE •
+
+    $default  reduce using rule 217 (comparison_operator)
+
+
+State 172
+
+  187 comparison: comparison comparison_operator • genericCallLikeComparison
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    genericCallLikeComparison  go to state 226
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 173
+
+  191 elvisExpression: elvisExpression QUEST_COLON • rangeExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression    go to state 107
+    parenthesizedExpression   go to state 108
+    functionCall              go to state 109
+    jumpExpression            go to state 110
+    rangeExpression           go to state 227
+    additiveExpression        go to state 119
+    multiplicativeExpression  go to state 120
+    primaryExpression         go to state 121
+    collectionLiteral         go to state 122
+
+
+State 174
+
+  189 genericCallLikeComparison: elvisExpression IN • elvisExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression    go to state 107
+    parenthesizedExpression   go to state 108
+    functionCall              go to state 109
+    jumpExpression            go to state 110
+    elvisExpression           go to state 228
+    rangeExpression           go to state 118
+    additiveExpression        go to state 119
+    multiplicativeExpression  go to state 120
+    primaryExpression         go to state 121
+    collectionLiteral         go to state 122
+
+
+State 175
+
+  193 rangeExpression: rangeExpression RANGE • additiveExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression    go to state 107
+    parenthesizedExpression   go to state 108
+    functionCall              go to state 109
+    jumpExpression            go to state 110
+    additiveExpression        go to state 229
+    multiplicativeExpression  go to state 120
+    primaryExpression         go to state 121
+    collectionLiteral         go to state 122
+
+
+State 176
+
+  195 additiveExpression: additiveExpression ADD • multiplicativeExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression    go to state 107
+    parenthesizedExpression   go to state 108
+    functionCall              go to state 109
+    jumpExpression            go to state 110
+    multiplicativeExpression  go to state 230
+    primaryExpression         go to state 121
+    collectionLiteral         go to state 122
+
+
+State 177
+
+  196 additiveExpression: additiveExpression SUB • multiplicativeExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression    go to state 107
+    parenthesizedExpression   go to state 108
+    functionCall              go to state 109
+    jumpExpression            go to state 110
+    multiplicativeExpression  go to state 231
+    primaryExpression         go to state 121
+    collectionLiteral         go to state 122
+
+
+State 178
+
+  198 multiplicativeExpression: multiplicativeExpression MULT • postfixUnaryExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression   go to state 232
+    parenthesizedExpression  go to state 108
+    functionCall             go to state 109
+    jumpExpression           go to state 110
+    primaryExpression        go to state 121
+    collectionLiteral        go to state 122
+
+
+State 179
+
+  200 multiplicativeExpression: multiplicativeExpression MOD • postfixUnaryExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression   go to state 233
+    parenthesizedExpression  go to state 108
+    functionCall             go to state 109
+    jumpExpression           go to state 110
+    primaryExpression        go to state 121
+    collectionLiteral        go to state 122
+
+
+State 180
+
+  199 multiplicativeExpression: multiplicativeExpression DIV • postfixUnaryExpression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression   go to state 234
+    parenthesizedExpression  go to state 108
+    functionCall             go to state 109
+    jumpExpression           go to state 110
+    primaryExpression        go to state 121
+    collectionLiteral        go to state 122
+
+
+State 181
+
+  120 multi_postfixUnarySuffix: multi_postfixUnarySuffix • postfixUnarySuffix
+  123 postfixUnaryExpression: primaryExpression multi_postfixUnarySuffix •
+
+    DOT          shift, and go to state 235
+    LPAREN       shift, and go to state 236
+    LSQUARE      shift, and go to state 211
+    INCR         shift, and go to state 237
+    DECR         shift, and go to state 238
+    EXCL_NO_WS   shift, and go to state 239
+    QUEST_NO_WS  shift, and go to state 240
+
+    DOT          [reduce using rule 123 (postfixUnaryExpression)]
+    LPAREN       [reduce using rule 123 (postfixUnaryExpression)]
+    LSQUARE      [reduce using rule 123 (postfixUnaryExpression)]
+    INCR         [reduce using rule 123 (postfixUnaryExpression)]
+    DECR         [reduce using rule 123 (postfixUnaryExpression)]
+    EXCL_NO_WS   [reduce using rule 123 (postfixUnaryExpression)]
+    QUEST_NO_WS  [reduce using rule 123 (postfixUnaryExpression)]
+    $default     reduce using rule 123 (postfixUnaryExpression)
+
+    postfixUnarySuffix    go to state 241
+    navigationSuffix      go to state 242
+    memberAccessOperator  go to state 243
+    postfixUnaryOperator  go to state 244
+    indexingSuffix        go to state 245
+    callSuffix            go to state 246
+    valueArguments        go to state 247
+
+
+State 182
+
+  122 multi_postfixUnarySuffix: $@7 •
+
+    $default  reduce using rule 122 (multi_postfixUnarySuffix)
+
+
+State 183
+
+  111 multi_comma_typeProjection: multi_comma_typeProjection COMMA typeProjection •
+
+    $default  reduce using rule 111 (multi_comma_typeProjection)
+
+
+State 184
+
+  110 typeArguments: LANGLE typeProjection multi_comma_typeProjection opt_comma RANGLE •
+
+    $default  reduce using rule 110 (typeArguments)
+
+
+State 185
+
+   38 statement: error SEMICOLON •
+
+    $default  reduce using rule 38 (statement)
+
+
+State 186
+
+  104 parenthesizedAssignableExpression: LPAREN • assignableExpression RPAREN
+  156 parenthesizedExpression: LPAREN • expression RPAREN
+
+    LPAREN           shift, and go to state 186
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    LPAREN           [reduce using rule 96 ($@5)]
+    LSQUARE          [reduce using rule 96 ($@5)]
+    RETURN           [reduce using rule 96 ($@5)]
+    CONTINUE         [reduce using rule 96 ($@5)]
+    BREAK            [reduce using rule 96 ($@5)]
+    FLOAT_LITERAL    [reduce using rule 96 ($@5)]
+    INTEGER_LITERAL  [reduce using rule 96 ($@5)]
+    STRING_LITERAL   [reduce using rule 96 ($@5)]
+    IDENTIFIER       [reduce using rule 96 ($@5)]
+    $default         reduce using rule 96 ($@5)
+
+    assignableExpression               go to state 248
+    multi_unaryPrefix                  go to state 143
+    $@5                                go to state 144
+    prefixUnaryExpression              go to state 145
+    parenthesizedAssignableExpression  go to state 146
+    postfixUnaryExpression             go to state 107
+    parenthesizedExpression            go to state 108
+    functionCall                       go to state 109
+    jumpExpression                     go to state 110
+    expression                         go to state 158
+    disjunction                        go to state 112
+    conjunction                        go to state 113
+    equality                           go to state 114
+    comparison                         go to state 115
+    genericCallLikeComparison          go to state 116
+    elvisExpression                    go to state 117
+    rangeExpression                    go to state 118
+    additiveExpression                 go to state 119
+    multiplicativeExpression           go to state 120
+    primaryExpression                  go to state 121
+    collectionLiteral                  go to state 122
+
+
+State 187
+
+  104 parenthesizedAssignableExpression: LPAREN assignableExpression • RPAREN
+  119 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression • RPAREN
+
+    RPAREN  shift, and go to state 249
+
+
+State 188
+
+  166 loopStatement: FOR LPAREN • variable_multivariable IN expression RPAREN controlStructureBody
+
+    LPAREN       shift, and go to state 250
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                       go to state 72
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+    variableDeclaration        go to state 251
+    multiVariableDeclaration   go to state 252
+    variable_multivariable     go to state 253
+
+
+State 189
+
+  165 loopStatement: WHILE LPAREN • expression RPAREN control_structure_body_or_comma
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 254
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 190
+
+   32 statements: optional_statement_sequence SEMICOLON •
+
+    $default  reduce using rule 32 (statements)
+
+
+State 191
+
+   25 block: LCURL statements RCURL •
+
+    $default  reduce using rule 25 (block)
+
+
+State 192
+
+   28 semis_statement: semis_statement • semis statement
+   30 optional_statement_sequence: statement semis_statement •
+
+    SEMICOLON  shift, and go to state 255
+
+    RCURL      reduce using rule 30 (optional_statement_sequence)
+    SEMICOLON  [reduce using rule 30 (optional_statement_sequence)]
+    $default   reduce using rule 27 (semis)
+
+    semis  go to state 256
+
+
+State 193
+
+   43 val_var: VAL •
+
+    $default  reduce using rule 43 (val_var)
+
+
+State 194
+
+   42 val_var: VAR •
+
+    $default  reduce using rule 42 (val_var)
+
+
+State 195
+
+   66 propertyDeclaration: opt_modifier val_var • opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   67                    | opt_modifier val_var • opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   68                    | opt_modifier val_var • opt_typeParameters multivariable_variableDeclaration opt_eq_exp
+
+    LANGLE  shift, and go to state 15
+
+    $default  reduce using rule 70 (opt_typeParameters)
+
+    opt_typeParameters  go to state 257
+    typeParameters      go to state 17
+
+
+State 196
+
+   88 assignmentAndOperator: ADD_ASSIGNMENT •
+
+    $default  reduce using rule 88 (assignmentAndOperator)
+
+
+State 197
+
+   89 assignmentAndOperator: SUB_ASSIGNMENT •
+
+    $default  reduce using rule 89 (assignmentAndOperator)
+
+
+State 198
+
+   90 assignmentAndOperator: MULT_ASSIGNMENT •
+
+    $default  reduce using rule 90 (assignmentAndOperator)
+
+
+State 199
+
+   91 assignmentAndOperator: DIV_ASSIGNMENT •
+
+    $default  reduce using rule 91 (assignmentAndOperator)
+
+
+State 200
+
+   92 assignmentAndOperator: MOD_ASSIGNMENT •
+
+    $default  reduce using rule 92 (assignmentAndOperator)
+
+
+State 201
+
+  107 directly_assign: assignableExpression assignmentAndOperator •
+
+    $default  reduce using rule 107 (directly_assign)
+
+
+State 202
+
+  100 prefixUnaryOperator: INCR •
+
+    $default  reduce using rule 100 (prefixUnaryOperator)
+
+
+State 203
+
+  101 prefixUnaryOperator: DECR •
+
+    $default  reduce using rule 101 (prefixUnaryOperator)
+
+
+State 204
+
+  102 prefixUnaryOperator: EXCL_NO_WS • EXCL_NO_WS
+
+    EXCL_NO_WS  shift, and go to state 258
+
+
+State 205
+
+   98 prefixUnaryOperator: ADD •
+
+    $default  reduce using rule 98 (prefixUnaryOperator)
+
+
+State 206
+
+   99 prefixUnaryOperator: SUB •
+
+    $default  reduce using rule 99 (prefixUnaryOperator)
+
+
+State 207
+
+   95 multi_unaryPrefix: multi_unaryPrefix prefixUnaryOperator •
+
+    $default  reduce using rule 95 (multi_unaryPrefix)
+
+
+State 208
+
+  103 prefixUnaryExpression: multi_unaryPrefix postfixUnaryExpression •
+
+    $default  reduce using rule 103 (prefixUnaryExpression)
+
+
+State 209
+
+  105 assignment: directly_assign expression •
+
+    $default  reduce using rule 105 (assignment)
+
+
+State 210
+
+  106 directly_assign: directlyAssignableExpression ASSIGNMENT •
+
+    $default  reduce using rule 106 (directly_assign)
+
+
+State 211
+
+  140 indexingSuffix: LSQUARE • expression multi_comma_expression opt_comma RSQUARE
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 259
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 212
+
+  116 directlyAssignableExpression: postfixUnaryExpression assignableSuffix •
+
+    $default  reduce using rule 116 (directlyAssignableExpression)
+
+
+State 213
+
+  109 assignableSuffix: typeArguments •
+
+    $default  reduce using rule 109 (assignableSuffix)
+
+
+State 214
+
+  108 assignableSuffix: indexingSuffix •
+
+    $default  reduce using rule 108 (assignableSuffix)
+
+
+State 215
+
+   24 functionBody: ASSIGNMENT expression SEMICOLON •
+
+    $default  reduce using rule 24 (functionBody)
+
+
+State 216
+
+  156 parenthesizedExpression: LPAREN expression RPAREN •
+
+    $default  reduce using rule 156 (parenthesizedExpression)
+
+
+State 217
+
+  210 collectionLiteral: LSQUARE expression COMMA • RSQUARE
+
+    RSQUARE  shift, and go to state 260
+
+
+State 218
+
+  211 collectionLiteral: LSQUARE expression RSQUARE •
+
+    $default  reduce using rule 211 (collectionLiteral)
+
+
+State 219
+
+  137 multi_comma_expression: multi_comma_expression • COMMA expression
+  212 collectionLiteral: LSQUARE expression multi_comma_expression • RSQUARE
+  213                  | LSQUARE expression multi_comma_expression • COMMA RSQUARE
+
+    COMMA    shift, and go to state 261
+    RSQUARE  shift, and go to state 262
+
+
+State 220
+
+  139 multi_comma_expression: $@8 •
+
+    $default  reduce using rule 139 (multi_comma_expression)
+
+
+State 221
+
+  157 functionCall: IDENTIFIER LPAREN functionArguments • RPAREN
+  159 functionArguments: functionArguments • COMMA expression
+
+    COMMA   shift, and go to state 263
+    RPAREN  shift, and go to state 264
+
+
+State 222
+
+  158 functionArguments: expression •
+
+    $default  reduce using rule 158 (functionArguments)
+
+
+State 223
+
+  181 disjunction: disjunction DISJ conjunction •
+  183 conjunction: conjunction • CONJ equality
+
+    CONJ  shift, and go to state 164
+
+    CONJ      [reduce using rule 181 (disjunction)]
+    $default  reduce using rule 181 (disjunction)
+
+
+State 224
+
+  183 conjunction: conjunction CONJ equality •
+  185 equality: equality • equality_operator comparison
+
+    EQEQ    shift, and go to state 165
+    EQEQEQ  shift, and go to state 166
+
+    EQEQ      [reduce using rule 183 (conjunction)]
+    EQEQEQ    [reduce using rule 183 (conjunction)]
+    $default  reduce using rule 183 (conjunction)
+
+    equality_operator  go to state 167
+
+
+State 225
+
+  185 equality: equality equality_operator comparison •
+  187 comparison: comparison • comparison_operator genericCallLikeComparison
+
+    LANGLE  shift, and go to state 168
+    RANGLE  shift, and go to state 169
+    LE      shift, and go to state 170
+    GE      shift, and go to state 171
+
+    LANGLE    [reduce using rule 185 (equality)]
+    RANGLE    [reduce using rule 185 (equality)]
+    LE        [reduce using rule 185 (equality)]
+    GE        [reduce using rule 185 (equality)]
+    $default  reduce using rule 185 (equality)
+
+    comparison_operator  go to state 172
+
+
+State 226
+
+  187 comparison: comparison comparison_operator genericCallLikeComparison •
+
+    $default  reduce using rule 187 (comparison)
+
+
+State 227
+
+  191 elvisExpression: elvisExpression QUEST_COLON rangeExpression •
+  193 rangeExpression: rangeExpression • RANGE additiveExpression
+
+    RANGE  shift, and go to state 175
+
+    RANGE     [reduce using rule 191 (elvisExpression)]
+    $default  reduce using rule 191 (elvisExpression)
+
+
+State 228
+
+  189 genericCallLikeComparison: elvisExpression IN elvisExpression •
+  191 elvisExpression: elvisExpression • QUEST_COLON rangeExpression
+
+    QUEST_COLON  shift, and go to state 173
+
+    QUEST_COLON  [reduce using rule 189 (genericCallLikeComparison)]
+    $default     reduce using rule 189 (genericCallLikeComparison)
+
+
+State 229
+
+  193 rangeExpression: rangeExpression RANGE additiveExpression •
+  195 additiveExpression: additiveExpression • ADD multiplicativeExpression
+  196                   | additiveExpression • SUB multiplicativeExpression
+
+    ADD  shift, and go to state 176
+    SUB  shift, and go to state 177
+
+    ADD       [reduce using rule 193 (rangeExpression)]
+    SUB       [reduce using rule 193 (rangeExpression)]
+    $default  reduce using rule 193 (rangeExpression)
+
+
+State 230
+
+  195 additiveExpression: additiveExpression ADD multiplicativeExpression •
+  198 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
+  199                         | multiplicativeExpression • DIV postfixUnaryExpression
+  200                         | multiplicativeExpression • MOD postfixUnaryExpression
+
+    MULT  shift, and go to state 178
+    MOD   shift, and go to state 179
+    DIV   shift, and go to state 180
+
+    $default  reduce using rule 195 (additiveExpression)
+
+
+State 231
+
+  196 additiveExpression: additiveExpression SUB multiplicativeExpression •
+  198 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
+  199                         | multiplicativeExpression • DIV postfixUnaryExpression
+  200                         | multiplicativeExpression • MOD postfixUnaryExpression
+
+    MULT  shift, and go to state 178
+    MOD   shift, and go to state 179
+    DIV   shift, and go to state 180
+
+    $default  reduce using rule 196 (additiveExpression)
+
+
+State 232
+
+  198 multiplicativeExpression: multiplicativeExpression MULT postfixUnaryExpression •
+
+    $default  reduce using rule 198 (multiplicativeExpression)
+
+
+State 233
+
+  200 multiplicativeExpression: multiplicativeExpression MOD postfixUnaryExpression •
+
+    $default  reduce using rule 200 (multiplicativeExpression)
+
+
+State 234
+
+  199 multiplicativeExpression: multiplicativeExpression DIV postfixUnaryExpression •
+
+    $default  reduce using rule 199 (multiplicativeExpression)
+
+
+State 235
+
+  132 memberAccessOperator: DOT •
+
+    $default  reduce using rule 132 (memberAccessOperator)
+
+
+State 236
+
+  148 valueArguments: LPAREN • opt_valueArgument RPAREN
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    RPAREN      reduce using rule 146 ($@10)
+    IDENTIFIER  [reduce using rule 150 ($@11)]
+    $default    reduce using rule 150 ($@11)
+
+    simpleIdentifier         go to state 265
+    opt_valueArgument        go to state 266
+    $@10                     go to state 267
+    opt_simpleIdentifier_EQ  go to state 268
+    $@11                     go to state 269
+    valueArgument            go to state 270
+
+
+State 237
+
+  134 postfixUnaryOperator: INCR •
+
+    $default  reduce using rule 134 (postfixUnaryOperator)
+
+
+State 238
+
+  135 postfixUnaryOperator: DECR •
+
+    $default  reduce using rule 135 (postfixUnaryOperator)
+
+
+State 239
+
+  136 postfixUnaryOperator: EXCL_NO_WS • EXCL_NO_WS
+
+    EXCL_NO_WS  shift, and go to state 271
+
+
+State 240
+
+  133 memberAccessOperator: QUEST_NO_WS • DOT
+
+    DOT  shift, and go to state 272
+
+
+State 241
+
+  120 multi_postfixUnarySuffix: multi_postfixUnarySuffix postfixUnarySuffix •
+
+    $default  reduce using rule 120 (multi_postfixUnarySuffix)
+
+
+State 242
+
+  127 postfixUnarySuffix: navigationSuffix •
+
+    $default  reduce using rule 127 (postfixUnarySuffix)
+
+
+State 243
+
+  131 navigationSuffix: memberAccessOperator • identifier_expression_class
+
+    LPAREN      shift, and go to state 98
+    IMPORT      shift, and go to state 11
+    CLASS       shift, and go to state 273
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    simpleIdentifier             go to state 274
+    identifier_expression_class  go to state 275
+    parenthesizedExpression      go to state 276
+
+
+State 244
+
+  124 postfixUnarySuffix: postfixUnaryOperator •
+
+    $default  reduce using rule 124 (postfixUnarySuffix)
+
+
+State 245
+
+  125 postfixUnarySuffix: indexingSuffix •
+
+    $default  reduce using rule 125 (postfixUnarySuffix)
+
+
+State 246
+
+  126 postfixUnarySuffix: callSuffix •
+
+    $default  reduce using rule 126 (postfixUnarySuffix)
+
+
+State 247
+
+  141 callSuffix: valueArguments •
+
+    $default  reduce using rule 141 (callSuffix)
+
+
+State 248
+
+  104 parenthesizedAssignableExpression: LPAREN assignableExpression • RPAREN
+
+    RPAREN  shift, and go to state 277
+
+
+State 249
+
+  104 parenthesizedAssignableExpression: LPAREN assignableExpression RPAREN •
+  119 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression RPAREN •
+
+    ASSIGNMENT  reduce using rule 119 (parenthesizedDirectlyAssignableExpression)
+    $default    reduce using rule 104 (parenthesizedAssignableExpression)
+
+
+State 250
+
+   48 parenthesizedType: LPAREN • type RPAREN
+   84 multiVariableDeclaration: LPAREN • variableDeclaration multi_comma_variableDeclaration opt_comma RPAREN
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                       go to state 278
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+    variableDeclaration        go to state 279
+
+
+State 251
+
+  161 variable_multivariable: variableDeclaration •
+
+    $default  reduce using rule 161 (variable_multivariable)
+
+
+State 252
+
+  162 variable_multivariable: multiVariableDeclaration •
+
+    $default  reduce using rule 162 (variable_multivariable)
+
+
+State 253
+
+  166 loopStatement: FOR LPAREN variable_multivariable • IN expression RPAREN controlStructureBody
+
+    IN  shift, and go to state 280
+
+
+State 254
+
+  165 loopStatement: WHILE LPAREN expression • RPAREN control_structure_body_or_comma
+
+    RPAREN  shift, and go to state 281
+
+
+State 255
+
+   26 semis: SEMICOLON •
+
+    $default  reduce using rule 26 (semis)
+
+
+State 256
+
+   28 semis_statement: semis_statement semis • statement
+
+    error            shift, and go to state 126
+    LPAREN           shift, and go to state 127
+    LSQUARE          shift, and go to state 99
+    IMPORT           shift, and go to state 11
+    CLASS            shift, and go to state 1
+    FUN              shift, and go to state 2
+    FOR              shift, and go to state 128
+    WHILE            shift, and go to state 129
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    CONST            shift, and go to state 130
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 131
+
+    LPAREN           [reduce using rule 96 ($@5)]
+    LSQUARE          [reduce using rule 96 ($@5)]
+    INCR             reduce using rule 96 ($@5)
+    DECR             reduce using rule 96 ($@5)
+    EXCL_NO_WS       reduce using rule 96 ($@5)
+    VAL              reduce using rule 45 ($@1)
+    VAR              reduce using rule 45 ($@1)
+    RETURN           [reduce using rule 96 ($@5)]
+    CONTINUE         [reduce using rule 96 ($@5)]
+    BREAK            [reduce using rule 96 ($@5)]
+    FLOAT_LITERAL    [reduce using rule 96 ($@5)]
+    INTEGER_LITERAL  [reduce using rule 96 ($@5)]
+    STRING_LITERAL   [reduce using rule 96 ($@5)]
+    ADD              reduce using rule 96 ($@5)
+    SUB              reduce using rule 96 ($@5)
+    IDENTIFIER       [reduce using rule 96 ($@5)]
+
+    functionDeclaration                        go to state 132
+    statement                                  go to state 282
+    declaration                                go to state 136
+    opt_modifier                               go to state 137
+    $@1                                        go to state 138
+    propertyDeclaration                        go to state 139
+    simpleIdentifier                           go to state 140
+    classDeclaration                           go to state 141
+    assignableExpression                       go to state 142
+    multi_unaryPrefix                          go to state 143
+    $@5                                        go to state 144
+    prefixUnaryExpression                      go to state 145
+    parenthesizedAssignableExpression          go to state 146
+    assignment                                 go to state 147
+    directly_assign                            go to state 148
+    directlyAssignableExpression               go to state 149
+    parenthesizedDirectlyAssignableExpression  go to state 150
+    postfixUnaryExpression                     go to state 151
+    parenthesizedExpression                    go to state 108
+    functionCall                               go to state 109
+    loopStatement                              go to state 152
+    jumpExpression                             go to state 110
+    expression                                 go to state 153
+    disjunction                                go to state 112
+    conjunction                                go to state 113
+    equality                                   go to state 114
+    comparison                                 go to state 115
+    genericCallLikeComparison                  go to state 116
+    elvisExpression                            go to state 117
+    rangeExpression                            go to state 118
+    additiveExpression                         go to state 119
+    multiplicativeExpression                   go to state 120
+    primaryExpression                          go to state 121
+    collectionLiteral                          go to state 122
+
+
+State 257
+
+   66 propertyDeclaration: opt_modifier val_var opt_typeParameters • receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   67                    | opt_modifier val_var opt_typeParameters • multivariable_variableDeclaration opt_eq_exp SEMICOLON
+   68                    | opt_modifier val_var opt_typeParameters • multivariable_variableDeclaration opt_eq_exp
+
+    LPAREN       shift, and go to state 250
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                               go to state 72
+    receiverType                       go to state 283
+    parenthesizedType                  go to state 27
+    userType                           go to state 28
+    simpleUserType                     go to state 29
+    nullableType                       go to state 284
+    typeRef_parenthesizedType          go to state 31
+    multivariable_variableDeclaration  go to state 285
+    simpleIdentifier                   go to state 42
+    variableDeclaration                go to state 286
+    multiVariableDeclaration           go to state 287
+
+
+State 258
+
+  102 prefixUnaryOperator: EXCL_NO_WS EXCL_NO_WS •
+
+    $default  reduce using rule 102 (prefixUnaryOperator)
+
+
+State 259
+
+  140 indexingSuffix: LSQUARE expression • multi_comma_expression opt_comma RSQUARE
+
+    $default  reduce using rule 138 ($@8)
+
+    multi_comma_expression  go to state 288
+    $@8                     go to state 220
+
+
+State 260
+
+  210 collectionLiteral: LSQUARE expression COMMA RSQUARE •
+
+    $default  reduce using rule 210 (collectionLiteral)
+
+
+State 261
+
+  137 multi_comma_expression: multi_comma_expression COMMA • expression
+  213 collectionLiteral: LSQUARE expression multi_comma_expression COMMA • RSQUARE
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RSQUARE          shift, and go to state 289
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 290
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 262
+
+  212 collectionLiteral: LSQUARE expression multi_comma_expression RSQUARE •
+
+    $default  reduce using rule 212 (collectionLiteral)
+
+
+State 263
+
+  159 functionArguments: functionArguments COMMA • expression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 291
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 264
+
+  157 functionCall: IDENTIFIER LPAREN functionArguments RPAREN •
+
+    $default  reduce using rule 157 (functionCall)
+
+
+State 265
+
+  149 opt_simpleIdentifier_EQ: simpleIdentifier • ASSIGNMENT
+
+    ASSIGNMENT  shift, and go to state 292
+
+
+State 266
+
+  148 valueArguments: LPAREN opt_valueArgument • RPAREN
+
+    RPAREN  shift, and go to state 293
+
+
+State 267
+
+  147 opt_valueArgument: $@10 •
+
+    $default  reduce using rule 147 (opt_valueArgument)
+
+
+State 268
+
+  155 valueArgument: opt_simpleIdentifier_EQ • opt_Multi expression
+
+    MULT  shift, and go to state 294
+
+    $default  reduce using rule 153 ($@12)
+
+    opt_Multi  go to state 295
+    $@12       go to state 296
+
+
+State 269
+
+  151 opt_simpleIdentifier_EQ: $@11 •
+
+    $default  reduce using rule 151 (opt_simpleIdentifier_EQ)
+
+
+State 270
+
+  145 opt_valueArgument: valueArgument • multi_comma_valueArgument opt_comma
+
+    $default  reduce using rule 143 ($@9)
+
+    multi_comma_valueArgument  go to state 297
+    $@9                        go to state 298
+
+
+State 271
+
+  136 postfixUnaryOperator: EXCL_NO_WS EXCL_NO_WS •
+
+    $default  reduce using rule 136 (postfixUnaryOperator)
+
+
+State 272
+
+  133 memberAccessOperator: QUEST_NO_WS DOT •
+
+    $default  reduce using rule 133 (memberAccessOperator)
+
+
+State 273
+
+  130 identifier_expression_class: CLASS •
+
+    $default  reduce using rule 130 (identifier_expression_class)
+
+
+State 274
+
+  128 identifier_expression_class: simpleIdentifier •
+
+    $default  reduce using rule 128 (identifier_expression_class)
+
+
+State 275
+
+  131 navigationSuffix: memberAccessOperator identifier_expression_class •
+
+    $default  reduce using rule 131 (navigationSuffix)
+
+
+State 276
+
+  129 identifier_expression_class: parenthesizedExpression •
+
+    $default  reduce using rule 129 (identifier_expression_class)
+
+
+State 277
+
+  104 parenthesizedAssignableExpression: LPAREN assignableExpression RPAREN •
+
+    $default  reduce using rule 104 (parenthesizedAssignableExpression)
+
+
+State 278
+
+   48 parenthesizedType: LPAREN type • RPAREN
+   82 variableDeclaration: type • COLON type
+   83                    | type •
+
+    RPAREN  shift, and go to state 57
+    COLON   shift, and go to state 95
+
+    RPAREN    [reduce using rule 83 (variableDeclaration)]
+    $default  reduce using rule 83 (variableDeclaration)
+
+
+State 279
+
+   84 multiVariableDeclaration: LPAREN variableDeclaration • multi_comma_variableDeclaration opt_comma RPAREN
+
+    $default  reduce using rule 86 (multi_comma_variableDeclaration)
+
+    multi_comma_variableDeclaration  go to state 299
+
+
+State 280
+
+  166 loopStatement: FOR LPAREN variable_multivariable IN • expression RPAREN controlStructureBody
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 300
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 281
+
+  165 loopStatement: WHILE LPAREN expression RPAREN • control_structure_body_or_comma
+
+    error            shift, and go to state 126
+    COMMA            shift, and go to state 301
+    LPAREN           shift, and go to state 127
+    LSQUARE          shift, and go to state 99
+    LCURL            shift, and go to state 90
+    IMPORT           shift, and go to state 11
+    CLASS            shift, and go to state 1
+    FUN              shift, and go to state 2
+    FOR              shift, and go to state 128
+    WHILE            shift, and go to state 129
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    CONST            shift, and go to state 130
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 131
+
+    LPAREN           [reduce using rule 96 ($@5)]
+    LSQUARE          [reduce using rule 96 ($@5)]
+    INCR             reduce using rule 96 ($@5)
+    DECR             reduce using rule 96 ($@5)
+    EXCL_NO_WS       reduce using rule 96 ($@5)
+    VAL              reduce using rule 45 ($@1)
+    VAR              reduce using rule 45 ($@1)
+    RETURN           [reduce using rule 96 ($@5)]
+    CONTINUE         [reduce using rule 96 ($@5)]
+    BREAK            [reduce using rule 96 ($@5)]
+    FLOAT_LITERAL    [reduce using rule 96 ($@5)]
+    INTEGER_LITERAL  [reduce using rule 96 ($@5)]
+    STRING_LITERAL   [reduce using rule 96 ($@5)]
+    ADD              reduce using rule 96 ($@5)
+    SUB              reduce using rule 96 ($@5)
+    IDENTIFIER       [reduce using rule 96 ($@5)]
+
+    functionDeclaration                        go to state 132
+    block                                      go to state 302
+    statement                                  go to state 303
+    declaration                                go to state 136
+    opt_modifier                               go to state 137
+    $@1                                        go to state 138
+    propertyDeclaration                        go to state 139
+    simpleIdentifier                           go to state 140
+    classDeclaration                           go to state 141
+    assignableExpression                       go to state 142
+    multi_unaryPrefix                          go to state 143
+    $@5                                        go to state 144
+    prefixUnaryExpression                      go to state 145
+    parenthesizedAssignableExpression          go to state 146
+    assignment                                 go to state 147
+    directly_assign                            go to state 148
+    directlyAssignableExpression               go to state 149
+    parenthesizedDirectlyAssignableExpression  go to state 150
+    postfixUnaryExpression                     go to state 151
+    parenthesizedExpression                    go to state 108
+    functionCall                               go to state 109
+    control_structure_body_or_comma            go to state 304
+    loopStatement                              go to state 152
+    controlStructureBody                       go to state 305
+    jumpExpression                             go to state 110
+    expression                                 go to state 153
+    disjunction                                go to state 112
+    conjunction                                go to state 113
+    equality                                   go to state 114
+    comparison                                 go to state 115
+    genericCallLikeComparison                  go to state 116
+    elvisExpression                            go to state 117
+    rangeExpression                            go to state 118
+    additiveExpression                         go to state 119
+    multiplicativeExpression                   go to state 120
+    primaryExpression                          go to state 121
+    collectionLiteral                          go to state 122
+
+
+State 282
+
+   28 semis_statement: semis_statement semis statement •
+
+    $default  reduce using rule 28 (semis_statement)
+
+
+State 283
+
+   66 propertyDeclaration: opt_modifier val_var opt_typeParameters receiverType • DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON
+
+    DOT  shift, and go to state 306
+
+
+State 284
+
+   21 type: nullableType •
+   47 receiverType: nullableType •
+
+    DOT       reduce using rule 47 (receiverType)
+    $default  reduce using rule 21 (type)
+
+
+State 285
+
+   67 propertyDeclaration: opt_modifier val_var opt_typeParameters multivariable_variableDeclaration • opt_eq_exp SEMICOLON
+   68                    | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration • opt_eq_exp
+
+    ASSIGNMENT  shift, and go to state 82
+
+    $default  reduce using rule 62 ($@4)
+
+    opt_eq_exp  go to state 307
+    $@4         go to state 84
+
+
+State 286
+
+   64 multivariable_variableDeclaration: variableDeclaration •
+
+    $default  reduce using rule 64 (multivariable_variableDeclaration)
+
+
+State 287
+
+   65 multivariable_variableDeclaration: multiVariableDeclaration •
+
+    $default  reduce using rule 65 (multivariable_variableDeclaration)
+
+
+State 288
+
+  137 multi_comma_expression: multi_comma_expression • COMMA expression
+  140 indexingSuffix: LSQUARE expression multi_comma_expression • opt_comma RSQUARE
+
+    COMMA  shift, and go to state 308
+
+    $default  reduce using rule 72 (opt_comma)
+
+    opt_comma  go to state 309
+
+
+State 289
+
+  213 collectionLiteral: LSQUARE expression multi_comma_expression COMMA RSQUARE •
+
+    $default  reduce using rule 213 (collectionLiteral)
+
+
+State 290
+
+  137 multi_comma_expression: multi_comma_expression COMMA expression •
+
+    $default  reduce using rule 137 (multi_comma_expression)
+
+
+State 291
+
+  159 functionArguments: functionArguments COMMA expression •
+
+    $default  reduce using rule 159 (functionArguments)
+
+
+State 292
+
+  149 opt_simpleIdentifier_EQ: simpleIdentifier ASSIGNMENT •
+
+    $default  reduce using rule 149 (opt_simpleIdentifier_EQ)
+
+
+State 293
+
+  148 valueArguments: LPAREN opt_valueArgument RPAREN •
+
+    $default  reduce using rule 148 (valueArguments)
+
+
+State 294
+
+  152 opt_Multi: MULT •
+
+    $default  reduce using rule 152 (opt_Multi)
+
+
+State 295
+
+  155 valueArgument: opt_simpleIdentifier_EQ opt_Multi • expression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 310
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 296
+
+  154 opt_Multi: $@12 •
+
+    $default  reduce using rule 154 (opt_Multi)
+
+
+State 297
+
+  142 multi_comma_valueArgument: multi_comma_valueArgument • COMMA valueArgument
+  145 opt_valueArgument: valueArgument multi_comma_valueArgument • opt_comma
+
+    COMMA  shift, and go to state 311
+
+    $default  reduce using rule 72 (opt_comma)
+
+    opt_comma  go to state 312
+
+
+State 298
+
+  144 multi_comma_valueArgument: $@9 •
+
+    $default  reduce using rule 144 (multi_comma_valueArgument)
+
+
+State 299
+
+   84 multiVariableDeclaration: LPAREN variableDeclaration multi_comma_variableDeclaration • opt_comma RPAREN
+   85 multi_comma_variableDeclaration: multi_comma_variableDeclaration • COMMA variableDeclaration
+
+    COMMA  shift, and go to state 313
+
+    $default  reduce using rule 72 (opt_comma)
+
+    opt_comma  go to state 314
+
+
+State 300
+
+  166 loopStatement: FOR LPAREN variable_multivariable IN expression • RPAREN controlStructureBody
+
+    RPAREN  shift, and go to state 315
+
+
+State 301
+
+  164 control_structure_body_or_comma: COMMA •
+
+    $default  reduce using rule 164 (control_structure_body_or_comma)
+
+
+State 302
+
+  167 controlStructureBody: block •
+
+    $default  reduce using rule 167 (controlStructureBody)
+
+
+State 303
+
+  168 controlStructureBody: statement •
+
+    $default  reduce using rule 168 (controlStructureBody)
+
+
+State 304
+
+  165 loopStatement: WHILE LPAREN expression RPAREN control_structure_body_or_comma •
+
+    $default  reduce using rule 165 (loopStatement)
+
+
+State 305
+
+  163 control_structure_body_or_comma: controlStructureBody •
+
+    $default  reduce using rule 163 (control_structure_body_or_comma)
+
+
+State 306
+
+   66 propertyDeclaration: opt_modifier val_var opt_typeParameters receiverType DOT • multivariable_variableDeclaration opt_eq_exp SEMICOLON
+
+    LPAREN       shift, and go to state 250
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    type                               go to state 72
+    parenthesizedType                  go to state 27
+    userType                           go to state 28
+    simpleUserType                     go to state 29
+    nullableType                       go to state 41
+    typeRef_parenthesizedType          go to state 31
+    multivariable_variableDeclaration  go to state 316
+    simpleIdentifier                   go to state 42
+    variableDeclaration                go to state 286
+    multiVariableDeclaration           go to state 287
+
+
+State 307
+
+   67 propertyDeclaration: opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp • SEMICOLON
+   68                    | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp •
+
+    SEMICOLON  shift, and go to state 317
+
+    SEMICOLON  [reduce using rule 68 (propertyDeclaration)]
+    $default   reduce using rule 68 (propertyDeclaration)
+
+
+State 308
+
+   71 opt_comma: COMMA •
+  137 multi_comma_expression: multi_comma_expression COMMA • expression
+
+    LPAREN           shift, and go to state 98
+    LSQUARE          shift, and go to state 99
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 106
+
+    $default  reduce using rule 71 (opt_comma)
+
+    postfixUnaryExpression     go to state 107
+    parenthesizedExpression    go to state 108
+    functionCall               go to state 109
+    jumpExpression             go to state 110
+    expression                 go to state 290
+    disjunction                go to state 112
+    conjunction                go to state 113
+    equality                   go to state 114
+    comparison                 go to state 115
+    genericCallLikeComparison  go to state 116
+    elvisExpression            go to state 117
+    rangeExpression            go to state 118
+    additiveExpression         go to state 119
+    multiplicativeExpression   go to state 120
+    primaryExpression          go to state 121
+    collectionLiteral          go to state 122
+
+
+State 309
+
+  140 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma • RSQUARE
+
+    RSQUARE  shift, and go to state 318
+
+
+State 310
+
+  155 valueArgument: opt_simpleIdentifier_EQ opt_Multi expression •
+
+    $default  reduce using rule 155 (valueArgument)
+
+
+State 311
+
+   71 opt_comma: COMMA •
+  142 multi_comma_valueArgument: multi_comma_valueArgument COMMA • valueArgument
+
+    IMPORT      shift, and go to state 11
+    CONST       shift, and go to state 12
+    IDENTIFIER  shift, and go to state 13
+
+    RPAREN      reduce using rule 71 (opt_comma)
+    IDENTIFIER  [reduce using rule 150 ($@11)]
+    $default    reduce using rule 150 ($@11)
+
+    simpleIdentifier         go to state 265
+    opt_simpleIdentifier_EQ  go to state 268
+    $@11                     go to state 269
+    valueArgument            go to state 319
+
+
+State 312
+
+  145 opt_valueArgument: valueArgument multi_comma_valueArgument opt_comma •
+
+    $default  reduce using rule 145 (opt_valueArgument)
+
+
+State 313
+
+   71 opt_comma: COMMA •
+   85 multi_comma_variableDeclaration: multi_comma_variableDeclaration COMMA • variableDeclaration
+
+    LPAREN       shift, and go to state 25
+    IMPORT       shift, and go to state 11
+    CONST        shift, and go to state 12
+    TYPELITERAL  shift, and go to state 39
+    IDENTIFIER   shift, and go to state 13
+
+    $default  reduce using rule 71 (opt_comma)
+
+    type                       go to state 72
+    parenthesizedType          go to state 27
+    userType                   go to state 28
+    simpleUserType             go to state 29
+    nullableType               go to state 41
+    typeRef_parenthesizedType  go to state 31
+    simpleIdentifier           go to state 42
+    variableDeclaration        go to state 320
+
+
+State 314
+
+   84 multiVariableDeclaration: LPAREN variableDeclaration multi_comma_variableDeclaration opt_comma • RPAREN
+
+    RPAREN  shift, and go to state 321
+
+
+State 315
+
+  166 loopStatement: FOR LPAREN variable_multivariable IN expression RPAREN • controlStructureBody
+
+    error            shift, and go to state 126
+    LPAREN           shift, and go to state 127
+    LSQUARE          shift, and go to state 99
+    LCURL            shift, and go to state 90
+    IMPORT           shift, and go to state 11
+    CLASS            shift, and go to state 1
+    FUN              shift, and go to state 2
+    FOR              shift, and go to state 128
+    WHILE            shift, and go to state 129
+    RETURN           shift, and go to state 100
+    CONTINUE         shift, and go to state 101
+    BREAK            shift, and go to state 102
+    CONST            shift, and go to state 130
+    FLOAT_LITERAL    shift, and go to state 103
+    INTEGER_LITERAL  shift, and go to state 104
+    STRING_LITERAL   shift, and go to state 105
+    IDENTIFIER       shift, and go to state 131
+
+    LPAREN           [reduce using rule 96 ($@5)]
+    LSQUARE          [reduce using rule 96 ($@5)]
+    INCR             reduce using rule 96 ($@5)
+    DECR             reduce using rule 96 ($@5)
+    EXCL_NO_WS       reduce using rule 96 ($@5)
+    VAL              reduce using rule 45 ($@1)
+    VAR              reduce using rule 45 ($@1)
+    RETURN           [reduce using rule 96 ($@5)]
+    CONTINUE         [reduce using rule 96 ($@5)]
+    BREAK            [reduce using rule 96 ($@5)]
+    FLOAT_LITERAL    [reduce using rule 96 ($@5)]
+    INTEGER_LITERAL  [reduce using rule 96 ($@5)]
+    STRING_LITERAL   [reduce using rule 96 ($@5)]
+    ADD              reduce using rule 96 ($@5)
+    SUB              reduce using rule 96 ($@5)
+    IDENTIFIER       [reduce using rule 96 ($@5)]
+
+    functionDeclaration                        go to state 132
+    block                                      go to state 302
+    statement                                  go to state 303
+    declaration                                go to state 136
+    opt_modifier                               go to state 137
+    $@1                                        go to state 138
+    propertyDeclaration                        go to state 139
+    simpleIdentifier                           go to state 140
+    classDeclaration                           go to state 141
+    assignableExpression                       go to state 142
+    multi_unaryPrefix                          go to state 143
+    $@5                                        go to state 144
+    prefixUnaryExpression                      go to state 145
+    parenthesizedAssignableExpression          go to state 146
+    assignment                                 go to state 147
+    directly_assign                            go to state 148
+    directlyAssignableExpression               go to state 149
+    parenthesizedDirectlyAssignableExpression  go to state 150
+    postfixUnaryExpression                     go to state 151
+    parenthesizedExpression                    go to state 108
+    functionCall                               go to state 109
+    loopStatement                              go to state 152
+    controlStructureBody                       go to state 322
+    jumpExpression                             go to state 110
+    expression                                 go to state 153
+    disjunction                                go to state 112
+    conjunction                                go to state 113
+    equality                                   go to state 114
+    comparison                                 go to state 115
+    genericCallLikeComparison                  go to state 116
+    elvisExpression                            go to state 117
+    rangeExpression                            go to state 118
+    additiveExpression                         go to state 119
+    multiplicativeExpression                   go to state 120
+    primaryExpression                          go to state 121
+    collectionLiteral                          go to state 122
+
+
+State 316
+
+   66 propertyDeclaration: opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration • opt_eq_exp SEMICOLON
+
+    ASSIGNMENT  shift, and go to state 82
+
+    $default  reduce using rule 62 ($@4)
+
+    opt_eq_exp  go to state 323
+    $@4         go to state 84
+
+
+State 317
+
+   67 propertyDeclaration: opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON •
+
+    $default  reduce using rule 67 (propertyDeclaration)
+
+
+State 318
+
+  140 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma RSQUARE •
+
+    $default  reduce using rule 140 (indexingSuffix)
+
+
+State 319
+
+  142 multi_comma_valueArgument: multi_comma_valueArgument COMMA valueArgument •
+
+    $default  reduce using rule 142 (multi_comma_valueArgument)
+
+
+State 320
+
+   85 multi_comma_variableDeclaration: multi_comma_variableDeclaration COMMA variableDeclaration •
+
+    $default  reduce using rule 85 (multi_comma_variableDeclaration)
+
+
+State 321
+
+   84 multiVariableDeclaration: LPAREN variableDeclaration multi_comma_variableDeclaration opt_comma RPAREN •
+
+    $default  reduce using rule 84 (multiVariableDeclaration)
+
+
+State 322
+
+  166 loopStatement: FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody •
+
+    $default  reduce using rule 166 (loopStatement)
+
+
+State 323
+
+   66 propertyDeclaration: opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp • SEMICOLON
+
+    SEMICOLON  shift, and go to state 324
+
+
+State 324
+
+   66 propertyDeclaration: opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON •
+
+    $default  reduce using rule 66 (propertyDeclaration)
