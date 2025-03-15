@@ -11,7 +11,7 @@ all: my_program
 my_program: $(OBJS)
 	$(CC) $(CFLAGS) -DYYDEBUG -o k0 $(OBJS) -lfl
 
-main.o: main.c k0gram.tab.h tree.h
+main.o: main.c k0gram.tab.h tree.h symtab.h
 	$(CC) $(CFLAGS) -c main.c
 
 lex.yy.o: lex.yy.c k0gram.tab.h tree.h
@@ -20,7 +20,7 @@ lex.yy.o: lex.yy.c k0gram.tab.h tree.h
 k0gram.tab.o: k0gram.tab.c tree.h
 	$(CC) $(CFLAGS) -c k0gram.tab.c
 
-k0gram.tab.c k0gram.tab.h: k0gram.y
+k0gram.tab.c k0gram.tab.h: k0gram.y	
 	bison -d -v k0gram.y
 
 lex.yy.c: k0lex.l k0gram.tab.h tree.h
