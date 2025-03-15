@@ -498,5 +498,3 @@ int main(int argc, char **argv) {
     return 0;
     
 }
-
-/* for printing, use for loop to print out   each item in the bucket if it is not empty*/
