@@ -50,7 +50,7 @@
 
 /* Program Structure */
 program:
-    topLevelObjects {root = $1;treeprint(root, 1); printsyms(root);}
+    topLevelObjects {root = $1;treeprint(root, 1);}
 ;
 
 topLevelObjects:

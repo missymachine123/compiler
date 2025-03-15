@@ -1675,7 +1675,7 @@ yyreduce:
     {
   case 2: /* program: topLevelObjects  */
 #line 53 "k0gram.y"
-                    {root = (yyvsp[0].treeptr);treeprint(root, 1); printsyms(root);}
+                    {root = (yyvsp[0].treeptr);treeprint(root, 1);}
 #line 1680 "k0gram.tab.c"
     break;
 

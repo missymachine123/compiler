@@ -22,9 +22,9 @@ char *filename;
 extern struct tree *root;
 int serial = 0;
 extern const char *yyname(int sym);
-extern SymbolTable mksymtab();
-void printsymbol(char *s);
-void populate_symboltables(struct tree * t);
+SymbolTable current = NULL;
+SymbolTable globals = NULL;
+int GLOBAL = 1; 
 
 
 struct token {
@@ -38,65 +38,10 @@ struct token {
                    /*    the string (less quotes and after escapes) here */
 }token;
 
-void printsyms(struct tree *t) {
-    populate_symboltables(t);
-    if (t == NULL) { 
-        return;
-    }
-    if (t->leaf != NULL && t->leaf->category == 406) {
-        printsymbol(t->leaf->text);
-    }
-    for (int i = 0; i < t->nkids; i++) {
-        printsyms(t->kids[i]);
-    }
-}
-void printsymbol(char *s)
-{
-   printf("%s\n", s); fflush(stdout);
-}
-
-void populate_symboltables(struct tree * t)
-{
-   int i;
-   if (t == NULL) return;
-   /* pre-order activity */
-   switch (t->prodrule) {
-    case  1004 /* whatever production rule(s) enter new scope*/: {
-        printf("new scope\n");
-    //enter_newscope(/* name of new function, from some leaf*/);
-    break;
-   }
-   case  1017 /* whatever production rule(s) designate a variable declaration*/: {
-        printf("declaration rule_name: %s\n", t->symbolname);
-       /* figure out which kid is a "list" of variables */
-       /* walk through the subtree that is the list of variables */
-            /* for each variable, insert it into the current symbol table*/
-       break;
-   }
-   case 406 : {
-      printf("identifier\n");
-
-      //SymbolTableEntry ste = NULL;
-      //SymbolTable st = current;
-      /* check if the symbol is already defined in current scope */
-      /*   if it is, report a redeclaration error */
-      /*   if it is not, insert it into the current symbol table */
-      }
-   }
-}
-
-void enter_newscope(char *s)
-{
-   /* allocate a new symbol table */
-   mksymtab();
-   /* insert s into current symbol table */
-   /* attach new symbol table to s's symbol table in the current symbol table*/
-   /* push new symbol on the stack, making it the current symbol table */
-}
-
 int yyerror(char *s) {
     fprintf(stderr, "Syntax error: %s at line %d, near token '%s'\n", s, yylineno, yytext);
     exit(1);
+    
 }
 
 char *appendstring(char *s, char c) {
@@ -288,8 +233,160 @@ char *pretty_print_name(struct tree *t) {
       }
        }
  }
+
+ void printsymbol(char *s)
+ {
+    printf("%s\n", s); fflush(stdout);
+ }
+ 
  
- void print_graph(struct tree *t, char *filename){
+char * alloc(int n)
+{
+   char *a = calloc(n, sizeof(char));
+   if (a == NULL) {
+      fprintf(stderr, "alloc(%d): out of memory\n", (int)n);
+      exit(-1);
+      }
+   return a;
+}
+/*
+ * create a symbol table and return a pointer to it.
+ */
+SymbolTable mksymtab(int nbuckets) {
+    SymbolTable table = (SymbolTable)malloc(sizeof(struct sym_table));
+     if (table) {
+        table->nBuckets = nbuckets;
+        table->nEntries = 0;
+        table->tbl = (struct sym_entry **)
+        alloc((unsigned int)(nbuckets * sizeof(struct sym_entry *)));;
+     }
+     printf("created new table\n");
+     return table;
+}
+/*
+ * hash function
+ */
+int hash(SymbolTable st, char *s)
+{
+   register int h = 0;
+   register char c;
+   while (c = *s++) {
+      h += c & 0377;
+      h *= 37;
+      }
+   if (h < 0) h = -h;
+   return h % st->nBuckets;
+}
+
+/*
+ * Insert a symbol into a symbol table.
+ */
+int insert_sym(SymbolTable st, char *s) { 
+    struct sym_entry *se;
+    int h;
+    h = hash(st, s);
+    for (se = st->tbl[h]; se != NULL; se = se->next) {
+        if (!strcmp(s, se->s)) {
+            /*
+             * A copy of the string is already in the table.
+             */
+            return 0;
+        }
+    }
+    /*
+     * The string is not in the table. Add the copy from the
+     * buffer to the table.
+     */
+    se = (SymbolTableEntry)alloc((unsigned int) sizeof(struct sym_entry)); 
+    se->table = st;
+    se->next= st->tbl[h];
+    st->tbl[h] = se;
+    se->s = strdup(s);
+    //se->type = t;
+    st->nEntries++;
+    return 1;
+}
+
+void enter_newscope(char *s) {
+    // Allocate a new symbol table
+    SymbolTable newTable = mksymtab(101);
+    
+    // Insert s into the current symbol table
+    insert_sym(current, s);
+    
+    // Push new symbol table onto the stack
+    newTable->tbl = current->tbl;
+    current->tbl = newTable;
+}
+
+void populate_symboltables(struct tree *n)
+{
+    int i;
+    if (n == NULL) return;
+    /* pre-order activity */
+    switch (n->prodrule) {
+        case 1004: /* whatever production rule(s) designate a new scope */
+            printf("Entering new scope\n");
+            // enter_newscope("new_scope");
+            break;
+        case 1017: /* whatever production rule(s) designate a variable declaration */
+            printf("Variable declaration\n");
+            // printf("Global variable next->s: %s /n",globals->next->s);
+            for (i = 0; i < n->nkids; i++) {
+                 if (n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                     if (!insert_sym(current, n->kids[i]->leaf->text)) {
+                         fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
+                     }
+                 }
+             }
+            break;
+        case 406: /* whatever leaf denotes a variable name */
+            printf("Variable name: %s\n", n->leaf->text); 
+
+            if (!insert_sym(current, n->leaf->text)) {
+                fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
+            }
+            break;
+    }
+    /* visit children */
+    for (i = 0; i < n->nkids; i++)
+        populate_symboltables(n->kids[i]);
+}
+
+void printsymbols(SymbolTable st, int level)
+{
+   int i, j;
+   SymbolTableEntry ste;
+   if (st == NULL) return;
+   for (i=0;i<st->nBuckets;i++) {
+      for (ste = st->tbl[i]; ste; ste=ste->next) {
+	 for (j=0; j < level; j++) printf("  ");
+	 printf("%s\n", ste->s);
+
+	 /* if this symbol has a subscope, print it recursively, indented
+	 printsymbols( // subscope symbol table
+                    , level+1);
+          */
+      }
+   }
+}
+
+
+ void printsyms(struct tree *t) {
+    if (t == NULL) { 
+        return;
+    }
+ 
+    if (t->leaf != NULL && t->leaf->category == 406) {
+        printsymbol(t->leaf->text);
+    }
+    for (int i = 0; i < t->nkids; i++) {
+        printsyms(t->kids[i]);
+    }
+}
+
+ 
+void print_graph(struct tree *t, char *filename){
        FILE *f = fopen(filename, "w"); /* should check for NULL */
        fprintf(f, "digraph {\n");
        print_graph2(t, f);
@@ -340,30 +437,7 @@ char* removeSeparators(char* yytext) {
     return cleanText;
 }
 
-// Free memory allocated for a token
-void free_token(struct token *t) {
-    if (t) {
-        free(t->text);
-        free(t->filename);
-        free(t->sval);
-        free(t);
-    }
-}
-
-// Free memory allocated for a tree
-void free_tree(struct tree *t) {
-    if (t) {
-        if (t->leaf) {
-            free_token(t->leaf);
-        }
-        for (int i = 0; i < t->nkids; i++) {
-            free_tree(t->kids[i]);
-        }
-        free(t->symbolname);
-        free(t);
-    }
-}
-
+ 
 int main(int argc, char **argv) {
     int generate_dot = 0;  // Flag to check if -dot option is present
 
@@ -394,15 +468,20 @@ int main(int argc, char **argv) {
     int result = yyparse();
     printf("yyparse returns %d\n", result);
     // If -dot argument is present, generate the .dot file
-    /*
+    // printsyms(root);
+    globals = mksymtab(101);
+    current = globals;
+    populate_symboltables(root);
+    printsymbols(globals, 0);
+
+    
     if (generate_dot) {
         print_graph(root, "tree.dot");
         printf("Dot file generated: tree.dot\n");
     } else {    
-        treeprint(root,1);
+        // treeprint(root,1);
         printf("Normal behavior (no -dot option)\n");
     }
-        */
 
     // Close the input file
     fclose(yyin);
