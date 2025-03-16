@@ -37,25 +37,7 @@ typeptr alctype(int base)
    return rv;
 }
 
-#if 0
-/* For languages that have a list type.
- * List size determination from a tree nodeptr is sometimes reasonable?
- */
-typeptr alclist()
-{
-   typeptr rv = alctype(LIST_TYPE);
-   return rv;
-}
-
-/* For languages that have a struct type. */
-typeptr alcstructtype()
-{
-   typeptr rv = alctype(STRUCT_TYPE);
-   /* who initializes the fields, someone else I guess, later on */
-   return rv;
-}
-#endif
-
+ 
 /* Construct a function type from syntax (sub)tree(s).
  * For this to make any sense, you have to pass in the subtrees
  * for the return type (r) and the parameter list (p), but the calls to
@@ -75,6 +57,7 @@ typeptr alcarraytype(struct tree * s, struct tree * e)
 {
    typeptr rv = alctype(ARRAY_TYPE);
    if (rv == NULL) return NULL;
+   
    /* fill in size and elemtype by traversing subtrees */
    /* rf->u.f.elemtype = ... */
    return rv;

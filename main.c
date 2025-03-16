@@ -44,8 +44,6 @@ int yyerror(char *s) {
     
 }
 
-
-
 char *appendstring(char *s, char c) {
     int i = strlen(s);
     s = realloc(s, i + 2);
@@ -251,13 +249,34 @@ char * alloc(int n)
       }
    return a;
 }
+/*
+ * create a symbol table and return a pointer to it.
+ */
+SymbolTable mksymtab(int nbuckets) {
+    SymbolTable table = (SymbolTable)malloc(sizeof(struct sym_table));
+     if (table) {
+        table->nBuckets = nbuckets;
+        table->nEntries = 0;
+        table->tbl = (struct sym_entry **)
+        alloc((unsigned int)(nbuckets * sizeof(struct sym_entry *)));;
 
-/* Constructor function to create a new symbol table */
-SymbolTable mksymtab() {
-    SymbolTable newTable = (SymbolTable) alloc(sizeof(struct sym_table));
-    newTable->nEntries = 0;
-    newTable->next = NULL;
-    return newTable;
+     }
+    //  printf("created new table\n");
+     return table;
+}
+/*
+ * hash function
+ */
+int hash(SymbolTable st, char *s)
+{
+   register int h = 0;
+   register char c;
+   while (c = *s++) {
+      h += c & 0377;
+      h *= 37;
+      }
+   if (h < 0) h = -h;
+   return h % st->nBuckets;
 }
 
 /*
@@ -265,8 +284,9 @@ SymbolTable mksymtab() {
  */
 int insert_sym(SymbolTable st, char *s) { 
     struct sym_entry *se;
-
-    for (se = st->next; se != NULL; se = se->next) {
+    int h;
+    h = hash(st, s);
+    for (se = st->tbl[h]; se != NULL; se = se->next) {
         if (!strcmp(s, se->s)) {
             /*
              * A copy of the string is already in the table.
@@ -279,26 +299,38 @@ int insert_sym(SymbolTable st, char *s) {
      * buffer to the table.
      */
     se = (SymbolTableEntry)alloc((unsigned int) sizeof(struct sym_entry)); 
-    se->s = strdup(s);
-     
-    se->next = st->next;
-    st->next = se;
-     
-    st->nEntries++;
+    se->table = st;
+    se->next= st->tbl[h];
+    st->tbl[h] = se;
     
+    se->s = strdup(s);
+    //se->type = t;
+    st->nEntries++;
     return 1;
 }
 
 void enter_newscope(char *s) {
     // Allocate a new symbol table
-    SymbolTable newTable = mksymtab();
+    SymbolTable newTable = mksymtab(101);
     
     // Insert s into the current symbol table
     insert_sym(current, s);
-    
+
+    //attach new symbol to s's entry 
+    int h = hash(current, s);
+    struct sym_entry *se;
+    for (se = current->tbl[h]; se != NULL; se = se->next) {
+        if (!strcmp(se->s, s)) {
+            // Attach new symbol table to this entry
+            se->table = newTable;
+            break;
+        }
+    }
+
     // Push new symbol table onto the stack
-    newTable->next = current->next;
-    current->next = newTable;
+    newTable->parent = current;
+    current = newTable;
+    pushscope(current);
 }
 
 void populate_symboltables(struct tree *n)
@@ -306,16 +338,30 @@ void populate_symboltables(struct tree *n)
     int i;
     if (n == NULL) return;
     /* pre-order activity */
+    // printf("Current scope: %s\n", current->scope);
     switch (n->prodrule) {
-        case 1004: /* whatever production rule(s) designate a new scope */
-            printf("Entering new scope\n");
-            // enter_newscope("new_scope");
+
+        // Handle entering a new function scope
+        case 1004: /* Production rule for function declaration */ {
+            // Assuming the function name is stored in one of the child nodes
+            printf("Entering new function scope\n");
+            enter_newscope("Function"); // Replace "Function" with actual function name if retrievable
             break;
-        case 1017: /* whatever production rule(s) designate a variable declaration */
-            printf("Variable declaration\n");
+        }
+
+        // Handle entering a new class/struct scope
+        case 1033: /* Production rule for class/struct declaration */ {
+            printf("Entering new class scope\n");
+            enter_newscope("Class"); // Replace "Class" with actual class name if retrievable
+            break;
+        }
+
+        case 1028: /* whatever production rule(s) designate a variable declaration */
+            // printf("Variable declaration\n");
+            // enter_newscope("variable_declaration");
             // printf("Global variable next->s: %s /n",globals->next->s);
             for (i = 0; i < n->nkids; i++) {
-                 if (n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                      if (!insert_sym(current, n->kids[i]->leaf->text)) {
                          fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                      }
@@ -324,30 +370,44 @@ void populate_symboltables(struct tree *n)
             break;
         case 406: /* whatever leaf denotes a variable name */
             printf("Variable name: %s\n", n->leaf->text); 
-
             if (!insert_sym(current, n->leaf->text)) {
-                fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
+                // fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
             }
             break;
     }
-    /* visit children */
-    for (i = 0; i < n->nkids; i++)
+    /* Visit children (Recursive traversal of child nodes) */
+    for (i = 0; i < n->nkids; i++) {
         populate_symboltables(n->kids[i]);
+    }
+
+    /* Post-order activity */
+    switch (n->prodrule) {
+        
+        case 266: /* End of class scope */ {
+            printf("Exiting scope\n");
+            popscope(); // Pop the current scope to return to the parent scope
+            break;
+        }
+    }
 }
 
 void printsymbols(SymbolTable st, int level) {
+    int i, j;
+    SymbolTableEntry ste;
     if (st == NULL) return;
-    printf("Printing symbol table at level %d\n", level);
+    
+    printf("Symbol table:\n");
 
-    SymbolTableEntry ste = st->next;
-    while (ste != NULL) {
-        for (int j = 0; j < level; j++) printf("  ");
-        printf("%s\n", ste->s);
+    // Iterate over each bucket
+    for (i = 0; i < st->nBuckets; i++) {
+        for (ste = st->tbl[i]; ste != NULL; ste = ste->next) {
+            printf("%s\n", ste->s);
 
-        // If this symbol has a subscope, print it recursively, indented
-        // printsymbols(ste->subscope, level + 1);
-
-        ste = ste->next;
+            // If the symbol has a sub-scope, print it recursively
+            if (ste->table != NULL && ste->table != st) {
+                printsymbols(ste->table, level + 1);
+            }
+        }
     }
 }
 
@@ -415,19 +475,17 @@ char* removeSeparators(char* yytext) {
     cleanText[j] = '\0';
     return cleanText;
 }
-
- 
 int main(int argc, char **argv) {
-    int generate_dot = 0;  // Flag to check if -dot option is present
-    int generate_tree = 0;  // Flag for -tree option
-    int generate_symtab = 0;  // Flag for -symtab option
+    int generate_dot = 0;      // Flag for -dot option
+    int generate_tree = 0;     // Flag for -tree option
+    int generate_symtab = 0;   // Flag for -symtab option
 
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s [-dot] <filename>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-dot] [-tree] [-symtab] <filename>\n", argv[0]);
         return 1;
     }
 
-    // Check if -dot argument is present
+    // Parse command-line arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-dot") == 0) {
             generate_dot = 1;
@@ -440,50 +498,49 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (filename == NULL) {
+        fprintf(stderr, "Error: No input file specified.\n");
+        return 1;
+    }
 
-    filename = kt_extension(argv[1]);
     yyin = fopen(filename, "r");
     if (!yyin) {
         perror(filename);
         free(filename);
         return 1;
     }
-    
+
     // Call the parser
-    // yydebug = 1; // Enable debugging
-    printf("Printing from inside yyparse():\n\n");
+    printf("Parsing file: %s\n", filename);
     int result = yyparse();
     printf("yyparse returns %d\n", result);
-    // If -dot argument is present, generate the .dot file
-    // printsyms(root);
-    // globals = mksymtab();
-    // current = globals;
-    // populate_symboltables(root);
-    // printsymbols(globals, 0);
 
-    
-    // Handle options
+    // Handle the -tree option
     if (generate_tree) {
         treeprint(root, 1);  // Print the syntax tree
         printf("Syntax tree printed.\n");
     }
 
+    // Handle the -symtab option
     if (generate_symtab) {
-        if (result == 0) {  // Only generate symbol tables if no parsing errors
-            globals = mksymtab();
+        if (result == 0) {  // Only generate symbol tables if parsing succeeds
+            globals = mksymtab(101);
             current = globals;
             populate_symboltables(root);
+            printf("Symbol tables generated.\n");
             printsymbols(globals, 0);  // Print symbol tables
         } else {
             printf("Errors encountered during parsing. Symbol tables not generated.\n");
         }
     }
 
+    // Handle the -dot option
     if (generate_dot) {
         print_graph(root, "tree.dot");  // Generate a .dot file
         printf("Dot file generated: tree.dot\n");
     }
 
+    // Default behavior when no flags are provided
     if (!generate_tree && !generate_symtab && !generate_dot) {
         if (result == 0) {
             printf("No errors.\n");
@@ -492,9 +549,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    // Close the input file
+    // Cleanup
     fclose(yyin);
     free(filename);
     return 0;
-    
 }
