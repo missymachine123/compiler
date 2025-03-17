@@ -384,6 +384,19 @@ void populate_symboltables(struct tree *n)
             //enter_newscope("Class"); // Replace "Class" with actual class name if retrievable
             //break;
         //}
+        case 1007: /* rule for function paramteres */
+        for (i = 0; i < n->nkids; i++) {
+             if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
+                    fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
+                }else{
+                    insert_sym(current, n->kids[i]->leaf->text);
+
+                }
+             }
+         }
+        
+        break;  
 
         case 1022: /* whatever production rule(s) designate a variable declaration */
             // enter_newscope("variable_declaration");
@@ -405,9 +418,11 @@ void populate_symboltables(struct tree *n)
                  }
              }
             
-            break;
+            break;    
         
         case 406: /* whatever leaf denotes a variable name */
+        /*for any variable it encounters, check if it is in global and current table if 
+        *   not mark it as undeclared */
             //printf("Variable name: %s\n", n->leaf->text); 
             if ((lookup_st(current, n->leaf->text)) == NULL && (lookup_st(globals, n->leaf->text)) == NULL){ //
             //    insert_sym(current, n->leaf->text);
