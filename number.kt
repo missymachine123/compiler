@@ -20,6 +20,8 @@ fun main() {
 
 // Functions for integer operations
 fun add(a: Int, b: Int): Int {
+    var a = 10
+    c + b
     return
 }
 
