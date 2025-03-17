@@ -1,8 +1,3 @@
-Nonterminals useless in grammar
-
-    postfix_unary_operator
-
-
 Terminals unused in grammar
 
     RESERVED
@@ -98,12 +93,6 @@ Terminals unused in grammar
     AND
     OR
     LOWER_THAN_ELSE
-
-
-Rules useless in grammar
-
-  238 postfix_unary_operator: INCR
-  239                       | DECR
 
 
 State 36 conflicts: 1 shift/reduce

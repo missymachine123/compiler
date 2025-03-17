@@ -274,7 +274,7 @@ int hash(SymbolTable st, char *s)
 {
    register int h = 0;
    register char c;
-   while (c = *s++) {
+   while ((c = *s++)) {
       h += c & 0377;
       h *= 37;
       }
