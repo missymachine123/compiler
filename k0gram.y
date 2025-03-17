@@ -50,7 +50,7 @@
 
 /* Program Structure */
 program:
-    topLevelObjects {root = $1;treeprint(root, 1);}
+    topLevelObjects {root = $1; /*treeprint(root, 1); */}
 ;
 
 topLevelObjects:
@@ -120,7 +120,6 @@ functionBody:
 block:
     LCURL statements RCURL  {$$ = alctree(1012, "block", 3, $1, $2, $3);  }
 ;
-
 
 semis:
   SEMICOLON

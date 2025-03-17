@@ -779,27 +779,27 @@ static const yytype_int16 yyrline[] =
 {
        0,    53,    53,    57,    58,    62,    63,    64,    68,    69,
       73,    74,    79,    80,    85,    89,    93,    97,    98,   102,
-     103,   104,   109,   110,   115,   116,   121,   126,   127,   131,
-     132,   137,   138,   142,   143,   151,   152,   153,   154,   155,
-     159,   160,   161,   165,   166,   170,   171,   171,   176,   180,
-     186,   187,   187,   191,   196,   197,   202,   203,   203,   206,
-     210,   211,   216,   217,   217,   222,   223,   227,   228,   229,
-     234,   235,   239,   240,   243,   247,   252,   253,   257,   258,
-     259,   263,   264,   268,   269,   273,   276,   277,   283,   288,
-     289,   290,   291,   292,   296,   297,   300,   301,   301,   304,
-     305,   306,   307,   308,   313,   317,   321,   325,   326,   330,
-     331,   335,   339,   340,   340,   345,   346,   349,   350,   351,
-     355,   359,   360,   360,   363,   367,   368,   369,   370,   374,
-     375,   376,   380,   384,   385,   389,   390,   391,   395,   396,
-     396,   400,   404,   408,   409,   409,   412,   413,   413,   417,
-     421,   422,   422,   426,   427,   427,   431,   435,   452,   458,
-     459,   460,   464,   465,   469,   470,   474,   475,   480,   481,
-     486,   487,   488,   489,   528,   529,   533,   534,   539,   543,
-     548,   552,   553,   557,   558,   562,   563,   567,   568,   572,
-     573,   577,   578,   582,   583,   587,   588,   589,   593,   594,
-     595,   596,   600,   601,   602,   603,   604,   605,   606,   607,
-     611,   612,   613,   614,   615,   620,   621,   622,   623,   627,
-     628
+     103,   104,   109,   110,   115,   116,   121,   125,   126,   130,
+     131,   136,   137,   141,   142,   150,   151,   152,   153,   154,
+     158,   159,   160,   164,   165,   169,   170,   170,   175,   179,
+     185,   186,   186,   190,   195,   196,   201,   202,   202,   205,
+     209,   210,   215,   216,   216,   221,   222,   226,   227,   228,
+     233,   234,   238,   239,   242,   246,   251,   252,   256,   257,
+     258,   262,   263,   267,   268,   272,   275,   276,   282,   287,
+     288,   289,   290,   291,   295,   296,   299,   300,   300,   303,
+     304,   305,   306,   307,   312,   316,   320,   324,   325,   329,
+     330,   334,   338,   339,   339,   344,   345,   348,   349,   350,
+     354,   358,   359,   359,   362,   366,   367,   368,   369,   373,
+     374,   375,   379,   383,   384,   388,   389,   390,   394,   395,
+     395,   399,   403,   407,   408,   408,   411,   412,   412,   416,
+     420,   421,   421,   425,   426,   426,   430,   434,   451,   457,
+     458,   459,   463,   464,   468,   469,   473,   474,   479,   480,
+     485,   486,   487,   488,   527,   528,   532,   533,   538,   542,
+     547,   551,   552,   556,   557,   561,   562,   566,   567,   571,
+     572,   576,   577,   581,   582,   586,   587,   588,   592,   593,
+     594,   595,   599,   600,   601,   602,   603,   604,   605,   606,
+     610,   611,   612,   613,   614,   619,   620,   621,   622,   626,
+     627
 };
 #endif
 
@@ -1675,7 +1675,7 @@ yyreduce:
     {
   case 2: /* program: topLevelObjects  */
 #line 53 "k0gram.y"
-                    {root = (yyvsp[0].treeptr);treeprint(root, 1);}
+                    {root = (yyvsp[0].treeptr); /*treeprint(root, 1); */}
 #line 1680 "k0gram.tab.c"
     break;
 
@@ -1824,1063 +1824,1063 @@ yyreduce:
     break;
 
   case 28: /* semis: %empty  */
-#line 127 "k0gram.y"
+#line 126 "k0gram.y"
     {(yyval.treeptr) = NULL;}
 #line 1830 "k0gram.tab.c"
     break;
 
   case 29: /* semis_statement: semis_statement semis statement  */
-#line 131 "k0gram.y"
+#line 130 "k0gram.y"
                                   {(yyval.treeptr) = alctree(1013, "semis_statement", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 1836 "k0gram.tab.c"
     break;
 
   case 30: /* semis_statement: %empty  */
-#line 132 "k0gram.y"
+#line 131 "k0gram.y"
            {(yyval.treeptr) = NULL;}
 #line 1842 "k0gram.tab.c"
     break;
 
   case 31: /* optional_statement_sequence: statement semis_statement  */
-#line 137 "k0gram.y"
+#line 136 "k0gram.y"
                                 {(yyval.treeptr) = alctree(1014, "optional_statement_sequence", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 1848 "k0gram.tab.c"
     break;
 
   case 32: /* optional_statement_sequence: %empty  */
-#line 138 "k0gram.y"
+#line 137 "k0gram.y"
             {(yyval.treeptr) = NULL;}
 #line 1854 "k0gram.tab.c"
     break;
 
   case 33: /* statements: optional_statement_sequence SEMICOLON  */
-#line 142 "k0gram.y"
+#line 141 "k0gram.y"
                                               {(yyval.treeptr) = alctree(1015, "statements", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 1860 "k0gram.tab.c"
     break;
 
   case 34: /* statements: optional_statement_sequence  */
-#line 143 "k0gram.y"
+#line 142 "k0gram.y"
                                 {(yyval.treeptr) = alctree(1015, "statements", 1, (yyvsp[0].treeptr));}
 #line 1866 "k0gram.tab.c"
     break;
 
   case 35: /* statement: declaration  */
-#line 151 "k0gram.y"
+#line 150 "k0gram.y"
                 {(yyval.treeptr) = alctree(1016, "statement", 1, (yyvsp[0].treeptr));}
 #line 1872 "k0gram.tab.c"
     break;
 
   case 36: /* statement: assignment  */
-#line 152 "k0gram.y"
+#line 151 "k0gram.y"
                 {(yyval.treeptr) = alctree(1016, "statement", 1, (yyvsp[0].treeptr));}
 #line 1878 "k0gram.tab.c"
     break;
 
   case 37: /* statement: expression  */
-#line 153 "k0gram.y"
+#line 152 "k0gram.y"
                 {(yyval.treeptr) = alctree(1016, "statement", 1, (yyvsp[0].treeptr)); }
 #line 1884 "k0gram.tab.c"
     break;
 
   case 38: /* statement: loopStatement  */
-#line 154 "k0gram.y"
+#line 153 "k0gram.y"
                   {(yyval.treeptr) = alctree(1016, "statement", 1, (yyvsp[0].treeptr));}
 #line 1890 "k0gram.tab.c"
     break;
 
   case 39: /* statement: error SEMICOLON  */
-#line 155 "k0gram.y"
+#line 154 "k0gram.y"
                     {(yyval.treeptr) = alctree(1016, "statement", 1, (yyvsp[0].treeptr));}
 #line 1896 "k0gram.tab.c"
     break;
 
   case 40: /* declaration: classDeclaration  */
-#line 159 "k0gram.y"
+#line 158 "k0gram.y"
                    {(yyval.treeptr) = alctree(1017, "declaration", 1, (yyvsp[0].treeptr));}
 #line 1902 "k0gram.tab.c"
     break;
 
   case 41: /* declaration: functionDeclaration  */
-#line 160 "k0gram.y"
+#line 159 "k0gram.y"
                        {(yyval.treeptr) = alctree(1017, "declaration", 1, (yyvsp[0].treeptr));}
 #line 1908 "k0gram.tab.c"
     break;
 
   case 42: /* declaration: propertyDeclaration  */
-#line 161 "k0gram.y"
+#line 160 "k0gram.y"
                         {(yyval.treeptr) = alctree(1017, "declaration", 1, (yyvsp[0].treeptr));}
 #line 1914 "k0gram.tab.c"
     break;
 
   case 43: /* val_var: VAR  */
-#line 165 "k0gram.y"
+#line 164 "k0gram.y"
       {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 1920 "k0gram.tab.c"
     break;
 
   case 44: /* val_var: VAL  */
-#line 166 "k0gram.y"
+#line 165 "k0gram.y"
         {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 1926 "k0gram.tab.c"
     break;
 
   case 45: /* opt_modifier: CONST  */
-#line 170 "k0gram.y"
+#line 169 "k0gram.y"
         {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 1932 "k0gram.tab.c"
     break;
 
   case 46: /* $@1: %empty  */
-#line 171 "k0gram.y"
+#line 170 "k0gram.y"
     { /* epsilon production */ }
 #line 1938 "k0gram.tab.c"
     break;
 
   case 47: /* opt_modifier: $@1  */
-#line 171 "k0gram.y"
+#line 170 "k0gram.y"
                                  {(yyval.treeptr) = NULL;}
 #line 1944 "k0gram.tab.c"
     break;
 
   case 48: /* receiverType: nullableType  */
-#line 176 "k0gram.y"
+#line 175 "k0gram.y"
                 {(yyval.treeptr) = alctree(1018, "receiverType", 1, (yyvsp[0].treeptr));}
 #line 1950 "k0gram.tab.c"
     break;
 
   case 49: /* parenthesizedType: LPAREN type RPAREN  */
-#line 180 "k0gram.y"
+#line 179 "k0gram.y"
                      {(yyval.treeptr) = alctree(1019, "parenthesizedType", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 1956 "k0gram.tab.c"
     break;
 
   case 50: /* multi_dot_simpleUserType: multi_dot_simpleUserType DOT simpleUserType  */
-#line 186 "k0gram.y"
+#line 185 "k0gram.y"
                                               {(yyval.treeptr) = alctree(1020, "multi_dot_simpleUserType", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 1962 "k0gram.tab.c"
     break;
 
   case 51: /* $@2: %empty  */
-#line 187 "k0gram.y"
+#line 186 "k0gram.y"
     { /* epsilon production */ }
 #line 1968 "k0gram.tab.c"
     break;
 
   case 52: /* multi_dot_simpleUserType: $@2  */
-#line 187 "k0gram.y"
+#line 186 "k0gram.y"
                                  {(yyval.treeptr) = NULL;}
 #line 1974 "k0gram.tab.c"
     break;
 
   case 53: /* userType: simpleUserType multi_dot_simpleUserType  */
-#line 191 "k0gram.y"
+#line 190 "k0gram.y"
                                           {(yyval.treeptr) = alctree(1021, "userType", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 1980 "k0gram.tab.c"
     break;
 
   case 54: /* simpleUserType: simpleIdentifier typeArguments  */
-#line 196 "k0gram.y"
+#line 195 "k0gram.y"
                                 {(yyval.treeptr) = alctree(1022, "simpleUserType", 2, (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 1986 "k0gram.tab.c"
     break;
 
   case 55: /* simpleUserType: simpleIdentifier  */
-#line 197 "k0gram.y"
+#line 196 "k0gram.y"
                     {(yyval.treeptr) = alctree(1022, "simpleUserType", 1, (yyvsp[0].treeptr));}
 #line 1992 "k0gram.tab.c"
     break;
 
   case 56: /* multi_quest: multi_quest QUEST_NO_WS  */
-#line 202 "k0gram.y"
+#line 201 "k0gram.y"
                           {(yyval.treeptr) = alctree(1023, "multi_quest", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 1998 "k0gram.tab.c"
     break;
 
   case 57: /* $@3: %empty  */
-#line 203 "k0gram.y"
+#line 202 "k0gram.y"
     { /* epsilon production */ }
 #line 2004 "k0gram.tab.c"
     break;
 
   case 58: /* multi_quest: $@3  */
-#line 203 "k0gram.y"
+#line 202 "k0gram.y"
                                  {(yyval.treeptr) = NULL;}
 #line 2010 "k0gram.tab.c"
     break;
 
   case 59: /* nullableType: typeRef_parenthesizedType multi_quest  */
-#line 206 "k0gram.y"
+#line 205 "k0gram.y"
                                         {(yyval.treeptr) = alctree(1024, "nullableType", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2016 "k0gram.tab.c"
     break;
 
   case 60: /* typeRef_parenthesizedType: parenthesizedType  */
-#line 210 "k0gram.y"
+#line 209 "k0gram.y"
                     {(yyval.treeptr) = alctree(1025, "typeRef_parenthesizedType", 1, (yyvsp[0].treeptr));}
 #line 2022 "k0gram.tab.c"
     break;
 
   case 61: /* typeRef_parenthesizedType: userType  */
-#line 211 "k0gram.y"
+#line 210 "k0gram.y"
               {(yyval.treeptr) = alctree(1025, "typeRef_parenthesizedType", 1, (yyvsp[0].treeptr));}
 #line 2028 "k0gram.tab.c"
     break;
 
   case 62: /* opt_eq_exp: ASSIGNMENT expression  */
-#line 216 "k0gram.y"
+#line 215 "k0gram.y"
                         {(yyval.treeptr) = alctree(1026, "opt_eq_exp", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2034 "k0gram.tab.c"
     break;
 
   case 63: /* $@4: %empty  */
-#line 217 "k0gram.y"
+#line 216 "k0gram.y"
     { /* epsilon production */ }
 #line 2040 "k0gram.tab.c"
     break;
 
   case 64: /* opt_eq_exp: $@4  */
-#line 217 "k0gram.y"
+#line 216 "k0gram.y"
                                  {(yyval.treeptr) = NULL;}
 #line 2046 "k0gram.tab.c"
     break;
 
   case 65: /* multivariable_variableDeclaration: variableDeclaration  */
-#line 222 "k0gram.y"
+#line 221 "k0gram.y"
                       {(yyval.treeptr) = alctree(1027, "multivariable_variableDeclaration", 1, (yyvsp[0].treeptr));}
 #line 2052 "k0gram.tab.c"
     break;
 
   case 66: /* multivariable_variableDeclaration: multiVariableDeclaration  */
-#line 223 "k0gram.y"
+#line 222 "k0gram.y"
                              {(yyval.treeptr) = alctree(1027, "multivariable_variableDeclaration", 1, (yyvsp[0].treeptr));}
 #line 2058 "k0gram.tab.c"
     break;
 
   case 67: /* propertyDeclaration: opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON  */
-#line 227 "k0gram.y"
+#line 226 "k0gram.y"
                                                                                                                     {(yyval.treeptr) = alctree(1028, "propertyDeclaration", 8, (yyvsp[-7].treeptr), (yyvsp[-6].treeptr), (yyvsp[-5].treeptr), (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2064 "k0gram.tab.c"
     break;
 
   case 68: /* propertyDeclaration: opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON  */
-#line 228 "k0gram.y"
+#line 227 "k0gram.y"
                                                                                                    {(yyval.treeptr) = alctree(1028, "propertyDeclaration", 6, (yyvsp[-5].treeptr), (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2070 "k0gram.tab.c"
     break;
 
   case 69: /* propertyDeclaration: opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp  */
-#line 229 "k0gram.y"
+#line 228 "k0gram.y"
                                                                                          {(yyval.treeptr) = alctree(1028, "propertyDeclaration", 5, (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr) );}
 #line 2076 "k0gram.tab.c"
     break;
 
   case 70: /* opt_typeParameters: typeParameters  */
-#line 234 "k0gram.y"
+#line 233 "k0gram.y"
                     {(yyval.treeptr) = alctree(1029, "opt_typeParameters", 1, (yyvsp[0].treeptr));}
 #line 2082 "k0gram.tab.c"
     break;
 
   case 71: /* opt_typeParameters: %empty  */
-#line 235 "k0gram.y"
+#line 234 "k0gram.y"
                 {(yyval.treeptr) = NULL;}
 #line 2088 "k0gram.tab.c"
     break;
 
   case 72: /* opt_comma: COMMA  */
-#line 239 "k0gram.y"
+#line 238 "k0gram.y"
           {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2094 "k0gram.tab.c"
     break;
 
   case 73: /* opt_comma: %empty  */
-#line 240 "k0gram.y"
+#line 239 "k0gram.y"
                 {(yyval.treeptr) = NULL;}
 #line 2100 "k0gram.tab.c"
     break;
 
   case 74: /* typeParameters: LANGLE typeParameter multi_typeParameter opt_comma RANGLE  */
-#line 243 "k0gram.y"
+#line 242 "k0gram.y"
                                                               {(yyval.treeptr) = alctree(1030, "typeParameters", 5, (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2106 "k0gram.tab.c"
     break;
 
   case 75: /* typeParameter: simpleIdentifier  */
-#line 247 "k0gram.y"
+#line 246 "k0gram.y"
                       {(yyval.treeptr) = alctree(1031, "typeParameter", 1, (yyvsp[0].treeptr));}
 #line 2112 "k0gram.tab.c"
     break;
 
   case 76: /* multi_typeParameter: multi_typeParameter COMMA typeParameter  */
-#line 252 "k0gram.y"
+#line 251 "k0gram.y"
                                             {(yyval.treeptr) = alctree(1032, "multi_typeParameter", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2118 "k0gram.tab.c"
     break;
 
   case 77: /* multi_typeParameter: %empty  */
-#line 253 "k0gram.y"
+#line 252 "k0gram.y"
                  {(yyval.treeptr) = NULL;}
 #line 2124 "k0gram.tab.c"
     break;
 
   case 81: /* classDeclaration: CONST CLASS simpleIdentifier opt_typeParameters classBody  */
-#line 263 "k0gram.y"
+#line 262 "k0gram.y"
                                                                {  (yyval.treeptr) = alctree(1033, "classDeclaration", 5, (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2130 "k0gram.tab.c"
     break;
 
   case 82: /* classDeclaration: CLASS simpleIdentifier opt_typeParameters classBody  */
-#line 264 "k0gram.y"
+#line 263 "k0gram.y"
                                                           {(yyval.treeptr) = alctree(1033, "classDeclaration", 4, (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2136 "k0gram.tab.c"
     break;
 
   case 83: /* variableDeclaration: type COLON type  */
-#line 268 "k0gram.y"
+#line 267 "k0gram.y"
                      {(yyval.treeptr) = alctree(1034, "variableDeclaration", 1, (yyvsp[-2].treeptr));}
 #line 2142 "k0gram.tab.c"
     break;
 
   case 84: /* variableDeclaration: type  */
-#line 269 "k0gram.y"
+#line 268 "k0gram.y"
           {(yyval.treeptr) = alctree(1034, "variableDeclaration", 1, (yyvsp[0].treeptr));}
 #line 2148 "k0gram.tab.c"
     break;
 
   case 85: /* multiVariableDeclaration: LPAREN variableDeclaration multi_comma_variableDeclaration opt_comma RPAREN  */
-#line 273 "k0gram.y"
+#line 272 "k0gram.y"
                                                                                {(yyval.treeptr) = alctree(1035, "multiVariableDeclaration", 5, (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2154 "k0gram.tab.c"
     break;
 
   case 86: /* multi_comma_variableDeclaration: multi_comma_variableDeclaration COMMA variableDeclaration  */
-#line 276 "k0gram.y"
+#line 275 "k0gram.y"
                                                              {(yyval.treeptr) = alctree(1036, "multi_comma_variableDeclaration", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2160 "k0gram.tab.c"
     break;
 
   case 87: /* multi_comma_variableDeclaration: %empty  */
-#line 277 "k0gram.y"
+#line 276 "k0gram.y"
     { /* epsilon production */ }
 #line 2166 "k0gram.tab.c"
     break;
 
   case 88: /* classBody: LCURL classMembers RCURL  */
-#line 283 "k0gram.y"
+#line 282 "k0gram.y"
                               {(yyval.treeptr) = alctree(1037, "classBody", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2172 "k0gram.tab.c"
     break;
 
   case 89: /* assignmentAndOperator: ADD_ASSIGNMENT  */
-#line 288 "k0gram.y"
+#line 287 "k0gram.y"
                     {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2178 "k0gram.tab.c"
     break;
 
   case 90: /* assignmentAndOperator: SUB_ASSIGNMENT  */
-#line 289 "k0gram.y"
+#line 288 "k0gram.y"
                       {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2184 "k0gram.tab.c"
     break;
 
   case 91: /* assignmentAndOperator: MULT_ASSIGNMENT  */
-#line 290 "k0gram.y"
+#line 289 "k0gram.y"
                       {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2190 "k0gram.tab.c"
     break;
 
   case 92: /* assignmentAndOperator: DIV_ASSIGNMENT  */
-#line 291 "k0gram.y"
+#line 290 "k0gram.y"
                       {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2196 "k0gram.tab.c"
     break;
 
   case 93: /* assignmentAndOperator: MOD_ASSIGNMENT  */
-#line 292 "k0gram.y"
+#line 291 "k0gram.y"
                       {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2202 "k0gram.tab.c"
     break;
 
   case 94: /* assignableExpression: prefixUnaryExpression  */
-#line 296 "k0gram.y"
+#line 295 "k0gram.y"
                         {(yyval.treeptr) = alctree (1038, "assignableExpression", 1, (yyvsp[0].treeptr));}
 #line 2208 "k0gram.tab.c"
     break;
 
   case 95: /* assignableExpression: parenthesizedAssignableExpression  */
-#line 297 "k0gram.y"
+#line 296 "k0gram.y"
                                       {(yyval.treeptr) = alctree (1038, "assignableExpression", 1, (yyvsp[0].treeptr));}
 #line 2214 "k0gram.tab.c"
     break;
 
   case 96: /* multi_unaryPrefix: multi_unaryPrefix prefixUnaryOperator  */
-#line 300 "k0gram.y"
+#line 299 "k0gram.y"
                                         {(yyval.treeptr) = alctree(1039, "multi_unaryPrefix", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2220 "k0gram.tab.c"
     break;
 
   case 97: /* $@5: %empty  */
-#line 301 "k0gram.y"
+#line 300 "k0gram.y"
     { /* epsilon production */ }
 #line 2226 "k0gram.tab.c"
     break;
 
   case 98: /* multi_unaryPrefix: $@5  */
-#line 301 "k0gram.y"
+#line 300 "k0gram.y"
                                   {(yyval.treeptr) = NULL;}
 #line 2232 "k0gram.tab.c"
     break;
 
   case 99: /* prefixUnaryOperator: ADD  */
-#line 304 "k0gram.y"
+#line 303 "k0gram.y"
          {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2238 "k0gram.tab.c"
     break;
 
   case 100: /* prefixUnaryOperator: SUB  */
-#line 305 "k0gram.y"
+#line 304 "k0gram.y"
            {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2244 "k0gram.tab.c"
     break;
 
   case 101: /* prefixUnaryOperator: INCR  */
-#line 306 "k0gram.y"
+#line 305 "k0gram.y"
             {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2250 "k0gram.tab.c"
     break;
 
   case 102: /* prefixUnaryOperator: DECR  */
-#line 307 "k0gram.y"
+#line 306 "k0gram.y"
             {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2256 "k0gram.tab.c"
     break;
 
   case 103: /* prefixUnaryOperator: EXCL_NO_WS EXCL_NO_WS  */
-#line 308 "k0gram.y"
+#line 307 "k0gram.y"
                            { (yyval.treeptr) = alctree(1040, "prefixUnaryOperator", 2, (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2262 "k0gram.tab.c"
     break;
 
   case 104: /* prefixUnaryExpression: multi_unaryPrefix postfixUnaryExpression  */
-#line 313 "k0gram.y"
+#line 312 "k0gram.y"
                                             {(yyval.treeptr) = alctree(1041, "prefixUnaryExpression", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2268 "k0gram.tab.c"
     break;
 
   case 105: /* parenthesizedAssignableExpression: LPAREN assignableExpression RPAREN  */
-#line 317 "k0gram.y"
+#line 316 "k0gram.y"
                                         {(yyval.treeptr) = alctree(1042, "parenthesizedAssignableExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2274 "k0gram.tab.c"
     break;
 
   case 106: /* assignment: directly_assign expression  */
-#line 321 "k0gram.y"
+#line 320 "k0gram.y"
                               {(yyval.treeptr) = alctree(1043, "assignment", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2280 "k0gram.tab.c"
     break;
 
   case 107: /* directly_assign: directlyAssignableExpression ASSIGNMENT  */
-#line 325 "k0gram.y"
+#line 324 "k0gram.y"
                                             {(yyval.treeptr) = alctree(1044, "directly_assign", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2286 "k0gram.tab.c"
     break;
 
   case 108: /* directly_assign: assignableExpression assignmentAndOperator  */
-#line 326 "k0gram.y"
+#line 325 "k0gram.y"
                                                   {(yyval.treeptr) = alctree(1044, "directly_assign", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2292 "k0gram.tab.c"
     break;
 
   case 109: /* assignableSuffix: indexingSuffix  */
-#line 330 "k0gram.y"
+#line 329 "k0gram.y"
                     {(yyval.treeptr) = alctree(1045, "assignableSuffix", 1, (yyvsp[0].treeptr));}
 #line 2298 "k0gram.tab.c"
     break;
 
   case 110: /* assignableSuffix: typeArguments  */
-#line 331 "k0gram.y"
+#line 330 "k0gram.y"
                     {(yyval.treeptr) = alctree(1045, "assignableSuffix", 1, (yyvsp[0].treeptr));}
 #line 2304 "k0gram.tab.c"
     break;
 
   case 111: /* typeArguments: LANGLE typeProjection multi_comma_typeProjection opt_comma RANGLE  */
-#line 335 "k0gram.y"
+#line 334 "k0gram.y"
                                                                        {(yyval.treeptr) = alctree(1046, "typeArguments", 5, (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2310 "k0gram.tab.c"
     break;
 
   case 112: /* multi_comma_typeProjection: multi_comma_typeProjection COMMA typeProjection  */
-#line 339 "k0gram.y"
+#line 338 "k0gram.y"
                                                   {(yyval.treeptr) = alctree(1047, "multi_comma_typeProjection", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2316 "k0gram.tab.c"
     break;
 
   case 113: /* $@6: %empty  */
-#line 340 "k0gram.y"
+#line 339 "k0gram.y"
     { /* epsilon production */ }
 #line 2322 "k0gram.tab.c"
     break;
 
   case 114: /* multi_comma_typeProjection: $@6  */
-#line 340 "k0gram.y"
+#line 339 "k0gram.y"
                                   {(yyval.treeptr) = NULL;}
 #line 2328 "k0gram.tab.c"
     break;
 
   case 115: /* typeProjection: type  */
-#line 345 "k0gram.y"
+#line 344 "k0gram.y"
         {(yyval.treeptr) = alctree(1048, "typeProjection", 1, (yyvsp[0].treeptr));}
 #line 2334 "k0gram.tab.c"
     break;
 
   case 116: /* typeProjection: MULT  */
-#line 346 "k0gram.y"
+#line 345 "k0gram.y"
           {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2340 "k0gram.tab.c"
     break;
 
   case 117: /* directlyAssignableExpression: postfixUnaryExpression assignableSuffix  */
-#line 349 "k0gram.y"
+#line 348 "k0gram.y"
                                             {(yyval.treeptr) = alctree(1049, "directlyAssignableExpression", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2346 "k0gram.tab.c"
     break;
 
   case 118: /* directlyAssignableExpression: simpleIdentifier  */
-#line 350 "k0gram.y"
+#line 349 "k0gram.y"
                         {(yyval.treeptr) = alctree(1049, "directlyAssignableExpression", 1, (yyvsp[0].treeptr));}
 #line 2352 "k0gram.tab.c"
     break;
 
   case 119: /* directlyAssignableExpression: parenthesizedDirectlyAssignableExpression  */
-#line 351 "k0gram.y"
+#line 350 "k0gram.y"
                                                 {(yyval.treeptr) = alctree(1049, "directlyAssignableExpression", 1, (yyvsp[0].treeptr));}
 #line 2358 "k0gram.tab.c"
     break;
 
   case 120: /* parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression RPAREN  */
-#line 355 "k0gram.y"
+#line 354 "k0gram.y"
                                         {(yyval.treeptr) = alctree(1050, "parenthesizedDirectlyAssignableExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2364 "k0gram.tab.c"
     break;
 
   case 121: /* multi_postfixUnarySuffix: multi_postfixUnarySuffix postfixUnarySuffix  */
-#line 359 "k0gram.y"
+#line 358 "k0gram.y"
                                                 {(yyval.treeptr) = alctree(1051, "multi_postfixUnarySuffix", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2370 "k0gram.tab.c"
     break;
 
   case 122: /* $@7: %empty  */
-#line 360 "k0gram.y"
+#line 359 "k0gram.y"
       { /* epsilon production */ }
 #line 2376 "k0gram.tab.c"
     break;
 
   case 123: /* multi_postfixUnarySuffix: $@7  */
-#line 360 "k0gram.y"
+#line 359 "k0gram.y"
                                     {(yyval.treeptr) = NULL;}
 #line 2382 "k0gram.tab.c"
     break;
 
   case 124: /* postfixUnaryExpression: primaryExpression multi_postfixUnarySuffix  */
-#line 363 "k0gram.y"
+#line 362 "k0gram.y"
                                                 {(yyval.treeptr) = alctree(1052, "postfixUnaryExpression", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2388 "k0gram.tab.c"
     break;
 
   case 125: /* postfixUnarySuffix: postfixUnaryOperator  */
-#line 367 "k0gram.y"
+#line 366 "k0gram.y"
                         {(yyval.treeptr) = alctree(1053, "postfixUnarySuffix", 1, (yyvsp[0].treeptr));}
 #line 2394 "k0gram.tab.c"
     break;
 
   case 126: /* postfixUnarySuffix: indexingSuffix  */
-#line 368 "k0gram.y"
+#line 367 "k0gram.y"
                     {(yyval.treeptr) = alctree(1053, "postfixUnarySuffix", 1, (yyvsp[0].treeptr));}
 #line 2400 "k0gram.tab.c"
     break;
 
   case 127: /* postfixUnarySuffix: callSuffix  */
-#line 369 "k0gram.y"
+#line 368 "k0gram.y"
                {(yyval.treeptr) = alctree(1053, "postfixUnarySuffix", 1, (yyvsp[0].treeptr));}
 #line 2406 "k0gram.tab.c"
     break;
 
   case 128: /* postfixUnarySuffix: navigationSuffix  */
-#line 370 "k0gram.y"
+#line 369 "k0gram.y"
                     {(yyval.treeptr) = alctree(1053, "postfixUnarySuffix", 1, (yyvsp[0].treeptr));}
 #line 2412 "k0gram.tab.c"
     break;
 
   case 129: /* identifier_expression_class: simpleIdentifier  */
-#line 374 "k0gram.y"
+#line 373 "k0gram.y"
                    {(yyval.treeptr) = alctree(1054, "identifier_expression_class", 1, (yyvsp[0].treeptr));}
 #line 2418 "k0gram.tab.c"
     break;
 
   case 130: /* identifier_expression_class: parenthesizedExpression  */
-#line 375 "k0gram.y"
+#line 374 "k0gram.y"
                              {(yyval.treeptr) = alctree(1054, "identifier_expression_class", 1, (yyvsp[0].treeptr));}
 #line 2424 "k0gram.tab.c"
     break;
 
   case 131: /* identifier_expression_class: CLASS  */
-#line 376 "k0gram.y"
+#line 375 "k0gram.y"
           {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2430 "k0gram.tab.c"
     break;
 
   case 132: /* navigationSuffix: memberAccessOperator identifier_expression_class  */
-#line 380 "k0gram.y"
+#line 379 "k0gram.y"
                                                    {(yyval.treeptr) = alctree(1055, "navigationSuffix", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2436 "k0gram.tab.c"
     break;
 
   case 133: /* memberAccessOperator: DOT  */
-#line 384 "k0gram.y"
+#line 383 "k0gram.y"
       {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2442 "k0gram.tab.c"
     break;
 
   case 134: /* memberAccessOperator: QUEST_NO_WS DOT  */
-#line 385 "k0gram.y"
+#line 384 "k0gram.y"
                     {(yyval.treeptr) = alctree(1056, "memberAccessOperator", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2448 "k0gram.tab.c"
     break;
 
   case 135: /* postfixUnaryOperator: INCR  */
-#line 389 "k0gram.y"
+#line 388 "k0gram.y"
           { (yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2454 "k0gram.tab.c"
     break;
 
   case 136: /* postfixUnaryOperator: DECR  */
-#line 390 "k0gram.y"
+#line 389 "k0gram.y"
             { (yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2460 "k0gram.tab.c"
     break;
 
   case 137: /* postfixUnaryOperator: EXCL_NO_WS EXCL_NO_WS  */
-#line 391 "k0gram.y"
+#line 390 "k0gram.y"
                             { (yyval.treeptr) = alctree(1057, "postfixUnaryOperator", 2, (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2466 "k0gram.tab.c"
     break;
 
   case 138: /* multi_comma_expression: multi_comma_expression COMMA expression  */
-#line 395 "k0gram.y"
+#line 394 "k0gram.y"
                                           {(yyval.treeptr) = alctree(1058, "multi_comma_expression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2472 "k0gram.tab.c"
     break;
 
   case 139: /* $@8: %empty  */
-#line 396 "k0gram.y"
+#line 395 "k0gram.y"
     { /* epsilon production */ }
 #line 2478 "k0gram.tab.c"
     break;
 
   case 140: /* multi_comma_expression: $@8  */
-#line 396 "k0gram.y"
+#line 395 "k0gram.y"
                                   {(yyval.treeptr) = NULL;}
 #line 2484 "k0gram.tab.c"
     break;
 
   case 141: /* indexingSuffix: LSQUARE expression multi_comma_expression opt_comma RSQUARE  */
-#line 400 "k0gram.y"
+#line 399 "k0gram.y"
                                                                 {(yyval.treeptr) = alctree(1059, "indexingSuffix", 5, (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2490 "k0gram.tab.c"
     break;
 
   case 142: /* callSuffix: valueArguments  */
-#line 404 "k0gram.y"
+#line 403 "k0gram.y"
                   {(yyval.treeptr) = alctree(1060, "callSuffix", 1, (yyvsp[0].treeptr));}
 #line 2496 "k0gram.tab.c"
     break;
 
   case 143: /* multi_comma_valueArgument: multi_comma_valueArgument COMMA valueArgument  */
-#line 408 "k0gram.y"
+#line 407 "k0gram.y"
                                                 {(yyval.treeptr) = alctree(1061, "multi_comma_valueArgument", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2502 "k0gram.tab.c"
     break;
 
   case 144: /* $@9: %empty  */
-#line 409 "k0gram.y"
+#line 408 "k0gram.y"
     { /* epsilon production */ }
 #line 2508 "k0gram.tab.c"
     break;
 
   case 145: /* multi_comma_valueArgument: $@9  */
-#line 409 "k0gram.y"
+#line 408 "k0gram.y"
                                   {(yyval.treeptr) = NULL;}
 #line 2514 "k0gram.tab.c"
     break;
 
   case 146: /* opt_valueArgument: valueArgument multi_comma_valueArgument opt_comma  */
-#line 412 "k0gram.y"
+#line 411 "k0gram.y"
                                                     {(yyval.treeptr) = alctree(1062, "opt_valueArgument", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2520 "k0gram.tab.c"
     break;
 
   case 147: /* $@10: %empty  */
-#line 413 "k0gram.y"
+#line 412 "k0gram.y"
     { /* epsilon production */ }
 #line 2526 "k0gram.tab.c"
     break;
 
   case 148: /* opt_valueArgument: $@10  */
-#line 413 "k0gram.y"
+#line 412 "k0gram.y"
                                   {(yyval.treeptr) = NULL;}
 #line 2532 "k0gram.tab.c"
     break;
 
   case 149: /* valueArguments: LPAREN opt_valueArgument RPAREN  */
-#line 417 "k0gram.y"
+#line 416 "k0gram.y"
                                     {(yyval.treeptr) = alctree(1063, "valueArguments", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2538 "k0gram.tab.c"
     break;
 
   case 150: /* opt_simpleIdentifier_EQ: simpleIdentifier ASSIGNMENT  */
-#line 421 "k0gram.y"
+#line 420 "k0gram.y"
                                 {(yyval.treeptr) = alctree(1064, "opt_simpleIdentifier_EQ", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2544 "k0gram.tab.c"
     break;
 
   case 151: /* $@11: %empty  */
-#line 422 "k0gram.y"
+#line 421 "k0gram.y"
       { /* epsilon production */ }
 #line 2550 "k0gram.tab.c"
     break;
 
   case 152: /* opt_simpleIdentifier_EQ: $@11  */
-#line 422 "k0gram.y"
+#line 421 "k0gram.y"
                                     {(yyval.treeptr) = NULL;}
 #line 2556 "k0gram.tab.c"
     break;
 
   case 153: /* opt_Multi: MULT  */
-#line 426 "k0gram.y"
+#line 425 "k0gram.y"
         {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2562 "k0gram.tab.c"
     break;
 
   case 154: /* $@12: %empty  */
-#line 427 "k0gram.y"
+#line 426 "k0gram.y"
     { /* epsilon production */ }
 #line 2568 "k0gram.tab.c"
     break;
 
   case 155: /* opt_Multi: $@12  */
-#line 427 "k0gram.y"
+#line 426 "k0gram.y"
                                   {(yyval.treeptr) = NULL;}
 #line 2574 "k0gram.tab.c"
     break;
 
   case 156: /* valueArgument: opt_simpleIdentifier_EQ opt_Multi expression  */
-#line 431 "k0gram.y"
+#line 430 "k0gram.y"
                                                 {(yyval.treeptr) = alctree(1065, "valueArgument", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2580 "k0gram.tab.c"
     break;
 
   case 157: /* parenthesizedExpression: LPAREN expression RPAREN  */
-#line 435 "k0gram.y"
+#line 434 "k0gram.y"
                               {(yyval.treeptr) = alctree(1066, "parenthesizedExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2586 "k0gram.tab.c"
     break;
 
   case 158: /* functionCall: IDENTIFIER LPAREN functionArguments RPAREN  */
-#line 452 "k0gram.y"
+#line 451 "k0gram.y"
                                                 {(yyval.treeptr) = alctree(1068, "functionCall", 4, (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2592 "k0gram.tab.c"
     break;
 
   case 159: /* functionArguments: expression  */
-#line 458 "k0gram.y"
+#line 457 "k0gram.y"
               {(yyval.treeptr) = alctree(1069, "functionArguments", 1, (yyvsp[0].treeptr));}
 #line 2598 "k0gram.tab.c"
     break;
 
   case 160: /* functionArguments: functionArguments COMMA expression  */
-#line 459 "k0gram.y"
+#line 458 "k0gram.y"
                                        {(yyval.treeptr) = alctree(1070, "functionArguments", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2604 "k0gram.tab.c"
     break;
 
   case 161: /* functionArguments: %empty  */
-#line 460 "k0gram.y"
+#line 459 "k0gram.y"
               {(yyval.treeptr) = NULL;}
 #line 2610 "k0gram.tab.c"
     break;
 
   case 162: /* variable_multivariable: variableDeclaration  */
-#line 464 "k0gram.y"
+#line 463 "k0gram.y"
                      {(yyval.treeptr) = alctree(1071,"variable_multivariable", 1, (yyvsp[0].treeptr));}
 #line 2616 "k0gram.tab.c"
     break;
 
   case 163: /* variable_multivariable: multiVariableDeclaration  */
-#line 465 "k0gram.y"
+#line 464 "k0gram.y"
                               {(yyval.treeptr) = alctree(1071,"variable_multivariable", 1, (yyvsp[0].treeptr));}
 #line 2622 "k0gram.tab.c"
     break;
 
   case 164: /* control_structure_body_or_comma: controlStructureBody  */
-#line 469 "k0gram.y"
+#line 468 "k0gram.y"
                         {(yyval.treeptr) = alctree(1072,"control_structure_body_or_comma", 1, (yyvsp[0].treeptr));}
 #line 2628 "k0gram.tab.c"
     break;
 
   case 165: /* control_structure_body_or_comma: COMMA  */
-#line 470 "k0gram.y"
+#line 469 "k0gram.y"
           {(yyval.treeptr) = (yyvsp[0].treeptr);}
 #line 2634 "k0gram.tab.c"
     break;
 
   case 166: /* loopStatement: WHILE LPAREN expression RPAREN control_structure_body_or_comma  */
-#line 474 "k0gram.y"
+#line 473 "k0gram.y"
                                                                     {(yyval.treeptr) = alctree(1073,"loopStatement", 5 ,(yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2640 "k0gram.tab.c"
     break;
 
   case 167: /* loopStatement: FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody  */
-#line 475 "k0gram.y"
+#line 474 "k0gram.y"
                                                                                    {(yyval.treeptr) = alctree(1073,"loopStatement", 7 ,(yyvsp[-6].treeptr), (yyvsp[-5].treeptr), (yyvsp[-4].treeptr), (yyvsp[-3].treeptr),(yyvsp[-2].treeptr),(yyvsp[-1].treeptr),(yyvsp[0].treeptr));}
 #line 2646 "k0gram.tab.c"
     break;
 
   case 168: /* controlStructureBody: block  */
-#line 480 "k0gram.y"
+#line 479 "k0gram.y"
          {(yyval.treeptr) = alctree(1074, "controlStructureBody", 1, (yyvsp[0].treeptr));}
 #line 2652 "k0gram.tab.c"
     break;
 
   case 169: /* controlStructureBody: statement  */
-#line 481 "k0gram.y"
+#line 480 "k0gram.y"
               {(yyval.treeptr) = alctree(1074, "controlStructureBody", 1, (yyvsp[0].treeptr));}
 #line 2658 "k0gram.tab.c"
     break;
 
   case 170: /* jumpExpression: RETURN expression  */
-#line 486 "k0gram.y"
+#line 485 "k0gram.y"
                     {alctree(1075, "jumpExpression", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2664 "k0gram.tab.c"
     break;
 
   case 174: /* classMembers: %empty  */
-#line 528 "k0gram.y"
+#line 527 "k0gram.y"
                 {(yyval.treeptr) = NULL;}
 #line 2670 "k0gram.tab.c"
     break;
 
   case 175: /* classMembers: classMembers classMember  */
-#line 529 "k0gram.y"
+#line 528 "k0gram.y"
                               {(yyval.treeptr) = alctree(1082, "classMembers", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2676 "k0gram.tab.c"
     break;
 
   case 176: /* classMember: functionDeclaration  */
-#line 533 "k0gram.y"
+#line 532 "k0gram.y"
                         {(yyval.treeptr) = alctree(1083, "classMember", 1, (yyvsp[0].treeptr));}
 #line 2682 "k0gram.tab.c"
     break;
 
   case 177: /* classMember: variableDeclaration  */
-#line 534 "k0gram.y"
+#line 533 "k0gram.y"
                           {(yyval.treeptr) = alctree(1083, "classMember", 1, (yyvsp[0].treeptr));}
 #line 2688 "k0gram.tab.c"
     break;
 
   case 178: /* objectDeclaration: OBJECT IDENTIFIER objectBody  */
-#line 539 "k0gram.y"
+#line 538 "k0gram.y"
                                   {(yyval.treeptr) = alctree(1084, "objectDeclaration", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2694 "k0gram.tab.c"
     break;
 
   case 179: /* objectBody: LCURL classMembers RCURL  */
-#line 543 "k0gram.y"
+#line 542 "k0gram.y"
                               {(yyval.treeptr) = alctree(1085, "objectBody", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2700 "k0gram.tab.c"
     break;
 
   case 180: /* expression: disjunction  */
-#line 548 "k0gram.y"
+#line 547 "k0gram.y"
               {(yyval.treeptr) = alctree(1086, "expression", 1, (yyvsp[0].treeptr));}
 #line 2706 "k0gram.tab.c"
     break;
 
   case 181: /* disjunction: conjunction  */
-#line 552 "k0gram.y"
+#line 551 "k0gram.y"
               {(yyval.treeptr) = alctree(1087, "disjuction", 1, (yyvsp[0].treeptr));}
 #line 2712 "k0gram.tab.c"
     break;
 
   case 182: /* disjunction: disjunction DISJ conjunction  */
-#line 553 "k0gram.y"
+#line 552 "k0gram.y"
                                  {(yyval.treeptr) = alctree(1087, "disjuction", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2718 "k0gram.tab.c"
     break;
 
   case 183: /* conjunction: equality  */
-#line 557 "k0gram.y"
+#line 556 "k0gram.y"
            {(yyval.treeptr) = alctree(1088, "conjuction", 1, (yyvsp[0].treeptr));}
 #line 2724 "k0gram.tab.c"
     break;
 
   case 184: /* conjunction: conjunction CONJ equality  */
-#line 558 "k0gram.y"
+#line 557 "k0gram.y"
                               {(yyval.treeptr) = alctree(1088, "conjuction", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2730 "k0gram.tab.c"
     break;
 
   case 185: /* equality: comparison  */
-#line 562 "k0gram.y"
+#line 561 "k0gram.y"
              {(yyval.treeptr) = alctree(1028, "equality", 1, (yyvsp[0].treeptr));}
 #line 2736 "k0gram.tab.c"
     break;
 
   case 186: /* equality: equality equality_operator comparison  */
-#line 563 "k0gram.y"
+#line 562 "k0gram.y"
                                             {(yyval.treeptr) = alctree(1028, "equality", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2742 "k0gram.tab.c"
     break;
 
   case 187: /* comparison: genericCallLikeComparison  */
-#line 567 "k0gram.y"
+#line 566 "k0gram.y"
                                 {(yyval.treeptr) = alctree(1029, "comparison", 1, (yyvsp[0].treeptr));}
 #line 2748 "k0gram.tab.c"
     break;
 
   case 188: /* comparison: comparison comparison_operator genericCallLikeComparison  */
-#line 568 "k0gram.y"
+#line 567 "k0gram.y"
                                                                {(yyval.treeptr) = alctree(1028, "comparison", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2754 "k0gram.tab.c"
     break;
 
   case 189: /* genericCallLikeComparison: elvisExpression  */
-#line 572 "k0gram.y"
+#line 571 "k0gram.y"
                       {(yyval.treeptr) = alctree(1029, "genericCallLikeComparison", 1, (yyvsp[0].treeptr));}
 #line 2760 "k0gram.tab.c"
     break;
 
   case 190: /* genericCallLikeComparison: elvisExpression IN elvisExpression  */
-#line 573 "k0gram.y"
+#line 572 "k0gram.y"
                                          {(yyval.treeptr) = alctree(1029, "genericCallLikeComparison", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2766 "k0gram.tab.c"
     break;
 
   case 191: /* elvisExpression: rangeExpression  */
-#line 577 "k0gram.y"
+#line 576 "k0gram.y"
                       {(yyval.treeptr) = alctree(1030, "elvisExpression", 1, (yyvsp[0].treeptr));}
 #line 2772 "k0gram.tab.c"
     break;
 
   case 192: /* elvisExpression: elvisExpression QUEST_COLON rangeExpression  */
-#line 578 "k0gram.y"
+#line 577 "k0gram.y"
                                                    {(yyval.treeptr) = alctree(1030, "elvisExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2778 "k0gram.tab.c"
     break;
 
   case 193: /* rangeExpression: additiveExpression  */
-#line 582 "k0gram.y"
+#line 581 "k0gram.y"
                          {(yyval.treeptr) = alctree(1031, "rangeExpression", 1, (yyvsp[0].treeptr));}
 #line 2784 "k0gram.tab.c"
     break;
 
   case 194: /* rangeExpression: rangeExpression RANGE additiveExpression  */
-#line 583 "k0gram.y"
+#line 582 "k0gram.y"
                                                {(yyval.treeptr) = alctree(1031, "rangeExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2790 "k0gram.tab.c"
     break;
 
   case 195: /* additiveExpression: multiplicativeExpression  */
-#line 587 "k0gram.y"
+#line 586 "k0gram.y"
                              {(yyval.treeptr) = alctree(1032, "additiveExpression", 1, (yyvsp[0].treeptr));}
 #line 2796 "k0gram.tab.c"
     break;
 
   case 196: /* additiveExpression: additiveExpression ADD multiplicativeExpression  */
-#line 588 "k0gram.y"
+#line 587 "k0gram.y"
                                                       {(yyval.treeptr) = alctree(1032, "additiveExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2802 "k0gram.tab.c"
     break;
 
   case 197: /* additiveExpression: additiveExpression SUB multiplicativeExpression  */
-#line 589 "k0gram.y"
+#line 588 "k0gram.y"
                                                       {(yyval.treeptr) = alctree(1032, "additiveExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2808 "k0gram.tab.c"
     break;
 
   case 198: /* multiplicativeExpression: postfixUnaryExpression  */
-#line 593 "k0gram.y"
+#line 592 "k0gram.y"
                          {(yyval.treeptr) = alctree(1033, "multiplicativeExpression", 1, (yyvsp[0].treeptr));}
 #line 2814 "k0gram.tab.c"
     break;
 
   case 199: /* multiplicativeExpression: multiplicativeExpression MULT postfixUnaryExpression  */
-#line 594 "k0gram.y"
+#line 593 "k0gram.y"
                                                          {(yyval.treeptr) = alctree(1033, "multiplicativeExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2820 "k0gram.tab.c"
     break;
 
   case 200: /* multiplicativeExpression: multiplicativeExpression DIV postfixUnaryExpression  */
-#line 595 "k0gram.y"
+#line 594 "k0gram.y"
                                                         {(yyval.treeptr) = alctree(1033, "multiplicativeExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2826 "k0gram.tab.c"
     break;
 
   case 201: /* multiplicativeExpression: multiplicativeExpression MOD postfixUnaryExpression  */
-#line 596 "k0gram.y"
+#line 595 "k0gram.y"
                                                         {(yyval.treeptr) = alctree(1033, "multiplicativeExpression", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2832 "k0gram.tab.c"
     break;
 
   case 202: /* primaryExpression: parenthesizedExpression  */
-#line 600 "k0gram.y"
+#line 599 "k0gram.y"
                           { (yyval.treeptr) = alctree(1035, "primaryExpression", 1, (yyvsp[0].treeptr));}
 #line 2838 "k0gram.tab.c"
     break;
 
   case 204: /* primaryExpression: functionCall  */
-#line 602 "k0gram.y"
+#line 601 "k0gram.y"
                    { (yyval.treeptr) = alctree(1035, "primaryExpression", 1, (yyvsp[0].treeptr));}
 #line 2844 "k0gram.tab.c"
     break;
 
   case 208: /* primaryExpression: jumpExpression  */
-#line 606 "k0gram.y"
+#line 605 "k0gram.y"
                       {(yyval.treeptr) = alctree(1011, "primaryExpression", 1, (yyvsp[0].treeptr));}
 #line 2850 "k0gram.tab.c"
     break;
 
   case 209: /* primaryExpression: collectionLiteral  */
-#line 607 "k0gram.y"
+#line 606 "k0gram.y"
                         {(yyval.treeptr) = alctree(1011, "primaryExpression", 1, (yyvsp[0].treeptr));}
 #line 2856 "k0gram.tab.c"
     break;
 
   case 210: /* collectionLiteral: LSQUARE RSQUARE  */
-#line 611 "k0gram.y"
+#line 610 "k0gram.y"
                   {(yyval.treeptr) = alctree(1011, "collectionLiteral", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2862 "k0gram.tab.c"
     break;
 
   case 211: /* collectionLiteral: LSQUARE expression COMMA RSQUARE  */
-#line 612 "k0gram.y"
+#line 611 "k0gram.y"
                                      {(yyval.treeptr) = alctree(1011, "collectionLiteral", 4, (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2868 "k0gram.tab.c"
     break;
 
   case 212: /* collectionLiteral: LSQUARE expression RSQUARE  */
-#line 613 "k0gram.y"
+#line 612 "k0gram.y"
                                {(yyval.treeptr) = alctree(1011, "collectionLiteral", 3, (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2874 "k0gram.tab.c"
     break;
 
   case 213: /* collectionLiteral: LSQUARE expression multi_comma_expression RSQUARE  */
-#line 614 "k0gram.y"
+#line 613 "k0gram.y"
                                                       {(yyval.treeptr) = alctree(1011, "collectionLiteral", 4, (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2880 "k0gram.tab.c"
     break;
 
   case 214: /* collectionLiteral: LSQUARE expression multi_comma_expression COMMA RSQUARE  */
-#line 615 "k0gram.y"
+#line 614 "k0gram.y"
                                                             {(yyval.treeptr) = alctree(1011, "collectionLiteral", 5, (yyvsp[-4].treeptr), (yyvsp[-3].treeptr), (yyvsp[-2].treeptr), (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2886 "k0gram.tab.c"
     break;
@@ -3079,7 +3079,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 635 "k0gram.y"
+#line 634 "k0gram.y"
 
 const char *yyname(int sym)
 { 

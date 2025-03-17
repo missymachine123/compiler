@@ -24,7 +24,11 @@ int serial = 0;
 extern const char *yyname(int sym);
 SymbolTable current = NULL;
 SymbolTable globals = NULL;
-int GLOBAL = 1; 
+SymbolTable last_scope = NULL;
+int SCOPE = 0; 
+#define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
+#define popscope() do { current = current->parent; SCOPE--; } while(0)
+void printsymbols(SymbolTable st, int level);
 
 
 struct token {
@@ -258,7 +262,7 @@ SymbolTable mksymtab(int nbuckets) {
         table->nBuckets = nbuckets;
         table->nEntries = 0;
         table->tbl = (struct sym_entry **)
-        alloc((unsigned int)(nbuckets * sizeof(struct sym_entry *)));;
+        alloc((unsigned int)(nbuckets * sizeof(struct sym_entry *)));
      }
      printf("created new table\n");
      return table;
@@ -298,14 +302,15 @@ int insert_sym(SymbolTable st, char *s) {
      * buffer to the table.
      */
     se = (SymbolTableEntry)alloc((unsigned int) sizeof(struct sym_entry)); 
+    se->s = strdup(s);
     se->table = st;
     se->next= st->tbl[h];
     st->tbl[h] = se;
-    se->s = strdup(s);
     //se->type = t;
     st->nEntries++;
     return 1;
 }
+
 
 void enter_newscope(char *s) {
     // Allocate a new symbol table
@@ -313,10 +318,44 @@ void enter_newscope(char *s) {
     
     // Insert s into the current symbol table
     insert_sym(current, s);
-    
+
+    //attach new symbol to s's entry 
+    int h = hash(current, s);
+    struct sym_entry *se;
+    for (se = current->tbl[h]; se != NULL; se = se->next) {
+        if (!strcmp(se->s, s)) {
+            // Attach new symbol table to this entry
+            se->table = newTable;
+            break;
+        }
+    }
+
     // Push new symbol table onto the stack
-    newTable->tbl = current->tbl;
-    current->tbl = newTable;
+    //newTable->parent = current;
+    //current = newTable;
+    pushscope(newTable);
+    //newTable->tbl = current->tbl;
+    //current->tbl = newTable;
+    //current = newTable;
+}
+
+/*
+ * lookup_st - search the symbol table for a given symbol, return its entry.
+ */
+SymbolTableEntry lookup_st(SymbolTable st, char *s){
+ register int i;
+ int h;
+ SymbolTableEntry se;
+
+ h = hash(st, s);
+ for (se = st->tbl[h]; se != NULL; se = se->next)
+    if (!strcmp(s, se->s)) {
+       /*
+        *  Return a pointer to the symbol table entry.
+        */
+       return se;
+       }
+ return NULL;
 }
 
 void populate_symboltables(struct tree *n)
@@ -325,50 +364,115 @@ void populate_symboltables(struct tree *n)
     if (n == NULL) return;
     /* pre-order activity */
     switch (n->prodrule) {
-        case 1004: /* whatever production rule(s) designate a new scope */
-            printf("Entering new scope\n");
-            // enter_newscope("new_scope");
+
+        // Handle entering a new function scope
+        case 1004: /* Production rule for function declaration */ {
+            printf("Entering new function scope\n");
+            //finding the function name in tree
+            for (i = 0; i < n->nkids; i++) {
+                if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                   printf("Function new name: %s\n", n->kids[i]->leaf->text);
+                   enter_newscope(n->kids[i]->leaf->text);
+                   break;
+                }
+            } 
             break;
-        case 1017: /* whatever production rule(s) designate a variable declaration */
-            printf("Variable declaration\n");
+        }
+
+        // Handle entering a new class/struct scope
+        //case 1033: /* Production rule for class/struct declaration */ {
+            //printf("Entering new CLASS scope\n");
+            //enter_newscope("Class"); // Replace "Class" with actual class name if retrievable
+            //break;
+        //}
+
+        case 1028: /* whatever production rule(s) designate a variable declaration */
+            // enter_newscope("variable_declaration");
             // printf("Global variable next->s: %s /n",globals->next->s);
             for (i = 0; i < n->nkids; i++) {
-                 if (n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
-                     if (!insert_sym(current, n->kids[i]->leaf->text)) {
-                         fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
-                     }
+                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                    if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
+                        printf("redeclaration ERROR");
+                    }
+                    //if (!insert_sym(current, n->kids[i]->leaf->text)) {
+                        //fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
+                    //}
                  }
              }
             break;
+        
         case 406: /* whatever leaf denotes a variable name */
-            printf("Variable name: %s\n", n->leaf->text); 
-
-            if (!insert_sym(current, n->leaf->text)) {
-                fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
+            //printf("Variable name: %s\n", n->leaf->text); 
+            if ((lookup_st(globals, n->leaf->text)) == NULL){ //
+                insert_sym(current, n->leaf->text);
+            //fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
             }
             break;
-    }
-    /* visit children */
-    for (i = 0; i < n->nkids; i++)
+        }
+    /* Visit children (Recursive traversal of child nodes) */
+    for (i = 0; i < n->nkids; i++) {
         populate_symboltables(n->kids[i]);
+    }
+
+    /* Post-order activity */
+    switch (n->prodrule) {
+    
+        case 1004: /* End of class scope */ {
+            printsymbols(current, SCOPE);
+            printf("Exiting scope\n");
+            popscope(); // Pop the current scope to return to the parent scope
+            break;
+        }
+    }
 }
 
-void printsymbols(SymbolTable st, int level)
-{
-   int i, j;
-   SymbolTableEntry ste;
-   if (st == NULL) return;
-   for (i=0;i<st->nBuckets;i++) {
-      for (ste = st->tbl[i]; ste; ste=ste->next) {
-	 for (j=0; j < level; j++) printf("  ");
-	 printf("%s\n", ste->s);
+void printsymbols(SymbolTable st, int level) {
+    int i, j;
+    SymbolTableEntry ste;
+    if (st == NULL) return;
+    
+    printf("SCOPE %d - Symbol  for:\n", level);
+    
 
-	 /* if this symbol has a subscope, print it recursively, indented
-	 printsymbols( // subscope symbol table
-                    , level+1);
-          */
-      }
-   }
+    // Iterate over each bucket
+    for (i = 0; i < st->nBuckets; i++) {
+        for (ste = st->tbl[i]; ste != NULL; ste = ste->next) {
+            printf("%s\n", ste->s);
+
+            // If the symbol has a sub-scope, print it recursively
+            //if (ste->table != NULL && ste->table != st) {
+               // printsymbols(ste->table, level + 1);
+            //}
+        }
+    }
+}
+
+
+
+void print_symbol_table(SymbolTable st) {
+    printf("Symbol Table:\n");
+
+    // Traverse the hash table 
+    for (int i = 0; i < st->nBuckets; i++) {
+        struct sym_entry *se = st->tbl[i];
+        while (se != NULL) {
+            printf("Symbol: %s\n", se->s); // Print symbol name
+            // Print other properties 
+            // printf("Type: %d\n", se->type);
+            se = se->next;
+        }
+    }
+    printf("\n");
+}
+
+/*Traverse all symbol tables starting from current*/
+void print_all_symbol_tables() {
+    SymbolTable current_table = current;
+
+    while (current_table != NULL) {
+        print_symbol_table(current_table);
+        current_table = current_table->parent;
+    }
 }
 
 
@@ -384,6 +488,7 @@ void printsymbols(SymbolTable st, int level)
         printsyms(t->kids[i]);
     }
 }
+
 
  
 void print_graph(struct tree *t, char *filename){
@@ -473,6 +578,10 @@ int main(int argc, char **argv) {
     current = globals;
     populate_symboltables(root);
     printsymbols(globals, 0);
+    //printf("\nPRINTING SYMBOL TABLES\n");
+    //printsymbols(globals, 0);
+    //print_all_symbol_tables();
+    //print_all_symbol_tables();
 
     
     if (generate_dot) {
