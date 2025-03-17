@@ -614,10 +614,10 @@ equality_operator:
   | EXCL_EQEQ
   ;
   
-postfix_unary_operator: 
-  INCR
-  | DECR
-  ;
+// postfix_unary_operator: 
+//   INCR
+//   | DECR
+//   ;
 %%
 const char *yyname(int sym)
 { 

@@ -343,7 +343,7 @@ void enter_newscope(char *s) {
  * lookup_st - search the symbol table for a given symbol, return its entry.
  */
 SymbolTableEntry lookup_st(SymbolTable st, char *s){
- register int i;
+//  register int i;
  int h;
  SymbolTableEntry se;
 
@@ -430,7 +430,7 @@ void populate_symboltables(struct tree *n)
 }
 
 void printsymbols(SymbolTable st, int level) {
-    int i, j;
+    int i;
     SymbolTableEntry ste;
     if (st == NULL) return;
     printf("---");
