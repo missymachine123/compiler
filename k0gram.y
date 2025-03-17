@@ -32,12 +32,12 @@
 %type <treeptr> program topLevelObjects topLevelObject functionDeclaration  type functionBody block statements statement variableDeclaration assignment functionCall functionArguments 
 %type <treeptr> loopStatement  expression  disjunction  conjunction equality comparison genericCallLikeComparison elvisExpression rangeExpression primaryExpression
 %type <treeptr>  declaration opt_typeParameters opt_comma typeParameters typeParameter multi_typeParameter simpleIdentifier classDeclaration semis_statement optional_statement_sequence parameter  rangeTest 
-%type <treeptr> functionValueParameter functionValueParameters opt_functionValueParameter multi_comma_functionParameter opt_functionBody opt_eq_exp receiverType parenthesizedType 
+%type <treeptr> functionValueParameter functionValueParameters opt_functionValueParameter multi_comma_functionParameter opt_functionBody opt_eq_exp  parenthesizedType 
 %type <treeptr> typeRef_parenthesizedType nullableType multi_quest userType multi_dot_simpleUserType simpleUserType opt_modifier val_var multivariable_variableDeclaration parenthesizedExpression propertyDeclaration navigationSuffix identifier_expression_class
 %type <treeptr> memberAccessOperator typeArguments directlyAssignableExpression parenthesizedDirectlyAssignableExpression multi_postfixUnarySuffix postfixUnaryExpression postfixUnarySuffix postfixUnaryOperator multi_comma_expression callSuffix controlStructureBody 
 %type <treeptr>  control_structure_body_or_comma semis variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration multi_comma_variableDeclaration
-%type <treeptr> directly_assign classMembers objectBody classBody classMember opt_colon_type objectDeclaration assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
-%type <treeptr> collectionLiteral comparison_operator additiveExpression multiplicativeExpression jumpExpression  
+%type <treeptr> directly_assign classMembers  classBody classMember opt_colon_type  assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
+%type <treeptr> collectionLiteral whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression controls
 %left ADD SUB
 %left MULT DIV MOD
 %left AND OR
@@ -50,7 +50,7 @@
 
 /* Program Structure */
 program:
-    topLevelObjects {root = $1; /*treeprint(root, 1); */}
+    topLevelObjects {root = $1;}
 ;
 
 topLevelObjects:
@@ -61,7 +61,6 @@ topLevelObjects:
 topLevelObject:
     functionDeclaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
   | classDeclaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
-  | objectDeclaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
 ;
 
 opt_functionBody:
@@ -76,7 +75,7 @@ opt_colon_type:
 
 /* Function Declaration */
 functionDeclaration:
-    FUN opt_typeParameters receiverType DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody {$$ = alctree(1004, "functionDeclaration", 8, $1, $2, $3, $4, $5, $6, $7, $8);}
+    FUN opt_typeParameters nullableType DOT simpleIdentifier functionValueParameters opt_colon_type opt_functionBody {$$ = alctree(1004, "functionDeclaration", 8, $1, $2, $3, $4, $5, $6, $7, $8);}
     | FUN opt_typeParameters simpleIdentifier functionValueParameters opt_colon_type opt_functionBody {$$ = alctree(1004, "functionDeclaration",6, $1, $2, $3, $4, $5, $6);}
 
 ;
@@ -121,6 +120,7 @@ block:
     LCURL statements RCURL  {$$ = alctree(1012, "block", 3, $1, $2, $3);  }
 ;
 
+
 semis:
   SEMICOLON
   | {$$ = NULL;}
@@ -138,20 +138,16 @@ optional_statement_sequence:
 	;
 
 statements:
-	optional_statement_sequence SEMICOLON {$$ = alctree(1015, "statements", 2, $1, $2);}
-  |optional_statement_sequence  {$$ = alctree(1015, "statements", 1, $1);}
-   
-
+  optional_statement_sequence  {$$ = alctree(1015, "statements", 1, $1);}
 	;
 
 /* Statement */
 
 statement:
-    declaration {$$ = alctree(1016, "statement", 1, $1);}
-  | assignment  {$$ = alctree(1016, "statement", 1, $1);}
-  | expression  {$$ = alctree(1016, "statement", 1, $1); }
-  | loopStatement {$$ = alctree(1016, "statement", 1, $1);}
-  | error SEMICOLON {$$ = alctree(1016, "statement", 1, $2);}
+    declaration semis{$$ = alctree(1016, "statement", 2,$1,$2); }
+  | assignment semis  {$$ = alctree(1016, "statement", 2,$1,$2); }
+  | expression semis  {$$ = alctree(1016, "statement", 2,$1,$2); }
+  | loopStatement semis{$$ = alctree(1016, "statement", 2,$1,$2); }
 ;
 
 declaration:
@@ -169,11 +165,7 @@ opt_modifier:
   CONST {$$ = $1;}
   | { /* epsilon production */ } {$$ = NULL;}
   ;
-
-
-receiverType:
-  nullableType  {$$ = alctree(1018, "receiverType", 1, $1);}
-  ;
+ 
 
 parenthesizedType:
   LPAREN type RPAREN {$$ = alctree(1019, "parenthesizedType", 3, $1, $2, $3);}
@@ -223,7 +215,7 @@ multivariable_variableDeclaration:
   ;
 
 propertyDeclaration:
-    opt_modifier val_var opt_typeParameters receiverType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1028, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
+    opt_modifier val_var opt_typeParameters nullableType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1028, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
   | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1028, "propertyDeclaration", 6, $1, $2, $3, $4, $5, $6);}
   | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp {$$ = alctree(1028, "propertyDeclaration", 5, $1, $2, $3, $4, $5 );}
   ;
@@ -432,23 +424,22 @@ valueArgument:
 
 parenthesizedExpression:
     LPAREN expression RPAREN  {$$ = alctree(1066, "parenthesizedExpression", 3, $1, $2, $3);}
+
     ;
 
+    
+ifExpression:
+  IF LPAREN expression RPAREN controls {$$ = alctree(1011,"ifExpression",5, $1, $2, $3, $4, $5);}
+  ;
   
+controls:
+  controlStructureBody ELSE controlStructureBody {$$ = alctree(1012,"controls",3,$1, $2, $3);}
+  | controlStructureBody {$$ = alctree(1012,"controls",1,$1);}
 
-//     | callableReference {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | functionLiteral {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | collectionLiteral {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | thisExpression  {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | superExpression {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | ifExpression  {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | whenExpression   {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | tryExpression {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     | jumpExpression  {$$ = alctree(1067, "primaryExpression", 1, $1);}
-//     ;
+
 /* Function Call */
 functionCall:
-    IDENTIFIER LPAREN functionArguments RPAREN  {$$ = alctree(1068, "functionCall", 4, $1, $2, $3,$4);}
+    IDENTIFIER LPAREN functionArguments RPAREN semis   {$$ = alctree(1068, "functionCall", 4, $1, $2, $3,$4);}
     
 ;
 
@@ -488,36 +479,36 @@ jumpExpression:
   | BREAK
   ;
 
-// multi_whenEntry:
-//   multi_whenEntry whenEntry {$$ = alctree(1076, "multi_whenEntry", 2, $1, $2);}
-//   |   {$$ = NULL;}
-//   ;
+multi_whenEntry:
+  multi_whenEntry whenEntry {$$ = alctree(1076, "multi_whenEntry", 2, $1, $2);}
+  |   {$$ = NULL;}
+  ;
 
-// whenExpression:
-//   WHEN whenSubject LCURL multi_whenEntry RCURL {$$ = alctree(1077, "whenExpression", 5, $1, $2, $3, $4, $5);}
-//   | WHEN LCURL multi_whenEntry RCURL {$$ = alctree(1078, "whenExpression", 4, $1, $2, $3, $4);}
-//    ;
+whenExpression:
+  WHEN whenSubject LCURL multi_whenEntry RCURL {$$ = alctree(1077, "whenExpression", 5, $1, $2, $3, $4, $5);}
+  | WHEN LCURL multi_whenEntry RCURL {$$ = alctree(1078, "whenExpression", 4, $1, $2, $3, $4);}
+   ;
 
-// whenSubject:
-//   LPAREN expression RPAREN {$$ = alctree(1079, "whenSubject", 3, $1, $2, $3);}
-//   |  LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN {$$ = alctree(1079, "whenSubject", 6, $1, $2, $3, $4, $5, $6);}
+whenSubject:
+  LPAREN expression RPAREN {$$ = alctree(1079, "whenSubject", 3, $1, $2, $3);}
+  |  LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN {$$ = alctree(1079, "whenSubject", 6, $1, $2, $3, $4, $5, $6);}
 
-// multi_comma_whenCondition:
-//   multi_comma_whenCondition COMMA whenCondition {$$ = alctree(1080, "multi_comma_whenCondition", 3, $1, $2, $3);}
-//   | { /* epsilon production */ }  {$$ = NULL;}
-//   ;
+multi_comma_whenCondition:
+  multi_comma_whenCondition COMMA whenCondition {$$ = alctree(1080, "multi_comma_whenCondition", 3, $1, $2, $3);}
+  | { /* epsilon production */ }  {$$ = NULL;}
+  ;
 
-// whenEntry:
-//   whenCondition multi_comma_whenCondition ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
-//   | whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 5, $1, $2, $3, $4, $5);}
-//   | ELSE ARROW controlStructureBody SEMICOLON {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
-//   | ELSE ARROW controlStructureBody   {$$ = alctree(1011, "whenEntry", 3, $1, $2, $3);}
-//   ;
+whenEntry:
+  whenCondition multi_comma_whenCondition ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
+  | whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody  {$$ = alctree(1011, "whenEntry", 5, $1, $2, $3, $4, $5);}
+  | ELSE ARROW controlStructureBody SEMICOLON {$$ = alctree(1011, "whenEntry", 4, $1, $2, $3, $4);}
+  | ELSE ARROW controlStructureBody   {$$ = alctree(1011, "whenEntry", 3, $1, $2, $3);}
+  ;
 
-// whenCondition:
-//   expression {$$ = alctree(1080, "whenCondition", 1, $1);}
-//   | rangeTest {$$ = alctree(1080, "whenCondition", 1, $1);}
-//   ;
+whenCondition:
+  expression {$$ = alctree(1080, "whenCondition", 1, $1);}
+  | rangeTest {$$ = alctree(1080, "whenCondition", 1, $1);}
+  ;
 
 rangeTest:
   IN expression {$$ = alctree(1081, "rangeTest", 2, $1, $2);}
@@ -531,15 +522,6 @@ classMembers:
 classMember:
     functionDeclaration {$$ = alctree(1083, "classMember", 1, $1);}
   | variableDeclaration   {$$ = alctree(1083, "classMember", 1, $1);}
-;
-
-/* Object Declaration */
-objectDeclaration:
-    OBJECT IDENTIFIER objectBody  {$$ = alctree(1084, "objectDeclaration", 3, $1, $2, $3);}
-;
-
-objectBody:
-    LCURL classMembers RCURL  {$$ = alctree(1085, "objectBody", 3, $1, $2, $3);}
 ;
 
 /* Expressions */
@@ -558,41 +540,41 @@ conjunction:
   ;
 
 equality:
-  comparison {$$ = alctree(1028, "equality", 1, $1);}
-    | equality equality_operator comparison {$$ = alctree(1028, "equality", 3, $1, $2, $3);}
+  comparison {$$ = alctree(1089, "equality", 1, $1);}
+    | equality equality_operator comparison {$$ = alctree(1089, "equality", 3, $1, $2, $3);}
     ;
 
 comparison
-    : genericCallLikeComparison {$$ = alctree(1029, "comparison", 1, $1);}
-    | comparison comparison_operator genericCallLikeComparison {$$ = alctree(1028, "comparison", 3, $1, $2, $3);}
+    : genericCallLikeComparison {$$ = alctree(1090, "comparison", 1, $1);}
+    | comparison comparison_operator genericCallLikeComparison {$$ = alctree(1090, "comparison", 3, $1, $2, $3);}
     ;
 
 genericCallLikeComparison
-    : elvisExpression {$$ = alctree(1029, "genericCallLikeComparison", 1, $1);}
-    | elvisExpression IN elvisExpression {$$ = alctree(1029, "genericCallLikeComparison", 3, $1, $2, $3);}
+    : elvisExpression {$$ = alctree(1091, "genericCallLikeComparison", 1, $1);}
+    | elvisExpression IN elvisExpression {$$ = alctree(1091, "genericCallLikeComparison", 3, $1, $2, $3);}
     ;
 
 elvisExpression
-    : rangeExpression {$$ = alctree(1030, "elvisExpression", 1, $1);}
-    | elvisExpression QUEST_COLON rangeExpression  {$$ = alctree(1030, "elvisExpression", 3, $1, $2, $3);}
+    : rangeExpression {$$ = alctree(1092, "elvisExpression", 1, $1);}
+    | elvisExpression QUEST_COLON rangeExpression  {$$ = alctree(1092, "elvisExpression", 3, $1, $2, $3);}
     ;
 
 rangeExpression
-    : additiveExpression {$$ = alctree(1031, "rangeExpression", 1, $1);}
-    | rangeExpression RANGE additiveExpression {$$ = alctree(1031, "rangeExpression", 3, $1, $2, $3);}
+    : additiveExpression {$$ = alctree(1093, "rangeExpression", 1, $1);}
+    | rangeExpression RANGE additiveExpression {$$ = alctree(1093, "rangeExpression", 3, $1, $2, $3);}
     ;
 
 additiveExpression: 
-    multiplicativeExpression {$$ = alctree(1032, "additiveExpression", 1, $1);}
-    | additiveExpression ADD multiplicativeExpression {$$ = alctree(1032, "additiveExpression", 3, $1, $2, $3);}
-    | additiveExpression SUB multiplicativeExpression {$$ = alctree(1032, "additiveExpression", 3, $1, $2, $3);}
+    multiplicativeExpression {$$ = alctree(1094, "additiveExpression", 1, $1);}
+    | additiveExpression ADD multiplicativeExpression {$$ = alctree(1094, "additiveExpression", 3, $1, $2, $3);}
+    | additiveExpression SUB multiplicativeExpression {$$ = alctree(1094, "additiveExpression", 3, $1, $2, $3);}
     ;
 
 multiplicativeExpression:
-  postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 1, $1);}
-  | multiplicativeExpression MULT postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 3, $1, $2, $3);}
-  | multiplicativeExpression DIV postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 3, $1, $2, $3);}
-  | multiplicativeExpression MOD postfixUnaryExpression {$$ = alctree(1033, "multiplicativeExpression", 3, $1, $2, $3);}
+  postfixUnaryExpression {$$ = alctree(1095, "multiplicativeExpression", 1, $1);}
+  | multiplicativeExpression MULT postfixUnaryExpression {$$ = alctree(1095, "multiplicativeExpression", 3, $1, $2, $3);}
+  | multiplicativeExpression DIV postfixUnaryExpression {$$ = alctree(1095, "multiplicativeExpression", 3, $1, $2, $3);}
+  | multiplicativeExpression MOD postfixUnaryExpression {$$ = alctree(1095, "multiplicativeExpression", 3, $1, $2, $3);}
   ; 
 
 primaryExpression:
@@ -601,10 +583,13 @@ primaryExpression:
     | functionCall { $$ = alctree(1035, "primaryExpression", 1, $1);}
     | INTEGER_LITERAL 
     | STRING_LITERAL 
+    | BOOLEAN_LITERAL
     | FLOAT_LITERAL
     | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
     | collectionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
-    ;
+    | ifExpression {$$ = alctree(1011, "primaryExpression", 1, $1);}
+    | whenExpression   {$$ = alctree(1067, "primaryExpression", 1, $1);}
+    ; 
 
 collectionLiteral:
   LSQUARE RSQUARE {$$ = alctree(1011, "collectionLiteral", 2, $1, $2);}
@@ -625,6 +610,8 @@ comparison_operator:
 equality_operator:
   EQEQ
   |EQEQEQ
+  |EXCL_EQ
+  | EXCL_EQEQ
   ;
   
 postfix_unary_operator: 

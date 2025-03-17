@@ -4,6 +4,6 @@ fun foo(x : Int, y : String) : Int {
     }
  fun main() {
     var z : Int
-    var z : STring
+    var z : String
     z = foo(5, ("funf").toString())
  }

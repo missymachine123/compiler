@@ -256,15 +256,15 @@ char * alloc(int n)
 /*
  * create a symbol table and return a pointer to it.
  */
-SymbolTable mksymtab(int nbuckets) {
+SymbolTable mksymtab(int nbuckets, char *name) {
     SymbolTable table = (SymbolTable)malloc(sizeof(struct sym_table));
      if (table) {
         table->nBuckets = nbuckets;
         table->nEntries = 0;
+        table->name = strdup(name);
         table->tbl = (struct sym_entry **)
         alloc((unsigned int)(nbuckets * sizeof(struct sym_entry *)));
      }
-     printf("created new table\n");
      return table;
 }
 /*
@@ -314,7 +314,7 @@ int insert_sym(SymbolTable st, char *s) {
 
 void enter_newscope(char *s) {
     // Allocate a new symbol table
-    SymbolTable newTable = mksymtab(101);
+    SymbolTable newTable = mksymtab(101, s);
     
     // Insert s into the current symbol table
     insert_sym(current, s);
@@ -367,11 +367,10 @@ void populate_symboltables(struct tree *n)
 
         // Handle entering a new function scope
         case 1004: /* Production rule for function declaration */ {
-            printf("Entering new function scope\n");
             //finding the function name in tree
             for (i = 0; i < n->nkids; i++) {
                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
-                   printf("Function new name: %s\n", n->kids[i]->leaf->text);
+                   //printf("Function new name: %s\n", n->kids[i]->leaf->text);
                    enter_newscope(n->kids[i]->leaf->text);
                    break;
                 }
@@ -386,19 +385,23 @@ void populate_symboltables(struct tree *n)
             //break;
         //}
 
-        case 1028: /* whatever production rule(s) designate a variable declaration */
+        case 1022: /* whatever production rule(s) designate a variable declaration */
             // enter_newscope("variable_declaration");
             // printf("Global variable next->s: %s /n",globals->next->s);
+            //for (i = 0; i < n->nkids; i++) {
+               // if (n->kids[i] != NULL){
+               //     printf("category %d\n",n->kids[i]->prodrule);
+               // }
+            //}
+            
             for (i = 0; i < n->nkids; i++) {
                  if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                     if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
-                        printf("redeclaration ERROR");
+                        fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                     }
-                    //if (!insert_sym(current, n->kids[i]->leaf->text)) {
-                        //fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
-                    //}
                  }
              }
+            
             break;
         
         case 406: /* whatever leaf denotes a variable name */
@@ -419,7 +422,7 @@ void populate_symboltables(struct tree *n)
     
         case 1004: /* End of class scope */ {
             printsymbols(current, SCOPE);
-            printf("Exiting scope\n");
+            printf("---\n");
             popscope(); // Pop the current scope to return to the parent scope
             break;
         }
@@ -430,8 +433,8 @@ void printsymbols(SymbolTable st, int level) {
     int i, j;
     SymbolTableEntry ste;
     if (st == NULL) return;
-    
-    printf("SCOPE %d - Symbol  for:\n", level);
+    printf("---");
+    printf("SCOPE %d - Symbol table for: %s\n", level, st->name);
     
 
     // Iterate over each bucket
@@ -544,57 +547,81 @@ char* removeSeparators(char* yytext) {
 
  
 int main(int argc, char **argv) {
-    int generate_dot = 0;  // Flag to check if -dot option is present
+    int generate_dot = 0;      // Flag for -dot option
+    int generate_tree = 0;     // Flag for -tree option
+    int generate_symtab = 0;   // Flag for -symtab option
 
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s [-dot] <filename>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-dot] [-tree] [-symtab] <filename>\n", argv[0]);
         return 1;
     }
 
-    // Check if -dot argument is present
+    // Parse command-line arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-dot") == 0) {
             generate_dot = 1;
-        } 
+        } else if (strcmp(argv[i], "-tree") == 0) {
+            generate_tree = 1;
+        } else if (strcmp(argv[i], "-symtab") == 0) {
+            generate_symtab = 1;
+        } else if (argv[i][0] != '-') {  // Assume it's the filename
+            filename = kt_extension(argv[i]);
+        }
     }
 
+    if (filename == NULL) {
+        fprintf(stderr, "Error: No input file specified.\n");
+        return 1;
+    }
 
-    filename = kt_extension(argv[1]);
     yyin = fopen(filename, "r");
     if (!yyin) {
         perror(filename);
         free(filename);
         return 1;
     }
-    
+
     // Call the parser
-    // yydebug = 1; // Enable debugging
-    printf("Printing from inside yyparse():\n\n");
+    printf("Parsing file: %s\n", filename);
     int result = yyparse();
     printf("yyparse returns %d\n", result);
-    // If -dot argument is present, generate the .dot file
-    // printsyms(root);
-    globals = mksymtab(101);
-    current = globals;
-    populate_symboltables(root);
-    printsymbols(globals, 0);
-    //printf("\nPRINTING SYMBOL TABLES\n");
-    //printsymbols(globals, 0);
-    //print_all_symbol_tables();
-    //print_all_symbol_tables();
 
-    
-    if (generate_dot) {
-        print_graph(root, "tree.dot");
-        printf("Dot file generated: tree.dot\n");
-    } else {    
-        // treeprint(root,1);
-        printf("Normal behavior (no -dot option)\n");
+    // Handle the -tree option
+    if (generate_tree) {
+        treeprint(root, 1);  // Print the syntax tree
+        printf("Syntax tree printed.\n");
     }
 
-    // Close the input file
+    // Handle the -symtab option
+    if (generate_symtab) {
+        if (result == 0) {  // Only generate symbol tables if parsing succeeds
+            globals = mksymtab(101, "Global");
+            current = globals;
+            populate_symboltables(root);
+            //printf("Symbol tables generated.\n");
+            printsymbols(globals, 0);  // Print symbol tables
+        } else {
+            printf("Errors encountered during parsing. Symbol tables not generated.\n");
+        }
+    }
+
+    // Handle the -dot option
+    if (generate_dot) {
+        print_graph(root, "tree.dot");  // Generate a .dot file
+        printf("Dot file generated: tree.dot\n");
+    }
+
+    // Default behavior when no flags are provided
+    if (!generate_tree && !generate_symtab && !generate_dot) {
+        if (result == 0) {
+            printf("No errors.\n");
+        } else {
+            printf("Errors encountered.\n");
+        }
+    }
+
+    // Cleanup
     fclose(yyin);
     free(filename);
     return 0;
-    
 }
