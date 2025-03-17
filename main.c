@@ -29,6 +29,7 @@ int SCOPE = 0;
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
 void printsymbols(SymbolTable st, int level);
+extern int yyrestart(FILE *);
 
 
 struct token {
@@ -547,15 +548,15 @@ char* removeSeparators(char* yytext) {
     cleanText[j] = '\0';
     return cleanText;
 }
-
- 
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
     int generate_symtab = 0;   // Flag for -symtab option
+    int file_count = 0;        // Count of input files
+    char **files = NULL;       // Array of input files
 
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s [-dot] [-tree] [-symtab] <filename>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-dot] [-tree] [-symtab] <filename1> [<filename2> ...]\n", argv[0]);
         return 1;
     }
 
@@ -567,64 +568,73 @@ int main(int argc, char **argv) {
             generate_tree = 1;
         } else if (strcmp(argv[i], "-symtab") == 0) {
             generate_symtab = 1;
-        } else if (argv[i][0] != '-') {  // Assume it's the filename
-            filename = kt_extension(argv[i]);
+        } else if (argv[i][0] != '-') {  // Assume it's a filename
+            files = realloc(files, sizeof(char*) * (file_count + 1));
+            files[file_count++] = kt_extension(argv[i]);
         }
     }
 
-    if (filename == NULL) {
-        fprintf(stderr, "Error: No input file specified.\n");
+    if (file_count == 0) {
+        fprintf(stderr, "Error: No input files specified.\n");
         return 1;
     }
 
-    yyin = fopen(filename, "r");
-    if (!yyin) {
-        perror(filename);
+    for (int i = 0; i < file_count; i++) {
+        filename = files[i];
+        printf("this filename: %s\n", filename);
+        yyin = fopen(filename, "r");
+        if (!yyin) {
+            perror(filename);
+            free(filename);
+            continue;
+        }
+
+        // Call the parser
+        printf("Parsing file: %s\n", filename);
+        yyrestart(yyin);  // Restart the lexer with the new file
+        int result = yyparse();
+        printf("yyparse returns %d\n", result);
+
+        // Handle the -tree option
+        if (generate_tree) {
+            treeprint(root, 1);  // Print the syntax tree
+            printf("Syntax tree printed.\n");
+        }
+
+        // Handle the -symtab option
+        if (generate_symtab) {
+            if (result == 0) {  // Only generate symbol tables if parsing succeeds
+                globals = mksymtab(101, "Global");
+                current = globals;
+                populate_symboltables(root);
+                printsymbols(globals, 0);  // Print symbol tables
+            } else {
+                printf("Errors encountered during parsing. Symbol tables not generated.\n");
+            }
+        }
+
+        // Handle the -dot option
+        if (generate_dot) {
+            char dot_filename[256];
+            snprintf(dot_filename, sizeof(dot_filename), "%s.dot", filename);
+            print_graph(root, dot_filename);  // Generate a .dot file
+            printf("Dot file generated: %s\n", dot_filename);
+        }
+
+        // Default behavior when no flags are provided
+        if (!generate_tree && !generate_symtab && !generate_dot) {
+            if (result == 0) {
+                printf("No errors.\n");
+            } else {
+                printf("Errors encountered.\n");
+            }
+        }
+
+        // Cleanup
+        fclose(yyin);
         free(filename);
-        return 1;
     }
 
-    // Call the parser
-    printf("Parsing file: %s\n", filename);
-    int result = yyparse();
-    printf("yyparse returns %d\n", result);
-
-    // Handle the -tree option
-    if (generate_tree) {
-        treeprint(root, 1);  // Print the syntax tree
-        printf("Syntax tree printed.\n");
-    }
-
-    // Handle the -symtab option
-    if (generate_symtab) {
-        if (result == 0) {  // Only generate symbol tables if parsing succeeds
-            globals = mksymtab(101, "Global");
-            current = globals;
-            populate_symboltables(root);
-            //printf("Symbol tables generated.\n");
-            printsymbols(globals, 0);  // Print symbol tables
-        } else {
-            printf("Errors encountered during parsing. Symbol tables not generated.\n");
-        }
-    }
-
-    // Handle the -dot option
-    if (generate_dot) {
-        print_graph(root, "tree.dot");  // Generate a .dot file
-        printf("Dot file generated: tree.dot\n");
-    }
-
-    // Default behavior when no flags are provided
-    if (!generate_tree && !generate_symtab && !generate_dot) {
-        if (result == 0) {
-            printf("No errors.\n");
-        } else {
-            printf("Errors encountered.\n");
-        }
-    }
-
-    // Cleanup
-    fclose(yyin);
-    free(filename);
+    free(files);
     return 0;
 }
