@@ -124,12 +124,12 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "const"                 { return alctoken(CONST);}
 "interface"             { return alctoken(INTERFACE);} 
 "Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"String"|"Char"|"Byte"    { return alctoken(TYPELITERAL);} 
-"-"?" "?{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
-"-"?" "?{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
-"-"?" "?{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return alctoken(INTEGER_LITERAL);}  
+"-"?{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
+"-"?{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
+"-"?{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return alctoken(INTEGER_LITERAL);}  
 {HexLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext), NULL, 16); return alctoken(INTEGER_LITERAL);} 
 {BinLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext+2), NULL, 2); return alctoken(INTEGER_LITERAL);}
-"-"?" "?([{IntegerLiteral}{HexLiteral}{BinLiteral}])'L'	                { return alctoken(INTEGER_LITERAL);}
+"-"?([{IntegerLiteral}{HexLiteral}{BinLiteral}])'L'	                { return alctoken(INTEGER_LITERAL);}
 "true"|"false"						                            { return alctoken(BOOLEAN_LITERAL);}
 "null"							                                { return alctoken(NULL_LITERAL);}
 ["][^"]*["]				                                        { yysval = descape(yytext);return alctoken(STRING_LITERAL);}
