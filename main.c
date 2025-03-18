@@ -17,15 +17,18 @@ extern double yydval;
 extern char *yysval;
 extern int yylex_destroy();
 extern int yydebug;
+extern const char *yyname(int sym);
+extern void yyrestart(FILE *input_file);
+extern struct tree *root;
 struct token yytoken;
 char *filename;
-extern struct tree *root;
 int serial = 0;
-extern const char *yyname(int sym);
 SymbolTable current = NULL;
 SymbolTable globals = NULL;
+SymbolTable predefined = NULL;
 SymbolTable last_scope = NULL;
 int SCOPE = 0; 
+int variable_declaration = 0;
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
 void printsymbols(SymbolTable st, int level);
@@ -359,6 +362,33 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
  return NULL;
 }
 
+void predefined_symbols(){
+    predefined = mksymtab(101, "predefined");
+    insert_sym(predefined, "print");
+    insert_sym(predefined, "println");
+    insert_sym(predefined, "get");
+    insert_sym(predefined, "equals");
+    insert_sym(predefined, "length");
+    insert_sym(predefined, "toString");
+    insert_sym(predefined, "valueOf");
+    insert_sym(predefined, "readln");
+    insert_sym(predefined, "String");
+    insert_sym(predefined, "java");
+    insert_sym(predefined, "lang");
+    insert_sym(predefined, "util");
+    insert_sym(predefined, "Math");
+    insert_sym(predefined, "abs");
+    insert_sym(predefined, "max");
+    insert_sym(predefined, "min");
+    insert_sym(predefined, "pow");
+    insert_sym(predefined, "cos");
+    insert_sym(predefined, "sin");
+    insert_sym(predefined, "tan");
+    insert_sym(predefined, "random");
+    insert_sym(predefined, "nextInt");
+}
+
+
 void populate_symboltables(struct tree *n)
 {
     int i;
@@ -378,11 +408,10 @@ void populate_symboltables(struct tree *n)
             } 
             break;
         }
-
         // Handle entering a new class/struct scope
         //case 1033: /* Production rule for class/struct declaration */ {
             //printf("Entering new CLASS scope\n");
-            //enter_newscope("Class"); // Replace "Class" with actual class name if retrievable
+            //enter_newscope(n->kids[i]->leaf->text);
             //break;
         //}
         case 1007: /* rule for function paramteres */
@@ -399,38 +428,38 @@ void populate_symboltables(struct tree *n)
         
         break;  
 
-        case 1022: /* whatever production rule(s) designate a variable declaration */
-            // enter_newscope("variable_declaration");
-            // printf("Global variable next->s: %s /n",globals->next->s);
-            //for (i = 0; i < n->nkids; i++) {
-               // if (n->kids[i] != NULL){
-               //     printf("category %d\n",n->kids[i]->prodrule);
-               // }
-            //}
-            
-            for (i = 0; i < n->nkids; i++) {
-                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
-                    if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
-                        fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
-                    }else{
-                        insert_sym(current, n->kids[i]->leaf->text);
+        case 1028: /* check if it has passed through rule: property declaration*/
+            variable_declaration = 1;
+            break;
 
+        case 1022: /* whatever production rule(s) designate a variable declaration */
+            /* if variable flag = 1, insert variable, if 0 then it is part of a control structure*/
+            if(variable_declaration == 1){
+                for (i = 0; i < n->nkids; i++) {
+                    if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                        if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
+                            fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
+                        }else{
+                            insert_sym(current, n->kids[i]->leaf->text);
+
+                        }
                     }
-                 }
-             }
-            
+                }
+            }
+            variable_declaration = 0;
             break;    
         
+             
         case 406: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
         *   not mark it as undeclared */
             //printf("Variable name: %s\n", n->leaf->text); 
-            if ((lookup_st(current, n->leaf->text)) == NULL && (lookup_st(globals, n->leaf->text)) == NULL){ //
+            if ((lookup_st(current, n->leaf->text)) == NULL && (lookup_st(globals, n->leaf->text)) == NULL && (lookup_st(predefined, n->leaf->text)) == NULL){ //
             //    insert_sym(current, n->leaf->text);
                 fprintf(stderr, "Error: Undeclared variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
             }
             break;
-        }
+    }
     /* Visit children (Recursive traversal of child nodes) */
     for (i = 0; i < n->nkids; i++) {
         populate_symboltables(n->kids[i]);
@@ -596,17 +625,19 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < file_count; i++) {
         filename = files[i];
-        printf("this filename: %s\n", filename);
+        printf("\nthis filename: %s\n", filename);
         yyin = fopen(filename, "r");
         if (!yyin) {
             perror(filename);
             free(filename);
             continue;
         }
+        
 
         // Call the parser
         printf("Parsing file: %s\n", filename);
         yyrestart(yyin);  // Restart the lexer with the new file
+        yylineno = 1;
         int result = yyparse();
         printf("yyparse returns %d\n", result);
 
@@ -621,35 +652,37 @@ int main(int argc, char **argv) {
             if (result == 0) {  // Only generate symbol tables if parsing succeeds
                 globals = mksymtab(101, "Global");
                 current = globals;
+                predefined_symbols();
                 populate_symboltables(root);
+                //printf("Symbol tables generated.\n");
                 printsymbols(globals, 0);  // Print symbol tables
             } else {
                 printf("Errors encountered during parsing. Symbol tables not generated.\n");
             }
         }
 
-        // Handle the -dot option
-        if (generate_dot) {
-            char dot_filename[256];
-            snprintf(dot_filename, sizeof(dot_filename), "%s.dot", filename);
-            print_graph(root, dot_filename);  // Generate a .dot file
-            printf("Dot file generated: %s\n", dot_filename);
-        }
-
-        // Default behavior when no flags are provided
-        if (!generate_tree && !generate_symtab && !generate_dot) {
-            if (result == 0) {
-                printf("No errors.\n");
-            } else {
-                printf("Errors encountered.\n");
-            }
-        }
-
-        // Cleanup
-        fclose(yyin);
-        free(filename);
+// Handle the -dot option
+    if (generate_dot) {
+        char dot_filename[256];
+        snprintf(dot_filename, sizeof(dot_filename), "%s.dot", filename);
+        print_graph(root, dot_filename);  // Generate a .dot file
+        printf("Dot file generated: %s\n", dot_filename);
     }
 
-    free(files);
-    return 0;
+    // Default behavior when no flags are provided
+    if (!generate_tree && !generate_symtab && !generate_dot) {
+        if (result == 0) {
+            printf("No errors.\n");
+        } else {
+            printf("Errors encountered.\n");
+        }
+    }
+
+    // Cleanup
+    fclose(yyin);
+    free(filename);
+}
+
+free(files);
+return 0;
 }

@@ -52,7 +52,7 @@ lineStringContent	    {LineStrText}|{LineStrEscapedChar}|{IDENTIFIER}
 unsupported             "as?"|"as"|"class"|"!in"|"is"|"!is"|"object"|"package"|"super"|"this"|"throw"|"typealias"|"try"|"typeof"|"field"|"it"
 unsupported_op          "@"|"$"|"$"|"`"|"\\"|"#"|"::"|"=>"|";;"
 unsupported_bit         "~"|">>"|"<<"|"&="|"|="|"^="|">>="|"<<="|"&"|"|"|"^"
-unsupported_word        "by"|"catch"|"constructor"|"delegate"|"dynamic"|"file"|"finally"|"get"|"init"|"param"|"property"|"reciever"|"set"|"setparam"|"value"|"where"
+unsupported_word        "by"|"catch"|"constructor"|"delegate"|"dynamic"|"file"|"finally"|"init"|"param"|"property"|"reciever"|"set"|"setparam"|"value"|"where"
 unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"sealed"|"annotation"|"data"|"inner"|"tailrec"|"operator"|"inline"|"infix"|"external"|"override"|"abstract"|"final"|"open"|"lateinit"|"vararg"|"noinline"|"crossinline"|"reified"|"expect"|"actual"|"protected"
 %x 						MULTICOM
 
@@ -123,7 +123,7 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "import"                { return alctoken(IMPORT);}
 "const"                 { return alctoken(CONST);}
 "interface"             { return alctoken(INTERFACE);} 
-"Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"String"|"Char"|"Byte"    { return alctoken(TYPELITERAL);} 
+"Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"Char"|"Byte"    { return alctoken(TYPELITERAL);} 
 "-"?{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
 "-"?{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
 "-"?{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return alctoken(INTEGER_LITERAL);}  

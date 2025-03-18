@@ -1,15 +1,21 @@
-fun assignments() {
-   val a : Int = 1;
-   val b : Int = 2;
-   val c : Int = 3;
-   d + 1;
+fun play() {
+   var hunger : Int = 0
+   var happy : Int = 0
+   println("What should we play?\n");
+   println( "Fetch (1) \n Roll over (2)\n" )
+   val choice : Int = 2
+   if (choice == 1) {
+      println("Fetch, eh")
+      happy = happy+10
+   }
+   else {
+      if (choice == 2) {
+         println("Roll over?  Really?")
+         hunger=hunger+ 1
+      }
+   }
 }
 
-fun Operators() {
-var w : Int = 0;
-var x : Int;
-var y : Int = 0;
-val z : Int =0;
-val q : Int =0;
-
-}
+fun main() {
+  play()
+  }

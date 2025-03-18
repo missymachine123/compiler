@@ -29,8 +29,8 @@
 %token <treeptr> IDENTIFIER
 %debug 
 
-%type <treeptr> program topLevelObjects topLevelObject functionDeclaration  type functionBody block statements statement variableDeclaration assignment functionCall functionArguments 
-%type <treeptr> loopStatement  expression  disjunction  conjunction equality comparison genericCallLikeComparison elvisExpression rangeExpression primaryExpression
+%type <treeptr> program topLevelObjects topLevelObject functionDeclaration  type functionBody block statements statement variableDeclaration assignment functionCall functionArguments  
+%type <treeptr> loopStatement  expression  disjunction  conjunction equality comparison genericCallLikeComparison elvisExpression rangeExpression primaryExpression dotExpression
 %type <treeptr>  declaration opt_typeParameters opt_comma typeParameters typeParameter multi_typeParameter simpleIdentifier classDeclaration semis_statement optional_statement_sequence parameter  rangeTest 
 %type <treeptr> functionValueParameter functionValueParameters opt_functionValueParameter multi_comma_functionParameter opt_functionBody opt_eq_exp  parenthesizedType 
 %type <treeptr> typeRef_parenthesizedType nullableType multi_quest userType multi_dot_simpleUserType simpleUserType opt_modifier val_var multivariable_variableDeclaration parenthesizedExpression propertyDeclaration navigationSuffix identifier_expression_class
@@ -440,8 +440,13 @@ controls:
 /* Function Call */
 functionCall:
     IDENTIFIER LPAREN functionArguments RPAREN semis   {$$ = alctree(1068, "functionCall", 4, $1, $2, $3,$4);}
-    
+    | dotExpression LPAREN functionArguments RPAREN semis {$$ = alctree(1068, "methodCall", 4, $1, $2, $3, $4);}  
 ;
+
+dotExpression:
+    IDENTIFIER DOT IDENTIFIER {$$ = alctree(3000, "dotExpression", 3, $1, $2, $3);}
+    | dotExpression DOT IDENTIFIER {$$ = alctree(3000, "dotExpression", 3, $1, $2, $3);}
+    ;
 
 /* Function Arguments */
 functionArguments:
