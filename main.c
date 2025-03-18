@@ -48,7 +48,7 @@ struct token {
 
 int yyerror(char *s) {
     fprintf(stderr, "Syntax error: %s at line %d, near token '%s'\n", s, yylineno, yytext);
-    exit(1);
+    exit(2);
     
 }
 
@@ -419,6 +419,7 @@ void populate_symboltables(struct tree *n)
              if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                 if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
                     fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
+                    exit(3);
                 }else{
                     insert_sym(current, n->kids[i]->leaf->text);
 
@@ -439,6 +440,7 @@ void populate_symboltables(struct tree *n)
                     if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                         if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
                             fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
+                            exit(3);
                         }else{
                             insert_sym(current, n->kids[i]->leaf->text);
 
@@ -452,11 +454,12 @@ void populate_symboltables(struct tree *n)
              
         case 406: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
-        *   not mark it as undeclared */
+         * not mark it as undeclared 
+         */
             //printf("Variable name: %s\n", n->leaf->text); 
-            if ((lookup_st(current, n->leaf->text)) == NULL && (lookup_st(globals, n->leaf->text)) == NULL && (lookup_st(predefined, n->leaf->text)) == NULL){ //
-            //    insert_sym(current, n->leaf->text);
+            if ((lookup_st(current, n->leaf->text)) == NULL && (lookup_st(globals, n->leaf->text)) == NULL && (lookup_st(predefined, n->leaf->text)) == NULL){ 
                 fprintf(stderr, "Error: Undeclared variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
+                exit(3);
             }
             break;
     }
