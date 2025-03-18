@@ -9,7 +9,9 @@ fun main() {
     // Test floating-point numbers
     val double1 = 10.5
     val double2 = 2.5
-
+    for(double2 in 1..5){
+    }
+    val double2 = 5.0
     println("\nFloating-Point Tests:")
     println("Addition: $double1 + $double2 = ${add(double1, double2)}")
     println("Subtraction: $double1 - $double2 = ${subtract(double1, double2)}")
@@ -20,13 +22,9 @@ fun main() {
 
 // Functions for integer operations
 fun add(a: Int, b: Int): Int {
-    string.get(a)
+    String.get(a)
     java.lang.util(b)
     return
-}
-
-class Student(){
-    val pi = 3.14;
 }
 
 fun subtract(a: Int, b: Int): Int {

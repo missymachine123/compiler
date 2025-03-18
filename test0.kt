@@ -1,16 +1,30 @@
-fun assignments() {
-   val a : Int = 1;
-   val b : Int = 2;
-   val c : Int = 3;
-   d + 1; //expected error:undeclared
-   a.toString()
-}
+fun main() {
+	var test1 : Int = 0
+	var test2 : Int = 0
+        // infinite loop
+	while (true) {
+		test1 = test1 + 1
+	}
 
-fun Operators() {
-var w : Int = 0;
-var x : Int;
-var y : Int = 0;
-val z : Int =0;
-val q : Int =0;
+	// While loop with incrementing variable
+	test1 = 0
+	while (test1 < 10) {
+		test1 = test1 + 1
+	}
 
+	// While loop with different expression
+	test2 = 0
+	while (test2 != 1) {
+		test2 = 1
+	}
+
+	// While loop with function call
+	while (random()) {
+		println("X")
+	}
+
+	// For loop
+	for (test1 in 0..20) {
+		println("X")
+	}
 }

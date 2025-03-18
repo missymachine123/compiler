@@ -28,6 +28,7 @@ SymbolTable globals = NULL;
 SymbolTable predefined = NULL;
 SymbolTable last_scope = NULL;
 int SCOPE = 0; 
+int variable_declaration = 0;
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
 void printsymbols(SymbolTable st, int level);
@@ -382,7 +383,7 @@ void predefined_symbols(){
     insert_sym(predefined, "cos");
     insert_sym(predefined, "sin");
     insert_sym(predefined, "tan");
-    insert_sym(predefined, "Random");
+    insert_sym(predefined, "random");
     insert_sym(predefined, "nextInt");
 }
 
@@ -426,6 +427,11 @@ void populate_symboltables(struct tree *n)
         
         break;  
 
+        case 1028:
+            variable_declaration = 1;
+            break;
+
+
         case 1022: /* whatever production rule(s) designate a variable declaration */
             // enter_newscope("variable_declaration");
             // printf("Global variable next->s: %s /n",globals->next->s);
@@ -434,20 +440,22 @@ void populate_symboltables(struct tree *n)
                //     printf("category %d\n",n->kids[i]->prodrule);
                // }
             //}
-            
-            for (i = 0; i < n->nkids; i++) {
-                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
-                    if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
-                        fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
-                    }else{
-                        insert_sym(current, n->kids[i]->leaf->text);
+            if(variable_declaration == 1){
+                for (i = 0; i < n->nkids; i++) {
+                    if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                        if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
+                            fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
+                        }else{
+                            insert_sym(current, n->kids[i]->leaf->text);
 
+                        }
                     }
-                 }
-             }
-            
+                }
+            }
+            variable_declaration = 0;
             break;    
         
+             
         case 406: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
         *   not mark it as undeclared */
@@ -457,7 +465,7 @@ void populate_symboltables(struct tree *n)
                 fprintf(stderr, "Error: Undeclared variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
             }
             break;
-        }
+    }
     /* Visit children (Recursive traversal of child nodes) */
     for (i = 0; i < n->nkids; i++) {
         populate_symboltables(n->kids[i]);
