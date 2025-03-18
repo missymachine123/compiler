@@ -478,7 +478,7 @@ controlStructureBody:
  
 
 jumpExpression:
-  RETURN expression {alctree(1075, "jumpExpression", 2, $1, $2);}
+  RETURN expression {$$ = alctree(1075, "jumpExpression", 2, $1, $2);}
   | RETURN
   | CONTINUE
   | BREAK
