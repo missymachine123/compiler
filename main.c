@@ -427,19 +427,12 @@ void populate_symboltables(struct tree *n)
         
         break;  
 
-        case 1028:
+        case 1028: /* check if it has passed through rule: property declaration*/
             variable_declaration = 1;
             break;
 
-
         case 1022: /* whatever production rule(s) designate a variable declaration */
-            // enter_newscope("variable_declaration");
-            // printf("Global variable next->s: %s /n",globals->next->s);
-            //for (i = 0; i < n->nkids; i++) {
-               // if (n->kids[i] != NULL){
-               //     printf("category %d\n",n->kids[i]->prodrule);
-               // }
-            //}
+            /* if variable flag = 1, insert variable, if 0 then it is part of a control structure*/
             if(variable_declaration == 1){
                 for (i = 0; i < n->nkids; i++) {
                     if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
