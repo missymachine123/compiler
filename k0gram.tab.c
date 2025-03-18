@@ -2742,7 +2742,7 @@ yyreduce:
 
   case 172: /* jumpExpression: RETURN expression  */
 #line 481 "k0gram.y"
-                    {alctree(1075, "jumpExpression", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
+                    {(yyval.treeptr) = alctree(1075, "jumpExpression", 2, (yyvsp[-1].treeptr), (yyvsp[0].treeptr));}
 #line 2747 "k0gram.tab.c"
     break;
 

@@ -22,8 +22,8 @@ fun main() {
 
 // Functions for integer operations
 fun add(a: Int, b: Int): Int {
-    b + d
-    return
+    a + b
+    return c
 }
 
 fun subtract(a: Int, b: Int): Int {
