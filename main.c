@@ -17,13 +17,15 @@ extern double yydval;
 extern char *yysval;
 extern int yylex_destroy();
 extern int yydebug;
+extern const char *yyname(int sym);
+extern void yyrestart(FILE *input_file);
+extern struct tree *root;
 struct token yytoken;
 char *filename;
-extern struct tree *root;
 int serial = 0;
-extern const char *yyname(int sym);
 SymbolTable current = NULL;
 SymbolTable globals = NULL;
+SymbolTable predefined = NULL;
 SymbolTable last_scope = NULL;
 int SCOPE = 0; 
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
@@ -358,6 +360,33 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
  return NULL;
 }
 
+void predefined_symbols(){
+    predefined = mksymtab(101, "predefined");
+    insert_sym(predefined, "print");
+    insert_sym(predefined, "println");
+    insert_sym(predefined, "get");
+    insert_sym(predefined, "equals");
+    insert_sym(predefined, "length");
+    insert_sym(predefined, "toString");
+    insert_sym(predefined, "valueOf");
+    insert_sym(predefined, "readln");
+    insert_sym(predefined, "String");
+    insert_sym(predefined, "java");
+    insert_sym(predefined, "lang");
+    insert_sym(predefined, "util");
+    insert_sym(predefined, "Math");
+    insert_sym(predefined, "abs");
+    insert_sym(predefined, "max");
+    insert_sym(predefined, "min");
+    insert_sym(predefined, "pow");
+    insert_sym(predefined, "cos");
+    insert_sym(predefined, "sin");
+    insert_sym(predefined, "tan");
+    insert_sym(predefined, "Random");
+    insert_sym(predefined, "nextInt");
+}
+
+
 void populate_symboltables(struct tree *n)
 {
     int i;
@@ -377,11 +406,10 @@ void populate_symboltables(struct tree *n)
             } 
             break;
         }
-
         // Handle entering a new class/struct scope
         //case 1033: /* Production rule for class/struct declaration */ {
             //printf("Entering new CLASS scope\n");
-            //enter_newscope("Class"); // Replace "Class" with actual class name if retrievable
+            //enter_newscope(n->kids[i]->leaf->text);
             //break;
         //}
         case 1007: /* rule for function paramteres */
@@ -424,7 +452,7 @@ void populate_symboltables(struct tree *n)
         /*for any variable it encounters, check if it is in global and current table if 
         *   not mark it as undeclared */
             //printf("Variable name: %s\n", n->leaf->text); 
-            if ((lookup_st(current, n->leaf->text)) == NULL && (lookup_st(globals, n->leaf->text)) == NULL){ //
+            if ((lookup_st(current, n->leaf->text)) == NULL && (lookup_st(globals, n->leaf->text)) == NULL && (lookup_st(predefined, n->leaf->text)) == NULL){ //
             //    insert_sym(current, n->leaf->text);
                 fprintf(stderr, "Error: Undeclared variable '%s' at line %d\n", n->leaf->text, n->leaf->lineno);
             }
@@ -568,9 +596,11 @@ int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
     int generate_symtab = 0;   // Flag for -symtab option
+    int file_count = 0;        // Count of input files
+    char **files = NULL;       // Array of input files
 
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s [-dot] [-tree] [-symtab] <filename>\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-dot] [-tree] [-symtab] <filename1> [<filename2> ...]\n", argv[0]);
         return 1;
     }
 
@@ -582,51 +612,61 @@ int main(int argc, char **argv) {
             generate_tree = 1;
         } else if (strcmp(argv[i], "-symtab") == 0) {
             generate_symtab = 1;
-        } else if (argv[i][0] != '-') {  // Assume it's the filename
-            filename = kt_extension(argv[i]);
+        } else if (argv[i][0] != '-') {  // Assume it's a filename
+            files = realloc(files, sizeof(char*) * (file_count + 1));
+            files[file_count++] = kt_extension(argv[i]);
         }
     }
 
-    if (filename == NULL) {
-        fprintf(stderr, "Error: No input file specified.\n");
+    if (file_count == 0) {
+        fprintf(stderr, "Error: No input files specified.\n");
         return 1;
     }
 
-    yyin = fopen(filename, "r");
-    if (!yyin) {
-        perror(filename);
-        free(filename);
-        return 1;
-    }
-
-    // Call the parser
-    printf("Parsing file: %s\n", filename);
-    int result = yyparse();
-    printf("yyparse returns %d\n", result);
-
-    // Handle the -tree option
-    if (generate_tree) {
-        treeprint(root, 1);  // Print the syntax tree
-        printf("Syntax tree printed.\n");
-    }
-
-    // Handle the -symtab option
-    if (generate_symtab) {
-        if (result == 0) {  // Only generate symbol tables if parsing succeeds
-            globals = mksymtab(101, "Global");
-            current = globals;
-            populate_symboltables(root);
-            //printf("Symbol tables generated.\n");
-            printsymbols(globals, 0);  // Print symbol tables
-        } else {
-            printf("Errors encountered during parsing. Symbol tables not generated.\n");
+    for (int i = 0; i < file_count; i++) {
+        filename = files[i];
+        printf("\nthis filename: %s\n", filename);
+        yyin = fopen(filename, "r");
+        if (!yyin) {
+            perror(filename);
+            free(filename);
+            continue;
         }
-    }
+        
 
-    // Handle the -dot option
+        // Call the parser
+        printf("Parsing file: %s\n", filename);
+        yyrestart(yyin);  // Restart the lexer with the new file
+        yylineno = 1;
+        int result = yyparse();
+        printf("yyparse returns %d\n", result);
+
+        // Handle the -tree option
+        if (generate_tree) {
+            treeprint(root, 1);  // Print the syntax tree
+            printf("Syntax tree printed.\n");
+        }
+
+        // Handle the -symtab option
+        if (generate_symtab) {
+            if (result == 0) {  // Only generate symbol tables if parsing succeeds
+                globals = mksymtab(101, "Global");
+                current = globals;
+                predefined_symbols();
+                populate_symboltables(root);
+                //printf("Symbol tables generated.\n");
+                printsymbols(globals, 0);  // Print symbol tables
+            } else {
+                printf("Errors encountered during parsing. Symbol tables not generated.\n");
+            }
+        }
+
+// Handle the -dot option
     if (generate_dot) {
-        print_graph(root, "tree.dot");  // Generate a .dot file
-        printf("Dot file generated: tree.dot\n");
+        char dot_filename[256];
+        snprintf(dot_filename, sizeof(dot_filename), "%s.dot", filename);
+        print_graph(root, dot_filename);  // Generate a .dot file
+        printf("Dot file generated: %s\n", dot_filename);
     }
 
     // Default behavior when no flags are provided
@@ -641,5 +681,8 @@ int main(int argc, char **argv) {
     // Cleanup
     fclose(yyin);
     free(filename);
-    return 0;
+}
+
+free(files);
+return 0;
 }

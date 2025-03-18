@@ -20,9 +20,13 @@ fun main() {
 
 // Functions for integer operations
 fun add(a: Int, b: Int): Int {
-    var a = 10
-    c + b
+    string.get(a)
+    java.lang.util(b)
     return
+}
+
+class Student(){
+    val pi = 3.14;
 }
 
 fun subtract(a: Int, b: Int): Int {

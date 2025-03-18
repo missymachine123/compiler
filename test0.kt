@@ -2,7 +2,8 @@ fun assignments() {
    val a : Int = 1;
    val b : Int = 2;
    val c : Int = 3;
-   d + 1;
+   d + 1; //expected error:undeclared
+   a.toString()
 }
 
 fun Operators() {
