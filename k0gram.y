@@ -256,7 +256,7 @@ classDeclaration:
 
 /* Variable Declaration */
 variableDeclaration:
-    type COLON type  {$$ = alctree(1034, "variableDeclaration", 1, $1);}
+    type COLON type  {$$ = alctree(1034, "variableDeclaration", 3, $1,$2,$3 );}
   | type  {$$ = alctree(1034, "variableDeclaration", 1, $1);}
 
 ;
