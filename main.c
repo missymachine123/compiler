@@ -5,6 +5,7 @@
 #include "k0gram.tab.h" 
 #include "tree.h"
 #include "symtab.h"
+#include "type.h"
 
 
 extern FILE *yyin;
@@ -32,8 +33,7 @@ int variable_declaration = 0;
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
 void printsymbols(SymbolTable st, int level);
-extern int yyrestart(FILE *);
-
+ 
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -289,9 +289,11 @@ int hash(SymbolTable st, char *s)
 /*
  * Insert a symbol into a symbol table.
  */
-int insert_sym(SymbolTable st, char *s) { 
+int insert_sym(SymbolTable st, char *s, typeptr t) { 
+
     struct sym_entry *se;
     int h;
+
     h = hash(st, s);
     for (se = st->tbl[h]; se != NULL; se = se->next) {
         if (!strcmp(s, se->s)) {
@@ -310,37 +312,43 @@ int insert_sym(SymbolTable st, char *s) {
     se->table = st;
     se->next= st->tbl[h];
     st->tbl[h] = se;
-    //se->type = t;
+    se->type = t;
     st->nEntries++;
     return 1;
 }
 
 
-void enter_newscope(char *s) {
-    // Allocate a new symbol table
-    SymbolTable newTable = mksymtab(101, s);
-    
-    // Insert s into the current symbol table
-    insert_sym(current, s);
 
-    //attach new symbol to s's entry 
-    int h = hash(current, s);
-    struct sym_entry *se;
-    for (se = current->tbl[h]; se != NULL; se = se->next) {
-        if (!strcmp(se->s, s)) {
-            // Attach new symbol table to this entry
-            se->table = newTable;
-            break;
+void enter_newscope(char *s) {
+    // Step 1: Allocate a new symbol table
+    SymbolTable newTable = mksymtab(101, s);
+
+    // Step 2: Allocate the corresponding type for the new scope
+    typeptr t;
+    // Allocate a function type and associate it with the symbol table
+    t = alcfunctype(NULL, NULL, newTable);
+    
+
+    // Step 3: Insert the symbol into the current symbol table with the type
+    if (insert_sym(current, s, t)) {
+        // Successfully inserted, now attach the symbol table to its entry
+        int h = hash(current, s);
+        struct sym_entry *se;
+        for (se = current->tbl[h]; se != NULL; se = se->next) {
+            if (!strcmp(se->s, s)) {
+                // Attach the new symbol table (scope) to this symbol's entry
+                se->table = newTable;
+                break;
+            }
         }
+    } else {
+        // If insertion failed (symbol already exists), handle the error
+        fprintf(stderr, "Symbol '%s' already exists in the current scope.\n", s);
+        return;
     }
 
-    // Push new symbol table onto the stack
-    //newTable->parent = current;
-    //current = newTable;
+    // Step 4: Push the new symbol table onto the stack to set it as the current scope
     pushscope(newTable);
-    //newTable->tbl = current->tbl;
-    //current->tbl = newTable;
-    //current = newTable;
 }
 
 /*
@@ -362,31 +370,35 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
  return NULL;
 }
 
-void predefined_symbols(){
+void predefined_symbols() {
+    // Step 1: Create the predefined symbol table
     predefined = mksymtab(101, "predefined");
-    insert_sym(predefined, "print");
-    insert_sym(predefined, "println");
-    insert_sym(predefined, "get");
-    insert_sym(predefined, "equals");
-    insert_sym(predefined, "length");
-    insert_sym(predefined, "toString");
-    insert_sym(predefined, "valueOf");
-    insert_sym(predefined, "readln");
-    insert_sym(predefined, "String");
-    insert_sym(predefined, "java");
-    insert_sym(predefined, "lang");
-    insert_sym(predefined, "util");
-    insert_sym(predefined, "Math");
-    insert_sym(predefined, "abs");
-    insert_sym(predefined, "max");
-    insert_sym(predefined, "min");
-    insert_sym(predefined, "pow");
-    insert_sym(predefined, "cos");
-    insert_sym(predefined, "sin");
-    insert_sym(predefined, "tan");
-    insert_sym(predefined, "random");
-    insert_sym(predefined, "nextInt");
+
+    // Step 2: Insert symbols with type information
+    insert_sym(predefined, "print", alctype(FUNC_TYPE));       // Function
+    insert_sym(predefined, "println", alctype(FUNC_TYPE));     // Function
+    insert_sym(predefined, "get", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "equals", alctype(FUNC_TYPE));      // Function
+    insert_sym(predefined, "length", alctype(FUNC_TYPE));      // Function
+    insert_sym(predefined, "toString", alctype(FUNC_TYPE));    // Function
+    insert_sym(predefined, "valueOf", alctype(FUNC_TYPE));     // Function
+    insert_sym(predefined, "readln", alctype(FUNC_TYPE));      // Function
+    insert_sym(predefined, "String", alctype(CLASS_TYPE));     // Class
+    insert_sym(predefined, "java", alctype(PACKAGE_TYPE));     // Package
+    insert_sym(predefined, "lang", alctype(PACKAGE_TYPE));     // Package
+    insert_sym(predefined, "util", alctype(PACKAGE_TYPE));     // Package
+    insert_sym(predefined, "Math", alctype(CLASS_TYPE));       // Class
+    insert_sym(predefined, "abs", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "max", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "min", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "pow", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "cos", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "sin", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "tan", alctype(FUNC_TYPE));         // Function
+    insert_sym(predefined, "random", alctype(FUNC_TYPE));      // Function
+    insert_sym(predefined, "nextInt", alctype(FUNC_TYPE));     // Function
 }
+
 
 
 void populate_symboltables(struct tree *n)
@@ -415,13 +427,14 @@ void populate_symboltables(struct tree *n)
             //break;
         //}
         case 1007: /* rule for function paramteres */
+        printf("type: %s\n",n->kids[2]->leaf->text);
         for (i = 0; i < n->nkids; i++) {
              if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                 if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
                     fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                     exit(3);
                 }else{
-                    insert_sym(current, n->kids[i]->leaf->text);
+                    insert_sym(current, n->kids[i]->leaf->text,alctype(NULL_TYPE));
 
                 }
              }
@@ -442,7 +455,7 @@ void populate_symboltables(struct tree *n)
                             fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                             exit(3);
                         }else{
-                            insert_sym(current, n->kids[i]->leaf->text);
+                            insert_sym(current, n->kids[i]->leaf->text,NULL);
 
                         }
                     }
@@ -595,6 +608,64 @@ char* removeSeparators(char* yytext) {
     cleanText[j] = '\0';
     return cleanText;
 }
+
+void free_tree(struct tree *t) {
+    if (t == NULL) {
+        return;
+    }
+
+    // Free the leaf node if it exists
+    if (t->leaf != NULL) {
+        free(t->leaf->text);
+        free(t->leaf->filename);
+        free(t->leaf->sval);
+        free(t->leaf);
+    }
+
+    // Recursively free the children nodes
+    for (int i = 0; i < t->nkids; i++) {
+        free_tree(t->kids[i]);
+    }
+
+    // Free the symbol name
+    free(t->symbolname);
+
+    // Finally, free the tree node itself
+    free(t);
+}
+
+void free_symbol_table(SymbolTable st) {
+    if (st == NULL) {
+        return;
+    }
+
+    // Free each entry in the symbol table
+    for (int i = 0; i < st->nBuckets; i++) {
+        struct sym_entry *se = st->tbl[i];
+        while (se != NULL) {
+            struct sym_entry *next = se->next;
+            free(se->s);
+            free(se);
+            se = next;
+        }
+    }
+
+    // Free the table itself
+    free(st->tbl);
+    free(st->name);
+    free(st);
+}
+
+void free_all_symbol_tables() {
+    SymbolTable current_table = current;
+
+    while (current_table != NULL) {
+        SymbolTable parent = current_table->parent;
+        free_symbol_table(current_table);
+        current_table = parent;
+    }
+}
+
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
@@ -682,8 +753,11 @@ int main(int argc, char **argv) {
     }
 
     // Cleanup
+    free_symbol_table(globals);
     fclose(yyin);
-    free(filename);
+    free(filename); 
+    yylex_destroy();  // Free lexer resources
+
 }
 
 free(files);

@@ -1,60 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "type.h"
+#include "tree.h"
 #include "symtab.h"
-#include "token.h"
 #include "k0gram.tab.h"
    
 struct typeinfo null_type = { NULL_TYPE };
+struct typeinfo byte_type = { BYTE_TYPE };
+struct typeinfo short_type = { SHORT_TYPE };
 struct typeinfo integer_type = { INT_TYPE };
+struct typeinfo long_type = { LONG_TYPE };
+struct typeinfo float_type = { FLOAT_TYPE };
 struct typeinfo double_type = { DOUBLE_TYPE };
 struct typeinfo boolean_type = { BOOL_TYPE };
+struct typeinfo string_type = { STRING_TYPE };
 struct typeinfo char_type = { CHAR_TYPE };
+struct typeinfo array_type = { ARRAY_TYPE };
+struct typeinfo func_type = { FUNC_TYPE };
+struct typeinfo class_type = { CLASS_TYPE };
+struct typeinfo package_type = { PACKAGE_TYPE };
+struct typeinfo any_type = { ANY_TYPE };
 
 typeptr null_typeptr = &null_type;
+typeptr byte_typeptr = &byte_type;
+typeptr short_typeptr = &short_type;
 typeptr integer_typeptr = &integer_type;
+typeptr long_typeptr = &long_type;
+typeptr float_typeptr = &float_type;
 typeptr double_typeptr = &double_type;
 typeptr boolean_typeptr = &boolean_type;
+typeptr string_typeptr = &string_type;
 typeptr char_typeptr = &char_type;
+typeptr array_typeptr = &array_type;
+typeptr func_typeptr = &func_type;
+typeptr class_typeptr = &class_type;
+typeptr package_typeptr = &package_type;
+typeptr any_typeptr = &any_type;
+
 
 char *typenam[] =
-   {"none", "int", "float", "bool", "char",
-    "string", "array", "func", "class", "package",
-    "any"}; /* "list", "dict", ... */
+   {"null","byte","short", "int", "long","float", "double","bool", "string","char",
+    "array", "func", "class", "package", "any"}; /* "list", "dict", ... */
 
 typeptr alctype(int base)
 {
    typeptr rv;
    if (base == NULL_TYPE) return null_typeptr;
+   else if (base == BYTE_TYPE) return byte_typeptr;
+   else if (base == SHORT_TYPE) return short_typeptr;
    else if (base == INT_TYPE) return integer_typeptr;
+   else if (base == LONG_TYPE) return long_typeptr;
+   else if (base == FLOAT_TYPE) return float_typeptr;
    else if (base == DOUBLE_TYPE) return double_typeptr;
    else if (base == BOOL_TYPE) return boolean_typeptr;
+   else if (base == STRING_TYPE) return string_typeptr;
    else if (base == CHAR_TYPE) return char_typeptr;
+   else if (base == ARRAY_TYPE) return array_typeptr;
+   else if (base == FUNC_TYPE) return func_typeptr;
+   else if (base == CLASS_TYPE) return class_typeptr;
+   else if (base == PACKAGE_TYPE) return package_typeptr;
+   else if (base == ANY_TYPE) return any_typeptr;
 
    rv = (typeptr) calloc(1, sizeof(struct typeinfo));
    if (rv == NULL) return rv;
    rv->basetype = base;
    return rv;
 }
-
-#if 0
-/* For languages that have a list type.
- * List size determination from a tree nodeptr is sometimes reasonable?
- */
-typeptr alclist()
-{
-   typeptr rv = alctype(LIST_TYPE);
-   return rv;
-}
-
-/* For languages that have a struct type. */
-typeptr alcstructtype()
-{
-   typeptr rv = alctype(STRUCT_TYPE);
-   /* who initializes the fields, someone else I guess, later on */
-   return rv;
-}
-#endif
+ 
 
 /* Construct a function type from syntax (sub)tree(s).
  * For this to make any sense, you have to pass in the subtrees
@@ -66,6 +78,12 @@ typeptr alcfunctype(struct tree * r, struct tree * p, SymbolTable st)
    typeptr rv = alctype(FUNC_TYPE);
    if (rv == NULL) return NULL;
    rv->u.f.st = st;
+
+   // if (r!=NULL){
+   //    rv->u.f.returntype = alctype();
+   // }
+
+
    /* fill in return type and paramlist by traversing subtrees */
    /* rf->u.f.returntype = ... */
    return rv;

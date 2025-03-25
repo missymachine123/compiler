@@ -7,9 +7,10 @@ typedef struct sym_table {
    /* more per-scope/per-symbol-table attributes go here */
    } *SymbolTable;
 
-   typedef struct sym_entry {
-      SymbolTable table;			/* what symbol table do we belong to*/
-       char *s;				/* string */
-       struct sym_entry *next;
-       } *SymbolTableEntry;
+typedef struct sym_entry {
+   SymbolTable table;			/* what symbol table do we belong to*/
+   char *s;				/* string */
+   struct typeinfo *type;		/* a.k.a. typeptr, struct c_type *... */
+   struct sym_entry *next;
+      } *SymbolTableEntry;
 

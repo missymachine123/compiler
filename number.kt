@@ -11,7 +11,7 @@ fun main() {
     val double2 = 2.5
     for(double2 in 1..5){
     }
-    //val double2 = 5.0
+    val double3 = -2.4
     println("\nFloating-Point Tests:")
     println("Addition: $double1 + $double2 = ${add(double1, double2)}")
     println("Subtraction: $double1 - $double2 = ${subtract(double1, double2)}")
@@ -23,7 +23,7 @@ fun main() {
 // Functions for integer operations
 fun add(a: Int, b: Int): Int {
     a + b
-    return c
+    return b
 }
 
 fun subtract(a: Int, b: Int): Int {
