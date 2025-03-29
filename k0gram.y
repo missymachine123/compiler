@@ -59,8 +59,7 @@ topLevelObjects:
 ;
 
 topLevelObject:
-    functionDeclaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
-  | classDeclaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
+    declaration {$$ = alctree(1002, "topLevelObject", 1, $1);} 
 ;
 
 opt_functionBody:
