@@ -59,9 +59,8 @@ topLevelObjects:
 ;
 
 topLevelObject:
-    functionDeclaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
-  | classDeclaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
-;
+    declaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
+ ;
 
 opt_functionBody:
     functionBody {$$ = alctree(1003, "opt_functionBody", 1, $1);}
@@ -468,6 +467,7 @@ control_structure_body_or_comma:
 loopStatement:
     WHILE LPAREN expression RPAREN control_structure_body_or_comma  {$$ = alctree(1073,"loopStatement", 5 ,$1, $2, $3, $4,$5);}
     | FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody  {$$ = alctree(1073,"loopStatement", 7 ,$1, $2, $3, $4,$5,$6,$7);}
+    | DO controlStructureBody WHILE LPAREN expression RPAREN  {$$ = alctree(1073,"loopStatement", 6 ,$1, $2, $3, $4,$5,$6);}
 ;
 
 
