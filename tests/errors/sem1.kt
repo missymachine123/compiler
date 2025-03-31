@@ -1,0 +1,1 @@
+val x: Int = "Hello" // Type mismatch

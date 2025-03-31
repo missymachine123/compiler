@@ -449,21 +449,27 @@ void populate_symboltables(struct tree *n)
         case 1022: /* whatever production rule(s) designate a variable declaration */
             /* if variable flag = 1, insert variable, if 0 then it is part of a control structure*/
             if(variable_declaration == 1){
+                
                 for (i = 0; i < n->nkids; i++) {
                     if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                         if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
                             fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                             exit(3);
-                        }else{
+                        }else{ 
                             insert_sym(current, n->kids[i]->leaf->text,NULL);
 
                         }
                     }
                 }
-            }
+            } 
             variable_declaration = 0;
             break;    
+        case 1034:
         
+            if (n->kids[2] != NULL && n->kids[2]->leaf != NULL) {
+                printf("Type: %s\n", n->kids[2]->leaf->text);
+            }
+            break;
              
         case 406: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 

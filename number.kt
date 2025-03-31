@@ -23,7 +23,11 @@ fun main() {
 // Functions for integer operations
 fun add(a: Int, b: Int): Int {
     a + b
+<<<<<<< HEAD
     return b
+=======
+    return a
+>>>>>>> 1f20bc9 (valgrind clean)
 }
 
 fun subtract(a: Int, b: Int): Int {
