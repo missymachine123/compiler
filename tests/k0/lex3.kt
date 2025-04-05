@@ -11,6 +11,11 @@ fun main() {
     println(x)
     x = x - 1
     println(x)
+    println(x)
+    x++
+	println(x)
+	x--
+    
     x += 1
     println(x)
     x -= 1
@@ -20,10 +25,5 @@ fun main() {
     x /= 2
     println(x)
     x %= 2
-    println(x)
-    x++
-	println(x)
-	x--
-    println(x)
 
 }

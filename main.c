@@ -295,6 +295,10 @@ int insert_sym(SymbolTable st, char *s, typeptr t) {
     int h;
 
     h = hash(st, s);
+    if (t != NULL) { 
+        printf("Inserting symbol: %d\n", t->basetype); 
+        }
+    
     for (se = st->tbl[h]; se != NULL; se = se->next) {
         if (!strcmp(s, se->s)) {
             /*
@@ -370,6 +374,23 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
  return NULL;
 }
 
+SymbolTableEntry insert_type(SymbolTable st, char *s, typeptr t){
+    //  register int i;
+     int h;
+     SymbolTableEntry se;
+    
+     h = hash(st, s);
+     for (se = st->tbl[h]; se != NULL; se = se->next)
+        if (!strcmp(s, se->s)) { 
+           /*
+            *  Return a pointer to the symbol table entry.
+            
+            */
+           return se;
+           }
+     return NULL;
+    }
+
 void predefined_symbols() {
     // Step 1: Create the predefined symbol table
     predefined = mksymtab(101, "predefined");
@@ -414,20 +435,18 @@ void populate_symboltables(struct tree *n)
             for (i = 0; i < n->nkids; i++) {
                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                    //printf("Function new name: %s\n", n->kids[i]->leaf->text);
-                   enter_newscope(n->kids[i]->leaf->text);
+                   (n->kids[i]->leaf->text);
                    break;
                 }
             } 
             break;
-        }
-        // Handle entering a new class/struct scope
-        //case 1033: /* Production rule for class/struct declaration */ {
-            //printf("Entering new CLASS scope\n");
-            //enter_newscope(n->kids[i]->leaf->text);
-            //break;
-        //}
+        } 
         case 1007: /* rule for function paramteres */
-        printf("type: %s\n",n->kids[2]->leaf->text);
+        if (n->kids[0] != NULL && n->kids[0]->leaf != NULL && n->kids[0]->leaf->category == 406 && n->kids[2]->leaf != NULL) {
+            printf("Function parameter name: %s\n", n->kids[0]->leaf->text);
+            printf("Function parameter type: %s\n", n->kids[2]->leaf->text); 
+        }
+        // printf("type: %s\n",n->kids[2]->leaf->text);
         for (i = 0; i < n->nkids; i++) {
              if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                 if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
@@ -456,6 +475,7 @@ void populate_symboltables(struct tree *n)
                             fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                             exit(3);
                         }else{ 
+                            // printf("current type is : %d\n", n->kids[1]->leaf->text);
                             insert_sym(current, n->kids[i]->leaf->text,NULL);
 
                         }
@@ -465,9 +485,10 @@ void populate_symboltables(struct tree *n)
             variable_declaration = 0;
             break;    
         case 1034:
-        
+            
             if (n->kids[2] != NULL && n->kids[2]->leaf != NULL) {
                 printf("Type: %s\n", n->kids[2]->leaf->text);
+                
             }
             break;
              
@@ -497,6 +518,35 @@ void populate_symboltables(struct tree *n)
             break;
         }
     }
+}
+
+
+void symboltable_type_init(struct tree *t) {
+    int i;
+    if (t == NULL) return; 
+    /* pre-order activity */
+    switch (t->prodrule) {
+    case 1034:
+        struct tree *s = t->kids[0];
+        while (s != NULL && s->prodrule != 406) {
+            s = s->kids[0];
+        }
+        if (s != NULL && s->prodrule == 406) {
+            printnode(s);
+        }
+        
+        if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) {
+            printnode(t->kids[2]);
+        }
+        
+        break;
+    }
+    for (i = 0; i < t->nkids; i++) {
+        symboltable_type_init(t->kids[i]);
+    }
+
+
+ 
 }
 
 void printsymbols(SymbolTable st, int level) {
@@ -718,6 +768,7 @@ int main(int argc, char **argv) {
         printf("Parsing file: %s\n", filename);
         yyrestart(yyin);  // Restart the lexer with the new file
         yylineno = 1;
+        // yydebug = 1;
         int result = yyparse();
         printf("yyparse returns %d\n", result);
 
@@ -734,6 +785,7 @@ int main(int argc, char **argv) {
                 current = globals;
                 predefined_symbols();
                 populate_symboltables(root);
+                symboltable_type_init(root);
                 //printf("Symbol tables generated.\n");
                 printsymbols(globals, 0);  // Print symbol tables
             } else {
