@@ -174,7 +174,6 @@ int alctoken(int category) {
     return category;
 }
 
-
 struct tree *alctree(int prodrule, const char *symbolname, int nkids, ...) {
     int i;
     va_list ap;
@@ -496,8 +495,8 @@ void populate_symboltables(struct tree *n)
     switch (n->prodrule) {
     
         case 1004: /* End of class scope */ {
-            printsymbols(current, SCOPE);
-            printf("---\n");
+            //printsymbols(current, SCOPE);
+            //printf("---\n");
             popscope(); // Pop the current scope to return to the parent scope
             break;
         }
@@ -533,13 +532,34 @@ void insert_type(SymbolTable st, char *s, typeptr t){
            return ;
            }
      return;
+}
+
+/* given table name, find table */
+SymbolTable find_table(char *table_name){
+    struct sym_entry *se;
+    int h = hash(current, table_name);
+    for (se = current->tbl[h]; se != NULL; se = se->next) {
+        return se->table;
     }
+    return NULL;
+
+}
 
 void symboltable_type_init(struct tree *t) {
     int i;
     if (t == NULL) return; 
     /* pre-order activity */
     switch (t->prodrule) {
+    case 1004: /* rule for functions */
+        for (i = 0; i < t->nkids; i++) {
+            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 406) {
+           char *function_name = t->kids[i]->leaf->text;
+           SymbolTable name = find_table(function_name);
+           pushscope(name); 
+           break;
+            }
+        }
+        break;
     case 1034:
         struct tree *s = t->kids[0];
         while (s != NULL && s->prodrule != 406) {
@@ -560,10 +580,47 @@ void symboltable_type_init(struct tree *t) {
         symboltable_type_init(t->kids[i]);
     }
 
-
+    /* Post-order activity */
+    switch (t->prodrule) {
+    
+        case 1004: /* End of class scope */ {
+            popscope(); // Pop the current scope to return to the parent scope
+            break;
+        }
+    }
  
 }
 
+/* print all symbol tables, pushes and pops scopes when it encounters a function*/
+void print_all(struct tree *t){
+    int i;
+    if (t == NULL) return; 
+    /* pre-order activity */
+    switch (t->prodrule) {
+    case 1004: /* rule for functions */
+        for (i = 0; i < t->nkids; i++) {
+            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 406) {
+           char *function_name = t->kids[i]->leaf->text;
+           SymbolTable name = find_table(function_name);
+           pushscope(name); 
+           break;
+            }
+        }
+        break;
+    }
+    for (i = 0; i < t->nkids; i++) {
+       print_all(t->kids[i]);
+    }
+    /* Post-order activity */
+    switch (t->prodrule) {
+        case 1004: /* End of class scope */ {
+            printsymbols(current, SCOPE);
+            popscope(); // Pop the current scope to return to the parent scope
+            break;
+        }
+    }
+
+}
 
 
 void printsymbols(SymbolTable st, int level) {
@@ -587,9 +644,9 @@ void printsymbols(SymbolTable st, int level) {
             }
 
             // If the symbol has a sub-scope, print it recursively
-            if (ste->table != NULL && ste->table != st) {
-               printsymbols(ste->table, level + 1);
-            }
+            //if (ste->table != NULL && ste->table != st) {
+              // printsymbols(ste->table, level + 1);
+            //}
         }
     }
 }
@@ -796,7 +853,8 @@ int main(int argc, char **argv) {
                 populate_symboltables(root);
                 symboltable_type_init(root);
                 //printf("Symbol tables generated.\n");
-                printsymbols(current, 0);  // Print symbol tables
+                printsymbols(current, 0);  // Print global symbol table
+                print_all(root);
             } else {
                 printf("Errors encountered during parsing. Symbol tables not generated.\n");
             }
