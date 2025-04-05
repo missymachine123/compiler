@@ -245,8 +245,6 @@ multi_typeParameter:
 
 simpleIdentifier:
   IDENTIFIER 
-  | IMPORT  
-  | CONST 
 ;
 
 classDeclaration:
@@ -584,7 +582,7 @@ multiplicativeExpression:
 
 primaryExpression:
   parenthesizedExpression { $$ = alctree(1035, "primaryExpression", 1, $1);}
-    | IDENTIFIER 
+    | simpleIdentifier { $$ = alctree(1035, "primaryExpression", 1, $1);} 
     | functionCall { $$ = alctree(1035, "primaryExpression", 1, $1);}
     | INTEGER_LITERAL 
     | STRING_LITERAL 
