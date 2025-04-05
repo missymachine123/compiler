@@ -374,22 +374,6 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
  return NULL;
 }
 
-SymbolTableEntry insert_type(SymbolTable st, char *s, typeptr t){
-    //  register int i;
-     int h;
-     SymbolTableEntry se;
-    
-     h = hash(st, s);
-     for (se = st->tbl[h]; se != NULL; se = se->next)
-        if (!strcmp(s, se->s)) { 
-           /*
-            *  Return a pointer to the symbol table entry.
-            
-            */
-           return se;
-           }
-     return NULL;
-    }
 
 void predefined_symbols() {
     // Step 1: Create the predefined symbol table
@@ -520,6 +504,24 @@ void populate_symboltables(struct tree *n)
     }
 }
 
+void insert_type(SymbolTable st, char *s, typeptr t){
+    //  register int i;
+     int h;
+     SymbolTableEntry se;
+    
+     h = hash(st, s);
+     for (se = st->tbl[h]; se != NULL; se = se->next)
+        if (!strcmp(s, se->s)) { 
+
+            printsymbol(s);
+           /*
+            *  Return a pointer to the symbol table entry.
+            
+            */
+           return ;
+           }
+     return;
+    }
 
 void symboltable_type_init(struct tree *t) {
     int i;
@@ -538,7 +540,7 @@ void symboltable_type_init(struct tree *t) {
         if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) {
             printnode(t->kids[2]);
         }
-        
+        insert_type(current,s->leaf->text,alctype(NULL_TYPE));
         break;
     }
     for (i = 0; i < t->nkids; i++) {
