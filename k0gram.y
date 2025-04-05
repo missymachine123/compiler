@@ -588,6 +588,7 @@ primaryExpression:
     | STRING_LITERAL 
     | BOOLEAN_LITERAL
     | FLOAT_LITERAL
+    | CHARACTER_LITERAL
     | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
     | collectionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
     | ifExpression {$$ = alctree(1011, "primaryExpression", 1, $1);}

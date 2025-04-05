@@ -62,6 +62,7 @@ typeptr alcfunctype(struct tree * r, struct tree * p, struct sym_table * st);
 typeptr alcarraytype(struct tree * s, struct tree * e);
 char *typename(typeptr t);
 
+typeptr assignType(char *typeName);
 extern struct sym_table *global_table;
 extern typeptr integer_typeptr;
 extern typeptr double_typeptr;

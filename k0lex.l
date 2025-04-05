@@ -123,7 +123,7 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "import"                { return alctoken(IMPORT);}
 "const"                 { return alctoken(CONST);}
 "interface"             { return alctoken(INTERFACE);} 
-"Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"Char"|"Byte"    { return alctoken(TYPELITERAL);} 
+"Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"Char"|"Byte"|"String"    { return alctoken(TYPELITERAL);} 
 "-"?{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
 "-"?{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
 "-"?{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return alctoken(INTEGER_LITERAL);}  
@@ -133,7 +133,7 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "true"|"false"						                            { return alctoken(BOOLEAN_LITERAL);}
 "null"							                                { return alctoken(NULL_LITERAL);}
 ["][^"]*["]				                                        { yysval = descape(yytext);return alctoken(STRING_LITERAL);}
-\'({EscapeSeq}|[^\r\n'\\]+)\'                                   { return alctoken(CHARACTER_LITERAL); }
+\'({EscapeSeq}|[^\r\n'\\])?\'                                   { return alctoken(CHARACTER_LITERAL); }
 {unsupported}                           { fprintf(stderr, ":%d: error: the reserved word '%s' is not supported by K0 \n", yylineno, yytext); }
 {unsupported_op}                        { fprintf(stderr, ":%d: error: punctuation '%s' is not supported by K0 \n", yylineno, yytext);  }
 {unsupported_bit}                       { fprintf(stderr, ":%d: error: the operator '%s' is not supported by K0 \n", yylineno, yytext); }

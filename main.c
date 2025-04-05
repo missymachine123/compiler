@@ -296,7 +296,7 @@ int insert_sym(SymbolTable st, char *s, typeptr t) {
 
     h = hash(st, s);
     if (t != NULL) { 
-        printf("Inserting symbol: %d\n", t->basetype); 
+        // printf("Inserting symbol: %d\n", t->basetype); 
         }
     
     for (se = st->tbl[h]; se != NULL; se = se->next) {
@@ -549,10 +549,10 @@ void symboltable_type_init(struct tree *t) {
             // printnode(s);
         }
         
-        if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) {
-            // printnode(t->kids[2]);
+        if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) { 
+            
+        insert_type(current,s->leaf->text,assignType(t->kids[2]->leaf->text));
         }
-        insert_type(current,s->leaf->text,alctype(NULL_TYPE));
         // printnode(s);
         break;
     }
@@ -583,13 +583,13 @@ void printsymbols(SymbolTable st, int level) {
                 // Print the type information if available
                 printf("Type: %d\n", ste->type->basetype);
             } else {
-                printf("Type: NULL\n");
+                // printf("Type: NULL\n");
             }
 
             // If the symbol has a sub-scope, print it recursively
-            //if (ste->table != NULL && ste->table != st) {
-               // printsymbols(ste->table, level + 1);
-            //}
+            if (ste->table != NULL && ste->table != st) {
+               printsymbols(ste->table, level + 1);
+            }
         }
     }
 }
@@ -621,8 +621,6 @@ void print_all_symbol_tables() {
         current_table = current_table->parent;
     }
 }
-
-
 
  
 void print_graph(struct tree *t, char *filename){
@@ -798,7 +796,7 @@ int main(int argc, char **argv) {
                 populate_symboltables(root);
                 symboltable_type_init(root);
                 //printf("Symbol tables generated.\n");
-                printsymbols(globals, 0);  // Print symbol tables
+                printsymbols(current, 0);  // Print symbol tables
             } else {
                 printf("Errors encountered during parsing. Symbol tables not generated.\n");
             }

@@ -4,6 +4,7 @@
 #include "tree.h"
 #include "symtab.h"
 #include "k0gram.tab.h"
+#include <string.h>
    
 struct typeinfo null_type = { NULL_TYPE };
 struct typeinfo byte_type = { BYTE_TYPE };
@@ -42,6 +43,29 @@ char *typenam[] =
    {"null","byte","short", "int", "long","float", "double","bool", "string","char",
     "array", "func", "class", "package", "any"}; /* "list", "dict", ... */
 
+
+typeptr assignType(char *typeName) {
+    if (strcmp(typeName, "null") == 0) return null_typeptr;
+    else if (strcmp(typeName, "Byte") == 0) return byte_typeptr;
+    else if (strcmp(typeName, "Short") == 0) return short_typeptr;
+    else if (strcmp(typeName, "Int") == 0) return integer_typeptr;
+    else if (strcmp(typeName, "Long") == 0) return long_typeptr;
+    else if (strcmp(typeName, "Float") == 0) return float_typeptr;
+    else if (strcmp(typeName, "Double") == 0) return double_typeptr;
+    else if (strcmp(typeName, "Boolean") == 0) return boolean_typeptr;
+    else if (strcmp(typeName, "String") == 0) return string_typeptr;
+    else if (strcmp(typeName, "Char") == 0) return char_typeptr;
+    else if (strcmp(typeName, "Array") == 0) return array_typeptr;
+    else if (strcmp(typeName, "func") == 0) return func_typeptr;
+    else if (strcmp(typeName, "class") == 0) return class_typeptr;
+    else if (strcmp(typeName, "package") == 0) return package_typeptr;
+    else if (strcmp(typeName, "any") == 0) return any_typeptr;
+   else {
+      // Handle unknown type names
+      fprintf(stderr, "Unknown type name: %s\n", typeName);
+      return NULL;
+   }
+}
 typeptr alctype(int base)
 {
    typeptr rv;
