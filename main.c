@@ -405,7 +405,6 @@ void predefined_symbols() {
 }
 
 
-
 void populate_symboltables(struct tree *n)
 {
     int i;
@@ -419,7 +418,8 @@ void populate_symboltables(struct tree *n)
             for (i = 0; i < n->nkids; i++) {
                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
                    //printf("Function new name: %s\n", n->kids[i]->leaf->text);
-                   (n->kids[i]->leaf->text);
+                   //(n->kids[i]->leaf->text);
+                   enter_newscope(n->kids[i]->leaf->text);
                    break;
                 }
             } 
@@ -471,7 +471,7 @@ void populate_symboltables(struct tree *n)
         case 1034:
             
             if (n->kids[2] != NULL && n->kids[2]->leaf != NULL) {
-                printf("Type: %s\n", n->kids[2]->leaf->text);
+                // printf("Type: %s\n", n->kids[2]->leaf->text);
                 
             }
             break;
@@ -503,6 +503,19 @@ void populate_symboltables(struct tree *n)
         }
     }
 }
+void printsyms(struct tree *t) {
+    if (t == NULL) { 
+        return;
+    }
+ 
+    if (t->leaf != NULL && t->leaf->category == 406) {
+        printsymbol(t->leaf->text);
+    }
+    for (int i = 0; i < t->nkids; i++) {
+        printsyms(t->kids[i]);
+    }
+}
+
 
 void insert_type(SymbolTable st, char *s, typeptr t){
     //  register int i;
@@ -512,8 +525,7 @@ void insert_type(SymbolTable st, char *s, typeptr t){
      h = hash(st, s);
      for (se = st->tbl[h]; se != NULL; se = se->next)
         if (!strcmp(s, se->s)) { 
-
-            printsymbol(s);
+            se->type = t; // Update the type of the existing symbol
            /*
             *  Return a pointer to the symbol table entry.
             
@@ -534,13 +546,14 @@ void symboltable_type_init(struct tree *t) {
             s = s->kids[0];
         }
         if (s != NULL && s->prodrule == 406) {
-            printnode(s);
+            // printnode(s);
         }
         
         if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) {
-            printnode(t->kids[2]);
+            // printnode(t->kids[2]);
         }
         insert_type(current,s->leaf->text,alctype(NULL_TYPE));
+        // printnode(s);
         break;
     }
     for (i = 0; i < t->nkids; i++) {
@@ -550,6 +563,8 @@ void symboltable_type_init(struct tree *t) {
 
  
 }
+
+
 
 void printsymbols(SymbolTable st, int level) {
     int i;
@@ -563,6 +578,13 @@ void printsymbols(SymbolTable st, int level) {
     for (i = 0; i < st->nBuckets; i++) {
         for (ste = st->tbl[i]; ste != NULL; ste = ste->next) {
             printf("%s\n", ste->s);
+
+            if (ste->type != NULL) {
+                // Print the type information if available
+                printf("Type: %d\n", ste->type->basetype);
+            } else {
+                printf("Type: NULL\n");
+            }
 
             // If the symbol has a sub-scope, print it recursively
             //if (ste->table != NULL && ste->table != st) {
@@ -600,19 +622,6 @@ void print_all_symbol_tables() {
     }
 }
 
-
- void printsyms(struct tree *t) {
-    if (t == NULL) { 
-        return;
-    }
- 
-    if (t->leaf != NULL && t->leaf->category == 406) {
-        printsymbol(t->leaf->text);
-    }
-    for (int i = 0; i < t->nkids; i++) {
-        printsyms(t->kids[i]);
-    }
-}
 
 
  
