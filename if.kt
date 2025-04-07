@@ -2,7 +2,8 @@
 fun assignments() {
    val a : Int = 1;
    val b : Int = 2;
-   val c : Int = 3;
+   val c : Int = "h";
+   var d = "3";
 }
 
 fun Operators() {

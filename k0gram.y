@@ -214,7 +214,7 @@ multivariable_variableDeclaration:
   ;
 
 propertyDeclaration:
-    opt_modifier val_var opt_typeParameters nullableType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1028, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
+    opt_modifier val_var opt_typeParameters nullableType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(10028, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
   | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1028, "propertyDeclaration", 6, $1, $2, $3, $4, $5, $6);}
   | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp {$$ = alctree(1028, "propertyDeclaration", 5, $1, $2, $3, $4, $5 );}
   ;
@@ -254,7 +254,7 @@ classDeclaration:
 /* Variable Declaration */
 variableDeclaration:
     type COLON type  {$$ = alctree(1034, "variableDeclaration", 3, $1,$2,$3 );}
-  | type  {$$ = alctree(1034, "variableDeclaration", 1, $1);}
+  | type  {$$ = alctree(1034, "impvariableDeclaration", 1, $1);}
 
 ;
 multiVariableDeclaration:

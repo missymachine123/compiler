@@ -63,6 +63,7 @@ typeptr alcarraytype(struct tree * s, struct tree * e);
 char *typename(typeptr t);
 
 typeptr assignType(char *typeName);
+typeptr get_type(int category);
 extern struct sym_table *global_table;
 extern typeptr integer_typeptr;
 extern typeptr double_typeptr;

@@ -90,6 +90,37 @@ typeptr alctype(int base)
    rv->basetype = base;
    return rv;
 }
+
+/* given a tokens category, set its type*/
+typeptr get_type(int category){
+   typeptr rv;
+   switch(category){
+      case 385:
+      //int
+         rv = integer_typeptr;
+      break;
+      case 392:
+      //string 
+         rv = string_typeptr;
+      break;
+      case 383:
+      //float 
+         rv = float_typeptr;
+      case 386:
+      //char literal 
+         rv = char_typeptr;
+      break;
+      case 391:
+      //bool literal 
+         rv = boolean_typeptr;
+      break;
+      default:
+         //fprintf(stderr, "Unknown type name: %s\n", typeName);
+         return NULL;
+   }
+   return rv;
+
+}
  
 
 /* Construct a function type from syntax (sub)tree(s).
