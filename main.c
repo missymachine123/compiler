@@ -500,7 +500,7 @@ void populate_symboltables(struct tree *n)
                 if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 406) {
                     SymbolTableEntry se = lookup_st(current, b->kids[i]->leaf->text);
                     if (se != NULL && se->mutability == 0){
-                        fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
+                        fprintf(stderr, "line %d: Error: symbol '%s' cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
                             exit(3);
                     }
                         
