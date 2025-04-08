@@ -331,6 +331,7 @@ multi_comma_typeProjection:
 
 typeProjection:
   type  {$$ = alctree(1048, "typeProjection", 1, $1);}
+  | type QUEST_NO_WS {$$ = alctree(1048, "nullable", 1, $1);}
   | MULT  {$$ = $1;}  
   ;
 directlyAssignableExpression:

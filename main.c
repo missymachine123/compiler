@@ -429,8 +429,8 @@ void populate_symboltables(struct tree *n)
         } 
         case 1007: /* rule for function paramteres */
         if (n->kids[0] != NULL && n->kids[0]->leaf != NULL && n->kids[0]->leaf->category == 406 && n->kids[2]->leaf != NULL) {
-            printf("Function parameter name: %s\n", n->kids[0]->leaf->text);
-            printf("Function parameter type: %s\n", n->kids[2]->leaf->text); 
+            //printf("Function parameter name: %s\n", n->kids[0]->leaf->text);
+            //printf("Function parameter type: %s\n", n->kids[2]->leaf->text); 
         }
         // printf("type: %s\n",n->kids[2]->leaf->text);
         for (i = 0; i < n->nkids; i++) {
@@ -489,7 +489,20 @@ void populate_symboltables(struct tree *n)
             break;
         
         case 1043: /* assignment */
-            //check semantic attribute here 
+            //printnode(n->kids[0]->kids[]);
+            struct tree *b = n->kids[0]->kids[0];
+            //printnode(b);
+            for (i = 0; i < b->nkids; i++) {
+                if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 406) {
+                    SymbolTableEntry se = lookup_st(current, b->kids[i]->leaf->text);
+                    if (se->mutability == 0){
+                        fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
+                            exit(3);
+                    }
+                        
+                    
+                }
+            }
 
         break;
              

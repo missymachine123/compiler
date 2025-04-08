@@ -4,8 +4,8 @@ fun assignments(fname: String) {
    val b : Int = 2;
    val c : Int = "h";
    var d = "3";
-   b = 10;
-   val z = 100;
+   d = 10;
+   //val e : Int? = "h";
 }
 
 fun Operators() {
