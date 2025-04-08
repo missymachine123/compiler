@@ -464,6 +464,7 @@ void populate_symboltables(struct tree *n)
                 
                 for (i = 0; i < n->nkids; i++) {
                     if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 407) {
+                        
                         if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
                             fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                             exit(3);
@@ -482,14 +483,17 @@ void populate_symboltables(struct tree *n)
         case 1034:
             
         if (n->kids[1] == NULL){
-            printnode(n);
-        }
-            
-            if (n->kids[2] != NULL && n->kids[2]->leaf != NULL) {
-                // printf("Type: %s\n", n->kids[2]->leaf->text);
-                
+            struct tree *child = n->kids[0];
+            while (child != NULL && (child->leaf == NULL || child->leaf->category != 407)) {
+                child = child->kids[0];
             }
+            if (child != NULL && child->leaf != NULL && child->leaf->category == 407) {
+                printf("Found leaf with category 407: %s\n", child->leaf->text);
+            }
+            // insert_sym(current,child->leaf->text,alctype(ARRAY_TYPE),false);
             break;
+        }
+             
         
             case 1043: /* assignment */
             //printnode(n->kids[0]->kids[]);
@@ -660,14 +664,9 @@ void symboltable_type_init(struct tree *t) {
         }
          
         
-    if(t->kids[2]){ 
-        printf("from type init 1034\n");
-        printnode(t->kids[2]);
-        if (t->kids[2]->kids[0]->prodrule == 1024){ 
-            // printf("Type: %s\n", t->kids[2]->kids[0]->leaf->text);
-            // insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
-    }else {
-        //    insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->leaf->text)); // Assuming the type is in the second child
+    if(t->kids[2]){  
+        if (t->kids[2]->kids[0]->kids[0]->prodrule == 400){  
+            insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
         }
     }
  

@@ -194,7 +194,7 @@ multi_quest:
 nullableType:
   typeRef_parenthesizedType multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);}
   |TYPELITERAL multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);} 
-  | arrayType {$$ = alctree(1024, "nullableType", 1, $1);}
+  | arrayType {$$ = alctree(1024, "nullableType-array", 1, $1);}
 
 arrayType:
   ARRAYTYPELITERAL typeArguments {$$ = alctree(2001, "arrayType", 2, $1, $2);}
