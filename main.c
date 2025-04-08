@@ -379,31 +379,31 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
 void predefined_symbols() {
     // Step 1: Create the predefined symbol table
     predefined = mksymtab(101, "predefined");
-    /*
+    
     // Step 2: Insert symbols with type information
-    insert_sym(predefined, "print", alctype(FUNC_TYPE));       // Function
-    insert_sym(predefined, "println", alctype(FUNC_TYPE));     // Function
-    insert_sym(predefined, "get", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "equals", alctype(FUNC_TYPE));      // Function
-    insert_sym(predefined, "length", alctype(FUNC_TYPE));      // Function
-    insert_sym(predefined, "toString", alctype(FUNC_TYPE));    // Function
-    insert_sym(predefined, "valueOf", alctype(FUNC_TYPE));     // Function
-    insert_sym(predefined, "readln", alctype(FUNC_TYPE));      // Function
-    insert_sym(predefined, "String", alctype(CLASS_TYPE));     // Class
-    insert_sym(predefined, "java", alctype(PACKAGE_TYPE));     // Package
-    insert_sym(predefined, "lang", alctype(PACKAGE_TYPE));     // Package
-    insert_sym(predefined, "util", alctype(PACKAGE_TYPE));     // Package
-    insert_sym(predefined, "Math", alctype(CLASS_TYPE));       // Class
-    insert_sym(predefined, "abs", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "max", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "min", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "pow", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "cos", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "sin", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "tan", alctype(FUNC_TYPE));         // Function
-    insert_sym(predefined, "random", alctype(FUNC_TYPE));      // Function
-    insert_sym(predefined, "nextInt", alctype(FUNC_TYPE));     // Function
-    */
+    insert_sym(predefined, "print", alctype(FUNC_TYPE), false);       // Function
+    insert_sym(predefined, "println", alctype(FUNC_TYPE), false);     // Function
+    insert_sym(predefined, "get", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "equals", alctype(FUNC_TYPE), false);      // Function
+    insert_sym(predefined, "length", alctype(FUNC_TYPE), false);      // Function
+    insert_sym(predefined, "toString", alctype(FUNC_TYPE), false);    // Function
+    insert_sym(predefined, "valueOf", alctype(FUNC_TYPE), false);     // Function
+    insert_sym(predefined, "readln", alctype(FUNC_TYPE), false);      // Function
+    insert_sym(predefined, "String", alctype(CLASS_TYPE), false);     // Class
+    insert_sym(predefined, "java", alctype(PACKAGE_TYPE), false);     // Package
+    insert_sym(predefined, "lang", alctype(PACKAGE_TYPE), false);     // Package
+    insert_sym(predefined, "util", alctype(PACKAGE_TYPE), false);     // Package
+    insert_sym(predefined, "Math", alctype(CLASS_TYPE), false);       // Class
+    insert_sym(predefined, "abs", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "max", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "min", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "pow", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "cos", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "sin", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "tan", alctype(FUNC_TYPE), false);         // Function
+    insert_sym(predefined, "random", alctype(FUNC_TYPE), false);      // Function
+    insert_sym(predefined, "nextInt", alctype(FUNC_TYPE), false);     // Function
+    
 }
 
 
@@ -495,7 +495,7 @@ void populate_symboltables(struct tree *n)
             for (i = 0; i < b->nkids; i++) {
                 if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 406) {
                     SymbolTableEntry se = lookup_st(current, b->kids[i]->leaf->text);
-                    if (se->mutability == 0){
+                    if (se != NULL && se->mutability == 0){
                         fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
                             exit(3);
                     }
