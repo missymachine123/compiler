@@ -418,7 +418,7 @@ void populate_symboltables(struct tree *n)
         case 1004: /* Production rule for function declaration */ {
             //finding the function name in tree
             for (i = 0; i < n->nkids; i++) {
-                if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 407) {
                    //printf("Function new name: %s\n", n->kids[i]->leaf->text);
                    //(n->kids[i]->leaf->text);
                    enter_newscope(n->kids[i]->leaf->text);
@@ -427,14 +427,9 @@ void populate_symboltables(struct tree *n)
             } 
             break;
         } 
-        case 1007: /* rule for function paramteres */
-        if (n->kids[0] != NULL && n->kids[0]->leaf != NULL && n->kids[0]->leaf->category == 406 && n->kids[2]->leaf != NULL) {
-            // printf("Function parameter name: %s\n", n->kids[0]->leaf->text);
-            // printf("Function parameter type: %s\n", n->kids[2]->leaf->text); 
-        }
-        // printf("type: %s\n",n->kids[2]->leaf->text);
+        case 1007: /* rule for function paramteres */ 
         for (i = 0; i < n->nkids; i++) {
-             if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+             if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 407) {
                 if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
                     fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                     exit(3);
@@ -468,7 +463,7 @@ void populate_symboltables(struct tree *n)
             if(variable_declaration == 1){
                 
                 for (i = 0; i < n->nkids; i++) {
-                    if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 406) {
+                    if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 407) {
                         if ((lookup_st(current, n->kids[i]->leaf->text)) != NULL){
                             fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                             exit(3);
@@ -501,7 +496,7 @@ void populate_symboltables(struct tree *n)
             struct tree *b = n->kids[0]->kids[0];
             //printnode(b);
             for (i = 0; i < b->nkids; i++) {
-                if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 406) {
+                if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 407) {
                     SymbolTableEntry se = lookup_st(current, b->kids[i]->leaf->text);
                     if (se != NULL && se->mutability == 0){
                         fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
@@ -514,7 +509,7 @@ void populate_symboltables(struct tree *n)
 
         break;
              
-        case 406: /* whatever leaf denotes a variable name */
+        case 407: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
          * not mark it as undeclared 
          */
@@ -548,7 +543,7 @@ void printsyms(struct tree *t) {
         return;
     }
  
-    if (t->leaf != NULL && t->leaf->category == 406) {
+    if (t->leaf != NULL && t->leaf->category == 407) {
         printsymbol(t->leaf->text);
     }
     for (int i = 0; i < t->nkids; i++) {
@@ -582,7 +577,7 @@ void build_function_parameter(struct tree *t) {
                 }
             } 
             for (i = 0; i < t->nkids; i++) {
-                if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 406) {
+                if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
                 function_name = t->kids[i]->leaf->text;
             //    printf("Function new name: %s\n", function_name);
                SymbolTable name = find_table(function_name);
@@ -646,7 +641,7 @@ void symboltable_type_init(struct tree *t) {
     switch (t->prodrule) {
     case 1004: /* rule for functions */
         for (i = 0; i < t->nkids; i++) {
-            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 406) {
+            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
            char *function_name = t->kids[i]->leaf->text;
         //    printf("Function new name: %s\n", function_name);
            SymbolTable name = find_table(function_name);
@@ -657,10 +652,10 @@ void symboltable_type_init(struct tree *t) {
         break;
     case 1034:
         struct tree *s = t->kids[0];
-        while (s != NULL && s->prodrule != 406) {
+        while (s != NULL && s->prodrule != 407) {
             s = s->kids[0];
         }
-        if (s != NULL && s->prodrule == 406) {
+        if (s != NULL && s->prodrule == 407) {
             // printnode(s);
         }
          
@@ -669,10 +664,10 @@ void symboltable_type_init(struct tree *t) {
         printf("from type init 1034\n");
         printnode(t->kids[2]);
         if (t->kids[2]->kids[0]->prodrule == 1024){ 
-            printf("Type: %s\n", t->kids[2]->kids[0]->leaf->text);
-            insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
+            // printf("Type: %s\n", t->kids[2]->kids[0]->leaf->text);
+            // insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
     }else {
-           insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->leaf->text)); // Assuming the type is in the second child
+        //    insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->leaf->text)); // Assuming the type is in the second child
         }
     }
  
@@ -691,7 +686,7 @@ void symboltable_type_init(struct tree *t) {
                 if(c->kids[0] != NULL && c->nkids < 2){
                     implicit_variable = 1;
                     c = c->kids[0];
-                    while (c != NULL && c->prodrule != 406) {
+                    while (c != NULL && c->prodrule != 407) {
                         c = c->kids[0]; /* get and store the symbols name*/
                     }
                 }
@@ -740,7 +735,7 @@ void print_all(struct tree *t){
     switch (t->prodrule) {
     case 1004: /* rule for functions */
         for (i = 0; i < t->nkids; i++) {
-            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 406) {
+            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
            char *function_name = t->kids[i]->leaf->text;
            SymbolTable name = find_table(function_name);
            pushscope(name); 

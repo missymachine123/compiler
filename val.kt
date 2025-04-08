@@ -8,7 +8,7 @@ fun main (){
     val myLong: Long = 150000   // Long
     val myShort: Short = 5000         // Short
     val myByte: Byte? = 100            // Byte
-    // val initArray = Array<Int>(3) {0}
+    val initArray = Array<Int>(3) {0}
     
     val myLetter: Char? = 'D'          // Char  
 
