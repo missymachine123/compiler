@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include "k0gram.tab.h" 
 #include "tree.h"
 #include "symtab.h"
@@ -20,8 +21,7 @@ extern int yydebug;
 extern const char *yyname(int sym);
 extern void yyrestart(FILE *input_file);
 extern struct tree *root;
-struct token yytoken;
-struct token token;
+struct token yytoken; 
 char *filename;
 int serial = 0;
 SymbolTable current = NULL;
@@ -34,8 +34,8 @@ int variable_declaration = 0;
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
 void printsymbols(SymbolTable st, int level);
 SymbolTable find_table(char *table_name);
-char * alloc(int n);
- 
+bool mutability = false; 
+
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -290,7 +290,7 @@ int hash(SymbolTable st, char *s)
 /*
  * Insert a symbol into a symbol table.
  */
-int insert_sym(SymbolTable st, char *s, typeptr t) { 
+int insert_sym(SymbolTable st, char *s, typeptr t, bool mutability) { 
 
     struct sym_entry *se;
     int h;
@@ -318,10 +318,10 @@ int insert_sym(SymbolTable st, char *s, typeptr t) {
     se->next= st->tbl[h];
     st->tbl[h] = se;
     se->type = t;
+    se->mutability = mutability;
     st->nEntries++;
     return 1;
 }
-
 
 
 void enter_newscope(char *s) {
@@ -335,7 +335,7 @@ void enter_newscope(char *s) {
     
 
     // Step 3: Insert the symbol into the current symbol table with the type
-    if (insert_sym(current, s, t)) {
+    if (insert_sym(current, s, t,false)) {
         // Successfully inserted, now attach the symbol table to its entry
         int h = hash(current, s);
         struct sym_entry *se;
@@ -379,7 +379,7 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
 void predefined_symbols() {
     // Step 1: Create the predefined symbol table
     predefined = mksymtab(101, "predefined");
-
+    /*
     // Step 2: Insert symbols with type information
     insert_sym(predefined, "print", alctype(FUNC_TYPE));       // Function
     insert_sym(predefined, "println", alctype(FUNC_TYPE));     // Function
@@ -403,6 +403,7 @@ void predefined_symbols() {
     insert_sym(predefined, "tan", alctype(FUNC_TYPE));         // Function
     insert_sym(predefined, "random", alctype(FUNC_TYPE));      // Function
     insert_sym(predefined, "nextInt", alctype(FUNC_TYPE));     // Function
+    */
 }
 
 
@@ -438,7 +439,7 @@ void populate_symboltables(struct tree *n)
                     fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                     exit(3);
                 }else{
-                    insert_sym(current, n->kids[i]->leaf->text,alctype(NULL_TYPE));
+                    insert_sym(current, n->kids[i]->leaf->text,alctype(NULL_TYPE),false);
 
                 }
              }
@@ -448,6 +449,18 @@ void populate_symboltables(struct tree *n)
 
         case 1028: /* check if it has passed through rule: property declaration*/
             variable_declaration = 1;
+
+            if (n->kids[1]->leaf != NULL){ /* check if this is val or var */
+                char *val_var = n->kids[1]->leaf->text;
+                /* set the muatbility attribute based on val/var */
+                if ((strcmp(val_var, "val") == 0)){
+                    mutability = false;
+                    
+                } else {
+                    mutability = true;
+                    
+                }
+            }
             break;
 
         case 1022: /* whatever production rule(s) designate a variable declaration */
@@ -461,14 +474,41 @@ void populate_symboltables(struct tree *n)
                             exit(3);
                         }else{ 
                             // printf("current type is : %d\n", n->kids[1]->leaf->text);
-                            insert_sym(current, n->kids[i]->leaf->text,NULL);
+                            insert_sym(current, n->kids[i]->leaf->text,NULL,mutability);
 
                         }
                     }
                 }
             } 
             variable_declaration = 0;
-            break;     
+            break;
+        
+        
+        case 1034:
+            
+            if (n->kids[2] != NULL && n->kids[2]->leaf != NULL) {
+                // printf("Type: %s\n", n->kids[2]->leaf->text);
+                
+            }
+            break;
+        
+        case 1043: /* assignment */
+            //printnode(n->kids[0]->kids[]);
+            struct tree *b = n->kids[0]->kids[0];
+            //printnode(b);
+            for (i = 0; i < b->nkids; i++) {
+                if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 406) {
+                    SymbolTableEntry se = lookup_st(current, b->kids[i]->leaf->text);
+                    if (se->mutability == 0){
+                        fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
+                            exit(3);
+                    }
+                        
+                    
+                }
+            }
+
+        break;
              
         case 406: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
@@ -734,6 +774,7 @@ void printsymbols(SymbolTable st, int level) {
             } else {
                 // printf("Type: NULL\n");
             }
+            printf("Mutability: %x\n", ste->mutability);
 
             // If the symbol has a sub-scope, print it recursively
             //if (ste->table != NULL && ste->table != st) {

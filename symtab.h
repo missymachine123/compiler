@@ -1,5 +1,7 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
+#include <stdbool.h>
+
 typedef struct sym_table {
    int nBuckets;			/* # of buckets */
    int nEntries;		   
@@ -14,6 +16,8 @@ typedef struct sym_entry {
    char *s;				/* string */
    struct typeinfo *type;		/* a.k.a. typeptr, struct c_type *... */
    struct sym_entry *next;
+   bool mutability;
+   bool nullable;
       } *SymbolTableEntry;
 
 #endif
