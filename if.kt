@@ -4,6 +4,7 @@ fun assignments() {
    val b : Int = 2;
    val c : Int = 3;
    var name:String = "John"
+   e = 10l;
 
 }
 
