@@ -1,5 +1,6 @@
 
 val s : Int = 1;
+
 val myNum: Int =5                // Int
 val myDoubleNum: Double = 5.99    // Double
 val myBoolean: Boolean = true     // Boolean
@@ -14,6 +15,7 @@ fun assignments() {
     val a : Int = 1;
     val b : Int = 2;
     val c : Int = 3;
+     
  }
  
  fun Operators() {

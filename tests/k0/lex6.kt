@@ -5,7 +5,7 @@ fun main (){
     val boolean: Boolean = false    // Boolean
     val myText: String = "Hello"      // String
     val myFloat: Float = 19.99f       // Float
-    val myLong: Long = 15000000000L   // Long
+    val myLong: Long = 150000000L   // Long
     val myShort: Short = 5000         // Short
     val myByte: Byte = 100            // Byte
     val myLetter: Char = 'D'          // Char

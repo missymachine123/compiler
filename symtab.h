@@ -1,3 +1,5 @@
+#ifndef SYMTAB_H
+#define SYMTAB_H
 typedef struct sym_table {
    int nBuckets;			/* # of buckets */
    int nEntries;		   
@@ -14,3 +16,4 @@ typedef struct sym_entry {
    struct sym_entry *next;
       } *SymbolTableEntry;
 
+#endif

@@ -3,9 +3,10 @@
 #include "type.h"
 #include "tree.h"
 #include "symtab.h"
-#include "k0gram.tab.h"
+#include "k0gram.tab.h" 
 #include <string.h>
-   
+ 
+
 struct typeinfo null_type = { NULL_TYPE };
 struct typeinfo byte_type = { BYTE_TYPE };
 struct typeinfo short_type = { SHORT_TYPE };
@@ -90,26 +91,72 @@ typeptr alctype(int base)
    rv->basetype = base;
    return rv;
 }
- 
 
+
+// Function to calculate the number of parameters in a syntax tree
+// This function traverses the tree and counts the parameters based on production rules.
+int calc_nparams(struct tree *n)
+{
+   if (n == NULL) {
+      // If the tree node is NULL, there are no parameters
+      return 0;
+   }
+
+   int count = 0;
+
+   // Traverse all the kids of the current node
+   for (int i = 0; i < n->nkids; i++) {
+      count += calc_nparams(n->kids[i]);
+   }
+   // If the current node represents a parameter, increment the count
+   if (n->prodrule == 1007) {
+      count++;
+   }
+
+   return count;
+}
+extern struct param * mk_nparams(struct tree *n);
+extern int insert_sym(SymbolTable st, char *s, typeptr t);
+extern void insert_type(SymbolTable st, char *s, typeptr t);
 /* Construct a function type from syntax (sub)tree(s).
  * For this to make any sense, you have to pass in the subtrees
- * for the return type (r) and the parameter list (p), but the calls to
- * to this function in the example are just passing NULL at present!
+ * for the return type (r) and the parameter list (p).
  */
-typeptr alcfunctype(struct tree * r, struct tree * p, SymbolTable st)
+typeptr alcfunctype(char *returntype, struct tree *p, SymbolTable st)
 {
    typeptr rv = alctype(FUNC_TYPE);
    if (rv == NULL) return NULL;
-   rv->u.f.st = st;
+   rv->u.f.st = st; 
+   rv->u.f.defined = 0; // 0 for prototype, 1 for defined function
 
-   // if (r!=NULL){
-   //    rv->u.f.returntype = alctype();
-   // }
+ 
+   // Process the return type subtree
+   if (returntype != NULL) {  
+      rv->u.f.returntype = assignType(returntype); // Assuming returntype is a string 
+   } else {
+      rv->u.f.returntype = null_typeptr; // Default to null if no return type is provided
+   }
 
+   int nparams = calc_nparams(p);
+   printf("Number of parameters: %d\n", nparams);
+   rv->u.f.nparams = nparams; // Set the number of parameters
+   
+   // Process the parameter list subtree
+   if (p->kids[1] != NULL) { 
+      rv->u.f.parameters = mk_nparams(p->kids[1]);
+   } else {
+      rv->u.f.parameters = NULL; // No parameters
+   }
+   // Print the parameters
+   struct param *param = rv->u.f.parameters;
 
-   /* fill in return type and paramlist by traversing subtrees */
-   /* rf->u.f.returntype = ... */
+   while (param != NULL) {
+      insert_type(st, param->name, param->type); // Insert parameter into the symbol table
+      printf("Parameter: %s, Type: %s\n", param->name, typename(param->type));
+      param = param->next;
+   } 
+   
+
    return rv;
 }
 
@@ -129,3 +176,5 @@ char *typename(typeptr t)
       return "(BOGUS)";
    else return typenam[t->basetype-1000000];
 }
+
+

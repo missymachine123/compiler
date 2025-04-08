@@ -14,19 +14,19 @@ my_program: $(OBJS)
 main.o: main.c k0gram.tab.h tree.h symtab.h type.h
 	$(CC) $(CFLAGS) -c main.c
 
-lex.yy.o: lex.yy.c k0gram.tab.h tree.h type.h
+lex.yy.o: lex.yy.c k0gram.tab.h tree.h type.h symtab.h
 	$(CC) $(CFLAGS) -c lex.yy.c
 
-k0gram.tab.o: k0gram.tab.c tree.h type.h
+k0gram.tab.o: k0gram.tab.c tree.h type.h symtab.h
 	$(CC) $(CFLAGS) -c k0gram.tab.c
 
 type.o: type.c type.h tree.h symtab.h
 	$(CC) $(CFLAGS) -c type.c
 
-k0gram.tab.c k0gram.tab.h: k0gram.y
-	bison -d -v k0gram.y
+k0gram.tab.c k0gram.tab.h: k0gram.y symtab.h	tree.h type.h
+	bison -d -v k0gram.y	
 
-lex.yy.c: k0lex.l k0gram.tab.h tree.h
+lex.yy.c: k0lex.l k0gram.tab.h tree.h	  
 	flex k0lex.l
 
 clean:

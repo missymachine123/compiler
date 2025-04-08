@@ -1,6 +1,6 @@
 #ifndef TYPE_H
 #define TYPE_H
-#include "tree.h"
+#include "tree.h" 
 typedef struct param {
    char *name;
    struct typeinfo *type;
@@ -55,12 +55,13 @@ typedef struct typeinfo {
    } u;
 } *typeptr;                 // Type alias for a pointer to type information.
 
-/* add constructors for each of the types if needed*/
 
-typeptr alctype(int);
-typeptr alcfunctype(struct tree * r, struct tree * p, struct sym_table * st);
+/* add constructors for each of the types if needed*/
+typeptr alctype(int base);
+typeptr alcfunctype(char *returntype, struct tree *p, struct sym_table *st);
 typeptr alcarraytype(struct tree * s, struct tree * e);
 char *typename(typeptr t);
+void printnode(struct tree *t);
 
 typeptr assignType(char *typeName);
 extern struct sym_table *global_table;

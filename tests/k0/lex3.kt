@@ -14,16 +14,18 @@ fun main() {
     println(x)
     x++
 	println(x)
+    --x
+    
 	x--
     
-    x += 1
-    println(x)
-    x -= 1
-    println(x)
-    x *= 2
-    println(x)
-    x /= 2
-    println(x)
-    x %= 2
+    // x += 1
+    // println(x)
+    // x -= 1
+    // println(x)
+    // x *= 2
+    // println(x)
+    // x /= 2
+    // println(x)
+    // x %= 2
 
 }

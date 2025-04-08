@@ -5,8 +5,7 @@
 #include "k0gram.tab.h" 
 #include "tree.h"
 #include "symtab.h"
-#include "type.h"
-
+#include "type.h" 
 
 extern FILE *yyin;
 extern int yyparse(void);
@@ -22,6 +21,7 @@ extern const char *yyname(int sym);
 extern void yyrestart(FILE *input_file);
 extern struct tree *root;
 struct token yytoken;
+struct token token;
 char *filename;
 int serial = 0;
 SymbolTable current = NULL;
@@ -33,7 +33,8 @@ int variable_declaration = 0;
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
 void printsymbols(SymbolTable st, int level);
- 
+SymbolTable find_table(char *table_name);
+char * alloc(int n);
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -177,7 +178,7 @@ int alctoken(int category) {
 struct tree *alctree(int prodrule, const char *symbolname, int nkids, ...) {
     int i;
     va_list ap;
-    struct tree *ptr = malloc(sizeof(struct tree) + (nkids-1)*sizeof(struct tree *));
+    struct tree *ptr = calloc(1, sizeof(struct tree) + (nkids-1)*sizeof(struct tree *));
 
     if (ptr == NULL) {
         fprintf(stderr, "alctree out of memory\n");
@@ -328,8 +329,8 @@ void enter_newscope(char *s) {
 
     // Step 2: Allocate the corresponding type for the new scope
     typeptr t;
-    // Allocate a function type and associate it with the symbol table
-    t = alcfunctype(NULL, NULL, newTable);
+    t = alctype(FUNC_TYPE); // Assuming FUNC_TYPE for function scope
+    // Allocate a function type and associate it with the symbol table 
     
 
     // Step 3: Insert the symbol into the current symbol table with the type
@@ -358,19 +359,19 @@ void enter_newscope(char *s) {
  * lookup_st - search the symbol table for a given symbol, return its entry.
  */
 SymbolTableEntry lookup_st(SymbolTable st, char *s){
-//  register int i;
- int h;
- SymbolTableEntry se;
+//  register int i; 
+    int h;
+    SymbolTableEntry se;
 
- h = hash(st, s);
- for (se = st->tbl[h]; se != NULL; se = se->next)
-    if (!strcmp(s, se->s)) {
-       /*
-        *  Return a pointer to the symbol table entry.
-        */
-       return se;
-       }
- return NULL;
+    h = hash(st, s);
+    for (se = st->tbl[h]; se != NULL; se = se->next)
+        if (!strcmp(s, se->s)) {
+        /*
+            *  Return a pointer to the symbol table entry.
+            */
+        return se;
+        }
+    return NULL;
 }
 
 
@@ -426,8 +427,8 @@ void populate_symboltables(struct tree *n)
         } 
         case 1007: /* rule for function paramteres */
         if (n->kids[0] != NULL && n->kids[0]->leaf != NULL && n->kids[0]->leaf->category == 406 && n->kids[2]->leaf != NULL) {
-            printf("Function parameter name: %s\n", n->kids[0]->leaf->text);
-            printf("Function parameter type: %s\n", n->kids[2]->leaf->text); 
+            // printf("Function parameter name: %s\n", n->kids[0]->leaf->text);
+            // printf("Function parameter type: %s\n", n->kids[2]->leaf->text); 
         }
         // printf("type: %s\n",n->kids[2]->leaf->text);
         for (i = 0; i < n->nkids; i++) {
@@ -466,14 +467,7 @@ void populate_symboltables(struct tree *n)
                 }
             } 
             variable_declaration = 0;
-            break;    
-        case 1034:
-            
-            if (n->kids[2] != NULL && n->kids[2]->leaf != NULL) {
-                // printf("Type: %s\n", n->kids[2]->leaf->text);
-                
-            }
-            break;
+            break;     
              
         case 406: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
@@ -512,6 +506,59 @@ void printsyms(struct tree *t) {
     }
     for (int i = 0; i < t->nkids; i++) {
         printsyms(t->kids[i]);
+    }
+}
+
+void build_function_parameter(struct tree *t) {
+    int i;
+    if (t == NULL) return; 
+    
+    struct tree *p = NULL;
+    char *returntype = NULL;
+    char *function_name = NULL;
+    /* pre-order activity */
+    switch (t->prodrule) {
+        case 1004: /* rule for functions */ 
+
+            if (t->kids[4] != NULL && t->kids[4]->prodrule == 1100) { 
+                // printnode(t->kids[4]->kids[1]); // Assuming the return type is the first child of the 4th kid
+                returntype = t->kids[4]->kids[0]->leaf->text; // Assuming the return type is the first child of the 4th kid
+                printf("Return type: %s\n", returntype);
+            }
+        
+            for (i = 0; i < t->nkids; i++) {
+                // printf("Child: %d: \n ---------------------------------\n", i);
+                // printnode(t->kids[i]);
+            
+                if (t->kids[i] != NULL && t->kids[i]->prodrule == 1005) {
+                    p = t->kids[i];                 
+                }
+            } 
+            for (i = 0; i < t->nkids; i++) {
+                if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 406) {
+                function_name = t->kids[i]->leaf->text;
+            //    printf("Function new name: %s\n", function_name);
+               SymbolTable name = find_table(function_name);
+               pushscope(name); 
+               break;
+                }
+            }
+            alcfunctype(returntype,p,current); // Assuming FUNC_TYPE for function scope
+            
+
+            break;  
+
+    }
+    for (i = 0; i < t->nkids; i++) {
+        build_function_parameter(t->kids[i]);
+    }
+    
+    /* Post-order activity */
+    switch (t->prodrule) {
+        case 1004: /* End of class scope */ {
+            popscope(); // Pop the current scope to return to the parent scope
+            break;
+        }
     }
 }
 
@@ -554,6 +601,7 @@ void symboltable_type_init(struct tree *t) {
         for (i = 0; i < t->nkids; i++) {
             if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 406) {
            char *function_name = t->kids[i]->leaf->text;
+        //    printf("Function new name: %s\n", function_name);
            SymbolTable name = find_table(function_name);
            pushscope(name); 
            break;
@@ -568,14 +616,20 @@ void symboltable_type_init(struct tree *t) {
         if (s != NULL && s->prodrule == 406) {
             // printnode(s);
         }
+         
         
-        if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) { 
-            
-        insert_type(current,s->leaf->text,assignType(t->kids[2]->leaf->text));
+      if(t->kids[2]){ 
+        if (t->kids[2]->kids[0]->prodrule == 1024)
+        insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
+        else {
+           insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->leaf->text)); // Assuming the type is in the second child
         }
-        // printnode(s);
+    }
+ 
         break;
     }
+
+
     for (i = 0; i < t->nkids; i++) {
         symboltable_type_init(t->kids[i]);
     }
@@ -729,65 +783,50 @@ char* removeSeparators(char* yytext) {
     }
     cleanText[j] = '\0';
     return cleanText;
-}
-
-void free_tree(struct tree *t) {
-    if (t == NULL) {
-        return;
-    }
-
-    // Free the leaf node if it exists
-    if (t->leaf != NULL) {
-        free(t->leaf->text);
-        free(t->leaf->filename);
-        free(t->leaf->sval);
-        free(t->leaf);
-    }
-
-    // Recursively free the children nodes
-    for (int i = 0; i < t->nkids; i++) {
-        free_tree(t->kids[i]);
-    }
-
-    // Free the symbol name
-    free(t->symbolname);
-
-    // Finally, free the tree node itself
-    free(t);
-}
-
-void free_symbol_table(SymbolTable st) {
-    if (st == NULL) {
-        return;
-    }
-
-    // Free each entry in the symbol table
-    for (int i = 0; i < st->nBuckets; i++) {
-        struct sym_entry *se = st->tbl[i];
-        while (se != NULL) {
-            struct sym_entry *next = se->next;
-            free(se->s);
-            free(se);
-            se = next;
+} 
+ 
+struct param * mk_nparams(struct tree *n)
+{ 
+   if (n->prodrule == 1007) { /* base case */
+      struct param *parameter = malloc(sizeof(struct param));
+      if (!parameter) {
+         fprintf(stderr, "Memory allocation failed for parameter.\n");
+         return NULL;
+      }
+      parameter->name = n->kids[0]->leaf->text; // Assuming the name is in the first child
+       
+      if(n->kids[2]){ 
+        if (n->kids[2]->kids[0]->prodrule == 1024)
+        parameter->type = assignType(n->kids[2]->kids[0]->kids[0]->leaf->text); // Assuming the type is in the second child
+        else {
+            parameter->type = assignType(n->kids[2]->kids[0]->leaf->text); // Assuming the type is in the second child
         }
     }
-
-    // Free the table itself
-    free(st->tbl);
-    free(st->name);
-    free(st);
-}
-
-void free_all_symbol_tables() {
-    SymbolTable current_table = current;
-
-    while (current_table != NULL) {
-        SymbolTable parent = current_table->parent;
-        free_symbol_table(current_table);
-        current_table = parent;
+    printf("Parameter Info:\n");
+    printf("Name: %s\n", parameter->name);
+    if (parameter->type != NULL) {
+        printf("Type: %d\n", parameter->type->basetype);
+    } else {
+        printf("Type: NULL\n");
     }
-}
+      parameter->next = NULL;
+      return parameter;
 
+   } else if (n->prodrule == 1009) { /* recursive case */
+      struct param *firstParameter = mk_nparams(n->kids[0]->kids[0]);
+      struct param *remainingParameters = NULL;
+      if (n->kids[1] != NULL){
+           remainingParameters = mk_nparams(n->kids[1]->kids[2]->kids[0]);
+      }
+      if (!firstParameter) return remainingParameters;
+      struct param *currentParameter = firstParameter;
+      while (currentParameter->next != NULL) currentParameter = currentParameter->next;
+      currentParameter->next = remainingParameters;
+      return firstParameter;
+   }
+   
+   return NULL;
+} 
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
@@ -852,7 +891,8 @@ int main(int argc, char **argv) {
                 predefined_symbols();
                 populate_symboltables(root);
                 symboltable_type_init(root);
-                //printf("Symbol tables generated.\n");
+                build_function_parameter(root);
+                // printf("Symbol tables generated.\n");
                 printsymbols(current, 0);  // Print global symbol table
                 print_all(root);
             } else {
@@ -878,7 +918,6 @@ int main(int argc, char **argv) {
     }
 
     // Cleanup
-    free_symbol_table(globals);
     fclose(yyin);
     free(filename); 
     yylex_destroy();  // Free lexer resources

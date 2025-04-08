@@ -50,7 +50,7 @@
 
 /* Program Structure */
 program:
-    topLevelObjects {root = $1;}
+    topLevelObjects {root = $1; $$ = alctree(1000, "program", 1, $1);}
 ;
 
 topLevelObjects:
@@ -59,7 +59,7 @@ topLevelObjects:
 ;
 
 topLevelObject:
-    declaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
+    declaration semis{$$ = alctree(1002, "topLevelObject", 2, $1,$2);}
  ;
 
 opt_functionBody:
@@ -68,7 +68,7 @@ opt_functionBody:
   ;
 
 opt_colon_type:
-  COLON type {$$ = alctree(1003, "opt_colon_type", 2, $1, $2);}
+  COLON type {$$ = alctree(1100, "opt_colon_type", 2, $1, $2);}
   | /* empty */ {$$ = NULL;}
   ;
 
@@ -105,7 +105,6 @@ opt_functionValueParameter:
 /* Type */
 type:
   nullableType {$$ = alctree(1010, "type", 1, $1);}
-  |TYPELITERAL {$$ = $1;}
 ;
 
 /* Function Body */
@@ -194,6 +193,8 @@ multi_quest:
   ;
 nullableType:
   typeRef_parenthesizedType multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);}
+  |TYPELITERAL multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);} 
+
   ;
 
 typeRef_parenthesizedType:
