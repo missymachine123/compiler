@@ -25,7 +25,7 @@
 %token <treeptr> PRIVATE PROTECTED INTERNAL ENUM SEALED ANNOTATION DATA INNER TAILREC OPERATOR INLINE INFIX EXTERNAL SUSPEND OVERRIDE ABSTRACT NULL_LITERAL
 %token <treeptr> FINAL OPEN CONST LATEINIT VARARG NOINLINE CROSSINLINE REIFIED EXPECT ACTUAL REAL_LITERAL FLOAT_LITERAL DOUBLE_LITERAL INTEGER_LITERAL CHARACTER_LITERAL
 %token <treeptr> HEX_LITERAL BIN_LITERAL UNSIGNED_LITERAL LONG_LITERAL  BOOLEAN_LITERAL STRING_LITERAL INT FLOAT BOOLEAN CHAR STRING BYTE T_EOF TYPELITERAL 
-%token <treeptr> MULT MOD DIV ADD SUB
+%token <treeptr> MULT MOD DIV ADD SUB ARRAYTYPELITERAL
 %token <treeptr> IDENTIFIER
 %debug 
 
@@ -37,7 +37,7 @@
 %type <treeptr> memberAccessOperator typeArguments directlyAssignableExpression parenthesizedDirectlyAssignableExpression multi_postfixUnarySuffix postfixUnaryExpression postfixUnarySuffix postfixUnaryOperator multi_comma_expression callSuffix controlStructureBody 
 %type <treeptr>  control_structure_body_or_comma semis variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration multi_comma_variableDeclaration
 %type <treeptr> directly_assign classMembers  classBody classMember opt_colon_type  assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
-%type <treeptr> collectionLiteral whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression controls
+%type <treeptr> collectionLiteral whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression controls arrayType arrayExpression typeLiteral
 %left ADD SUB
 %left MULT DIV MOD
 %left AND OR
@@ -104,7 +104,7 @@ opt_functionValueParameter:
 
 /* Type */
 type:
-  nullableType {$$ = alctree(1010, "type", 1, $1);}
+  nullableType {$$ = alctree(1010, "type", 1, $1);} 
 ;
 
 /* Function Body */
@@ -194,6 +194,11 @@ multi_quest:
 nullableType:
   typeRef_parenthesizedType multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);}
   |TYPELITERAL multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);} 
+  | arrayType {$$ = alctree(1024, "nullableType", 1, $1);}
+
+arrayType:
+  ARRAYTYPELITERAL typeArguments {$$ = alctree(2001, "arrayType", 2, $1, $2);}
+;
 
   ;
 
@@ -357,6 +362,8 @@ postfixUnarySuffix:
   |indexingSuffix   {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
   |callSuffix  {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
   |navigationSuffix {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
+  | typeArguments {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
+
   ;
   
 identifier_expression_class:
@@ -589,13 +596,25 @@ primaryExpression:
     | STRING_LITERAL 
     | BOOLEAN_LITERAL
     | FLOAT_LITERAL
+    | arrayExpression   { $$ = alctree(1035, "primaryExpression", 1, $1);}
     | CHARACTER_LITERAL
     | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
     | collectionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
     | ifExpression {$$ = alctree(1011, "primaryExpression", 1, $1);}
     | whenExpression   {$$ = alctree(1067, "primaryExpression", 1, $1);}
     ; 
+  
+  typeLiteral:
+  INTEGER_LITERAL
+  | STRING_LITERAL 
+  | BOOLEAN_LITERAL
+  | FLOAT_LITERAL
+  | CHARACTER_LITERAL
+;
 
+arrayExpression:
+  arrayType LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL   { $$ = alctree(2000, "arrayExpression", 7, $1, $2, $3, $4, $5, $6, $7);}
+;
 collectionLiteral:
   LSQUARE RSQUARE {$$ = alctree(1011, "collectionLiteral", 2, $1, $2);}
   | LSQUARE expression COMMA RSQUARE {$$ = alctree(1011, "collectionLiteral", 4, $1, $2, $3, $4);}

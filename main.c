@@ -486,20 +486,24 @@ void populate_symboltables(struct tree *n)
         
         case 1034:
             
+        if (n->kids[1] == NULL){
+            printnode(n);
+        }
+            
             if (n->kids[2] != NULL && n->kids[2]->leaf != NULL) {
                 // printf("Type: %s\n", n->kids[2]->leaf->text);
                 
             }
             break;
         
-        case 1043: /* assignment */
+            case 1043: /* assignment */
             //printnode(n->kids[0]->kids[]);
             struct tree *b = n->kids[0]->kids[0];
             //printnode(b);
             for (i = 0; i < b->nkids; i++) {
                 if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 406) {
                     SymbolTableEntry se = lookup_st(current, b->kids[i]->leaf->text);
-                    if (se->mutability == 0){
+                    if (se != NULL && se->mutability == 0){
                         fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
                             exit(3);
                     }
@@ -529,10 +533,12 @@ void populate_symboltables(struct tree *n)
     /* Post-order activity */
     switch (n->prodrule) {
     
-        case 1004: /* End of class scope */ {
+        case 1004: /* End of function scope */ {
             //printsymbols(current, SCOPE);
             //printf("---\n");
-            popscope(); // Pop the current scope to return to the parent scope
+            if (current != NULL) {
+                popscope(); // Pop the current scope to return to the parent scope
+            }
             break;
         }
     }
@@ -659,10 +665,13 @@ void symboltable_type_init(struct tree *t) {
         }
          
         
-      if(t->kids[2]){ 
-        if (t->kids[2]->kids[0]->prodrule == 1024)
-        insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
-        else {
+    if(t->kids[2]){ 
+        printf("from type init 1034\n");
+        printnode(t->kids[2]);
+        if (t->kids[2]->kids[0]->prodrule == 1024){ 
+            printf("Type: %s\n", t->kids[2]->kids[0]->leaf->text);
+            insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
+    }else {
            insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->leaf->text)); // Assuming the type is in the second child
         }
     }

@@ -8,10 +8,13 @@ fun main (){
     val myLong: Long = 150000   // Long
     val myShort: Short = 5000         // Short
     val myByte: Byte? = 100            // Byte
-    val myLetter: Char? = 'D'          // Char
+    // val initArray = Array<Int>(3) {0}
+    
+    val myLetter: Char? = 'D'          // Char  
+
 }
 
 fun subtracts(a: Int,b: Int): String {
     var s: String = "The result is: "
-    return a - b
+    return a 
  }

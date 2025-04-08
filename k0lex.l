@@ -123,6 +123,7 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "import"                { return alctoken(IMPORT);}
 "const"                 { return alctoken(CONST);}
 "interface"             { return alctoken(INTERFACE);} 
+"Array"                 { return alctoken(ARRAYTYPELITERAL);}
 "Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"Char"|"Byte"|"String"    { return alctoken(TYPELITERAL);} 
 "-"?{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
 "-"?{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
