@@ -50,7 +50,7 @@
 
 /* Program Structure */
 program:
-    topLevelObjects {root = $1;}
+    topLevelObjects {root = $1; $$ = alctree(1000, "program", 1, $1);}
 ;
 
 topLevelObjects:
@@ -59,7 +59,7 @@ topLevelObjects:
 ;
 
 topLevelObject:
-    declaration {$$ = alctree(1002, "topLevelObject", 1, $1);}
+    declaration semis{$$ = alctree(1002, "topLevelObject", 2, $1,$2);}
  ;
 
 opt_functionBody:
@@ -68,7 +68,7 @@ opt_functionBody:
   ;
 
 opt_colon_type:
-  COLON type {$$ = alctree(1003, "opt_colon_type", 2, $1, $2);}
+  COLON type {$$ = alctree(1100, "opt_colon_type", 2, $1, $2);}
   | /* empty */ {$$ = NULL;}
   ;
 
@@ -105,7 +105,6 @@ opt_functionValueParameter:
 /* Type */
 type:
   nullableType {$$ = alctree(1010, "type", 1, $1);}
-  |TYPELITERAL {$$ = $1;}
 ;
 
 /* Function Body */
@@ -194,6 +193,8 @@ multi_quest:
   ;
 nullableType:
   typeRef_parenthesizedType multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);}
+  |TYPELITERAL multi_quest {$$ = alctree(1024, "nullableType", 2, $1, $2);} 
+
   ;
 
 typeRef_parenthesizedType:
@@ -214,7 +215,7 @@ multivariable_variableDeclaration:
   ;
 
 propertyDeclaration:
-    opt_modifier val_var opt_typeParameters nullableType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(10028, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
+    opt_modifier val_var opt_typeParameters nullableType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1028, "propertyDeclaration", 8, $1, $2, $3, $4, $5, $6, $7,$8);}
   | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp SEMICOLON {$$ = alctree(1028, "propertyDeclaration", 6, $1, $2, $3, $4, $5, $6);}
   | opt_modifier val_var opt_typeParameters multivariable_variableDeclaration opt_eq_exp {$$ = alctree(1028, "propertyDeclaration", 5, $1, $2, $3, $4, $5 );}
   ;
@@ -254,7 +255,7 @@ classDeclaration:
 /* Variable Declaration */
 variableDeclaration:
     type COLON type  {$$ = alctree(1034, "variableDeclaration", 3, $1,$2,$3 );}
-  | type  {$$ = alctree(1034, "impvariableDeclaration", 1, $1);}
+  | type  {$$ = alctree(1034, "variableDeclaration", 1, $1);}
 
 ;
 multiVariableDeclaration:
@@ -331,7 +332,6 @@ multi_comma_typeProjection:
 
 typeProjection:
   type  {$$ = alctree(1048, "typeProjection", 1, $1);}
-  | type QUEST_NO_WS {$$ = alctree(1048, "nullable", 1, $1);}
   | MULT  {$$ = $1;}  
   ;
 directlyAssignableExpression:

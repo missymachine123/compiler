@@ -591,7 +591,7 @@ void symboltable_type_init(struct tree *t) {
             }
         }
         break;
-    case 1034:
+ case 1034:
         struct tree *s = t->kids[0];
         while (s != NULL && s->prodrule != 406) {
             s = s->kids[0];
@@ -599,11 +599,16 @@ void symboltable_type_init(struct tree *t) {
         if (s != NULL && s->prodrule == 406) {
             // printnode(s);
         }
+         
         
-        if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) {       
-        insert_type(current,s->leaf->text,assignType(t->kids[2]->leaf->text));
+      if(t->kids[2]){ 
+        if (t->kids[2]->kids[0]->prodrule == 1024)
+        insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->kids[0]->leaf->text)); // Assuming the type is in the second child
+        else {
+           insert_type(current,s->leaf->text,assignType(t->kids[2]->kids[0]->leaf->text)); // Assuming the type is in the second child
         }
-        // printnode(s);
+    }
+ 
         break;
     /* make sure this only happens for implicit types not all */
     case 1028: /* rule for property declaration*/
