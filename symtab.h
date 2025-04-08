@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 typedef struct sym_table {
    int nBuckets;			/* # of buckets */
    int nEntries;		   
@@ -10,6 +12,8 @@ typedef struct sym_table {
 typedef struct sym_entry {
    SymbolTable table;			/* what symbol table do we belong to*/
    char *s;				/* string */
+   bool mutability;
+   bool nullable;
    struct typeinfo *type;		/* a.k.a. typeptr, struct c_type *... */
    struct sym_entry *next;
       } *SymbolTableEntry;

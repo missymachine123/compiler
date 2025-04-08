@@ -30,6 +30,7 @@ SymbolTable predefined = NULL;
 SymbolTable last_scope = NULL;
 int SCOPE = 0; 
 int variable_declaration = 0;
+bool mutability = false; 
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
 void printsymbols(SymbolTable st, int level);
@@ -288,7 +289,7 @@ int hash(SymbolTable st, char *s)
 /*
  * Insert a symbol into a symbol table.
  */
-int insert_sym(SymbolTable st, char *s, typeptr t) { 
+int insert_sym(SymbolTable st, char *s, typeptr t, bool mutability) { 
 
     struct sym_entry *se;
     int h;
@@ -316,6 +317,7 @@ int insert_sym(SymbolTable st, char *s, typeptr t) {
     se->next= st->tbl[h];
     st->tbl[h] = se;
     se->type = t;
+    se->mutability = mutability;
     st->nEntries++;
     return 1;
 }
@@ -333,7 +335,7 @@ void enter_newscope(char *s) {
     
 
     // Step 3: Insert the symbol into the current symbol table with the type
-    if (insert_sym(current, s, t)) {
+    if (insert_sym(current, s, t, false)) {
         // Successfully inserted, now attach the symbol table to its entry
         int h = hash(current, s);
         struct sym_entry *se;
@@ -377,7 +379,7 @@ SymbolTableEntry lookup_st(SymbolTable st, char *s){
 void predefined_symbols() {
     // Step 1: Create the predefined symbol table
     predefined = mksymtab(101, "predefined");
-
+    /*
     // Step 2: Insert symbols with type information
     insert_sym(predefined, "print", alctype(FUNC_TYPE));       // Function
     insert_sym(predefined, "println", alctype(FUNC_TYPE));     // Function
@@ -401,6 +403,7 @@ void predefined_symbols() {
     insert_sym(predefined, "tan", alctype(FUNC_TYPE));         // Function
     insert_sym(predefined, "random", alctype(FUNC_TYPE));      // Function
     insert_sym(predefined, "nextInt", alctype(FUNC_TYPE));     // Function
+    */
 }
 
 
@@ -436,7 +439,7 @@ void populate_symboltables(struct tree *n)
                     fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                     exit(3);
                 }else{
-                    insert_sym(current, n->kids[i]->leaf->text,alctype(NULL_TYPE));
+                    insert_sym(current, n->kids[i]->leaf->text,alctype(NULL_TYPE), false);
 
                 }
              }
@@ -446,6 +449,18 @@ void populate_symboltables(struct tree *n)
 
         case 1028: /* check if it has passed through rule: property declaration*/
             variable_declaration = 1;
+
+            if (n->kids[1]->leaf != NULL){ /* check if this is val or var */
+                char *val_var = n->kids[1]->leaf->text;
+                /* set the muatbility attribute based on val/var */
+                if ((strcmp(val_var, "val") == 0)){
+                    mutability = false;
+                    
+                } else {
+                    mutability = true;
+                    
+                }
+            }
             break;
 
         case 1022: /* whatever production rule(s) designate a variable declaration */
@@ -458,9 +473,7 @@ void populate_symboltables(struct tree *n)
                             fprintf(stderr, "Error: Redeclaration of variable '%s' at line %d\n", n->kids[i]->leaf->text, n->kids[i]->leaf->lineno);
                             exit(3);
                         }else{ 
-                            // printf("current type is : %d\n", n->kids[1]->leaf->text);
-                            insert_sym(current, n->kids[i]->leaf->text,NULL);
-
+                            insert_sym(current, n->kids[i]->leaf->text,NULL, mutability);
                         }
                     }
                 }
@@ -474,6 +487,11 @@ void populate_symboltables(struct tree *n)
                 
             }
             break;
+        
+        case 1043: /* assignment */
+            //check semantic attribute here 
+
+        break;
              
         case 406: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
@@ -571,11 +589,6 @@ void symboltable_type_init(struct tree *t) {
         
         if (t->kids[2] != NULL && t->kids[2]->leaf != NULL) {       
         insert_type(current,s->leaf->text,assignType(t->kids[2]->leaf->text));
-        } else {
-            //for implicit type declaration
-            //if (implicit_variable_value != NULL){
-            printf("IMPLICIT\n");
-            
         }
         // printnode(s);
         break;
@@ -682,9 +695,10 @@ void printsymbols(SymbolTable st, int level) {
             if (ste->type != NULL) {
                 // Print the type information if available
                 printf("Type: %d\n", ste->type->basetype);
-            } else {
-                // printf("Type: NULL\n");
+                
             }
+                printf("Mutability: %x\n", ste->mutability);
+            
 
             // If the symbol has a sub-scope, print it recursively
             //if (ste->table != NULL && ste->table != st) {
@@ -895,7 +909,6 @@ int main(int argc, char **argv) {
                 predefined_symbols();
                 populate_symboltables(root);
                 symboltable_type_init(root);
-                //printf("Symbol tables generated.\n");
                 printsymbols(current, 0);  // Print global symbol table
                 print_all(root);
             } else {
