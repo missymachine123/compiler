@@ -40,6 +40,36 @@ typeptr package_typeptr = &package_type;
 typeptr any_typeptr = &any_type;
 
 
+typeptr get_type(int category){
+   typeptr rv;
+   switch(category){
+      case 385:
+      //int
+         rv = integer_typeptr;
+      break;
+      case 392:
+      //string 
+         rv = string_typeptr;
+      break;
+      case 383:
+      //float 
+         rv = float_typeptr;
+      case 386:
+      //char literal 
+         rv = char_typeptr;
+      break;
+      case 391:
+      //bool literal 
+         rv = boolean_typeptr;
+      break;
+      default:
+         //fprintf(stderr, "Unknown type name: %s\n", typeName);
+         return NULL;
+   }
+   return rv;
+
+}
+ 
 char *typenam[] =
    {"null","byte","short", "int", "long","float", "double","bool", "string","char",
     "array", "func", "class", "package", "any"}; /* "list", "dict", ... */

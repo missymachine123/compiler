@@ -35,6 +35,7 @@ int variable_declaration = 0;
 void printsymbols(SymbolTable st, int level);
 SymbolTable find_table(char *table_name);
 char * alloc(int n);
+ 
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -626,23 +627,60 @@ void symboltable_type_init(struct tree *t) {
         }
     }
  
+    break;
+    /* make sure this only happens for implicit types not all */
+    case 1028: /* rule for property declaration*/
+        struct tree *b;
+        struct tree *c; 
+        int implicit_variable = 0;
+
+        /* first check if we are a implicit variable declaration */
+        if (t->kids[3] != NULL) { /* multivariable_variableDeclaration */
+            c = t->kids[3];
+            if (c->kids[0] != NULL){
+                c = c->kids[0];
+                if(c->kids[0] != NULL && c->nkids < 2){
+                    implicit_variable = 1;
+                    c = c->kids[0];
+                    while (c != NULL && c->prodrule != 406) {
+                        c = c->kids[0]; /* get and store the symbols name*/
+                    }
+                }
+                }
+            }
+        if(implicit_variable == 1){
+        /* then traverse tree down to grammar rule for expression*/
+        if (t->kids[4] != NULL) { 
+            b = t->kids[4];
+            if(b->kids[1] != NULL) { /* at the rule for expression*/
+                b = b->kids[1];
+                while(b->kids[0] != NULL){ /* traverse down to the actual value*/
+                    b = b->kids[0];
+                    if (b->leaf != NULL) { /* found value*/
+                        //printf("Value:%s\n", b->leaf->text);
+                        insert_type(current,c->leaf->text,get_type(b->leaf->category));
+
+                    }
+
+                }
+                }      
+        }
+    }  
         break;
     }
-
-
     for (i = 0; i < t->nkids; i++) {
         symboltable_type_init(t->kids[i]);
     }
 
     /* Post-order activity */
     switch (t->prodrule) {
-    
+
         case 1004: /* End of class scope */ {
             popscope(); // Pop the current scope to return to the parent scope
             break;
         }
     }
- 
+
 }
 
 /* print all symbol tables, pushes and pops scopes when it encounters a function*/
