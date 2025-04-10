@@ -2,6 +2,8 @@ fun main(args: Array<String>) {
 
     val a = Array<Int> (5) {2}
     var x = 1975  
+    x++
+    x--
 
 
 }

@@ -1009,7 +1009,106 @@ struct param * mk_nparams(struct tree *n)
    }
    
    return NULL;
-} 
+}  
+
+struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2) 
+{
+    if (operator = 0 && e1 == NULL) // no operator
+        return e2->basetype;
+    else if (operator = 0 && e2 == NULL)
+        return e1->basetype;
+    
+    if (e1 == NULL || e2 == NULL) {
+        fprintf(stderr, "Error: Null type information provided.\n");
+        exit(1);
+    }
+
+    struct typeinfo *result = malloc(sizeof(struct typeinfo));
+    if (!result) {
+        fprintf(stderr, "Error: Memory allocation failed for typeinfo.\n");
+        exit(1);
+    }
+
+    switch (operator) {
+        case INCR: 
+            if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
+                result->basetype = INT_TYPE;
+            } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
+                       (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
+                       (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
+                result->basetype = FLOAT_TYPE;
+            } else if (e1->basetype == STRING_TYPE && e2->basetype == STRING_TYPE ||
+                (e1->basetype == STRING_TYPE && e2->basetype == INT_TYPE) ||
+                (e1->basetype == STRING_TYPE && e2->basetype == FLOAT_TYPE)||
+                (e1->basetype == STRING_TYPE && e2->basetype == BOOL_TYPE)) {
+                result->basetype = STRING_TYPE;
+            } else if (e1->basetype == BOOL_TYPE && e2->basetype == BOOL_TYPE) {
+                result->basetype = BOOL_TYPE;
+            } else if (e1->basetype == ARRAY_TYPE && e2->basetype == ARRAY_TYPE) {
+                result->basetype = ARRAY_TYPE;     
+            } else {
+                fprintf(stderr, "Type error: Unsupported types for '+' operator.\n");
+                exit(1);
+            }
+            break;
+        
+        case DECR: 
+            if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
+                result->basetype = INT_TYPE;
+            } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
+                    (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
+                    (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
+                result->basetype = FLOAT_TYPE;  
+            } else {
+                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                exit(1);
+            }
+            break;
+        
+        case MULT:
+            if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
+                result->basetype = INT_TYPE;
+            } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
+                    (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
+                    (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
+                result->basetype = FLOAT_TYPE;  
+            } else {
+                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                exit(1);
+            }
+            break;
+            
+        case DIV: 
+            if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
+                result->basetype = INT_TYPE;
+            } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
+                    (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
+                    (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
+                result->basetype = FLOAT_TYPE;  
+            } else {
+                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                exit(1);
+            }
+            break;
+        case MOD:
+            if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
+                result->basetype = INT_TYPE;
+            } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
+                    (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
+                    (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
+                result->basetype = FLOAT_TYPE;  
+            } else {
+                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                exit(1);
+            }
+        break;
+        default:
+            fprintf(stderr, "Error: Unknown operator.\n");
+            exit(1);
+    }
+
+    return result;
+}
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
@@ -1110,6 +1209,4 @@ int main(int argc, char **argv) {
 
 }
 
-free(files);
-return 0;
 }
