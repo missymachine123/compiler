@@ -189,15 +189,7 @@ typeptr alcfunctype(char *returntype, struct tree *p, SymbolTable st)
 
    return rv;
 }
-
-typeptr alcarraytype(struct tree * s, struct tree * e)
-{
-   typeptr rv = alctype(ARRAY_TYPE);
-   if (rv == NULL) return NULL;
-   /* fill in size and elemtype by traversing subtrees */
-   /* rf-&gt;u.f.elemtype = ... */
-   return rv;
-}
+ 
 
 char *typename(typeptr t)
 {

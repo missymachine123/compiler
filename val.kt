@@ -1,4 +1,11 @@
-fun main (){
+fun main(args: Array<String>) {
+
+    val a = Array<Int> (5) {2}
+    var x = 1975  
+
+
+}
+fun mains (s:Int, a: Int) {
     val myNum: Int = 5                // Int
     val myDoubleNum: Double = 5.99    // Double
     val myBoolean: Boolean = true     // Boolean
@@ -8,14 +15,6 @@ fun main (){
     val myLong: Long = 150000   // Long
     val myShort: Short = 5000         // Short
     val myByte: Byte? = 100            // Byte
-    val test = 100
-    val initArray = Array<Int>(3) {0}
-    
-    val myLetter: Char? = 'D'          // Char  
-
+    val myLetter: Char? = 'D'          // Char
 }
-
-fun subtracts(a: Int,b: Int): String {
-    var s: String = "The result is: "
-    return a 
- }
+ 

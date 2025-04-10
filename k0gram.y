@@ -304,7 +304,7 @@ prefixUnaryOperator:
 
 
 prefixUnaryExpression:
-  multi_unaryPrefix postfixUnaryExpression  {$$ = alctree(1041, "prefixUnaryExpression", 2, $1, $2);}
+  multi_unaryPrefix postfixUnaryExpression semis {$$ = alctree(1041, "prefixUnaryExpression", 3,$1,$2,$3);}
   ;
 
 parenthesizedAssignableExpression:
@@ -317,7 +317,7 @@ assignment:
 
 directly_assign:
     directlyAssignableExpression ASSIGNMENT {$$ = alctree(1044, "directly_assign", 2, $1, $2);}
-    | assignableExpression assignmentAndOperator  {$$ = alctree(1044, "directly_assign", 2, $1, $2);}
+    | directlyAssignableExpression assignmentAndOperator  {$$ = alctree(1044, "directly_assign", 2, $1, $2);}
     ;
 
 assignableSuffix:
@@ -596,6 +596,7 @@ primaryExpression:
     | STRING_LITERAL 
     | BOOLEAN_LITERAL
     | FLOAT_LITERAL
+    | NULL_LITERAL
     | arrayExpression   { $$ = alctree(1035, "primaryExpression", 1, $1);}
     | CHARACTER_LITERAL
     | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
