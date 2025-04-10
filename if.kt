@@ -2,8 +2,14 @@
 fun assignments() {
    val a : Int = 1;
    val b : Int = 2;
-   val c : Int = 3;
+   var c : Int = 3;
+   var g : Int? = 3;
+   var num = Array<Int> (3) {0} 
    var name:String = "John"
+   g = null
+   c = 56
+   //name = "ali"
+   c += 1
 
 }
 

@@ -477,7 +477,7 @@ void populate_symboltables(struct tree *n)
             break;
         
         case 1034:
-             
+        nullable = false;
         struct tree *z;
         if (n->kids[2] != NULL){
             z = n->kids[2];
@@ -488,8 +488,6 @@ void populate_symboltables(struct tree *n)
                 }
             }
         }
-     } else{
-            nullable = false;
         }
         if (n->kids[1] == NULL){
             struct tree *child = n->kids[0];
@@ -509,17 +507,30 @@ void populate_symboltables(struct tree *n)
             case 1043: /* assignment */
             //printnode(n->kids[0]->kids[]);
             struct tree *b = n->kids[0]->kids[0];
+            SymbolTableEntry se;
             //printnode(b);
             for (i = 0; i < b->nkids; i++) {
                 if (b->kids[i] != NULL && b->kids[i]->leaf != NULL && b->kids[i]->leaf->category == 407) {
-                    SymbolTableEntry se = lookup_st(current, b->kids[i]->leaf->text);
+                    se = lookup_st(current, b->kids[i]->leaf->text);
                     if (se != NULL && se->mutability == 0){
                         fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", b->kids[i]->leaf->lineno, b->kids[i]->leaf->text);
                             exit(3);
-                    }
-                        
-                    
+                    }   
                 }
+            } 
+            if(n->kids[1] != NULL){ /* at assignment */
+                b = n->kids[1];
+                while(b->kids[0] != NULL){ /* traverse down to the actual value*/
+                    b = b->kids[0];
+                    if (b->leaf != NULL && b->leaf->category == 371) { /* check if being assigned to null literal*/
+                        //printf("entry %s", )
+                        if (se != NULL && se->nullable == 0){
+                            fprintf(stderr, "Error: line %d: symbol '%s' cannot be assigned to null type \n", b->leaf->lineno, se->s);
+                            exit(3);
+                        }   
+                    }
+                }
+
             }
 
         break;
