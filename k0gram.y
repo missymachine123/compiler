@@ -304,7 +304,7 @@ prefixUnaryOperator:
 
 
 prefixUnaryExpression:
-  multi_unaryPrefix postfixUnaryExpression semis {$$ = alctree(1041, "prefixUnaryExpression", 3,$1,$2,$3);}
+  multi_unaryPrefix postfixUnaryExpression  {$$ = alctree(1041, "prefixUnaryExpression", 2, $1, $2);}
   ;
 
 parenthesizedAssignableExpression:
@@ -579,7 +579,7 @@ additiveExpression:
     multiplicativeExpression {$$ = alctree(1094, "additiveExpression", 1, $1);}
     | additiveExpression ADD multiplicativeExpression {$$ = alctree(1094, "additiveExpression", 3, $1, $2, $3);}
     | additiveExpression SUB multiplicativeExpression {$$ = alctree(1094, "additiveExpression", 3, $1, $2, $3);}
-    ;
+    ; 
 
 multiplicativeExpression:
   postfixUnaryExpression {$$ = alctree(1095, "multiplicativeExpression", 1, $1);}

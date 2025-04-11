@@ -38,6 +38,7 @@ SymbolTable find_table(char *table_name);
 bool nullable = false;
 bool mutability = false; 
 void insert_type(SymbolTable st, char *s, typeptr t);
+int literal[] = {385, 392, 383, 386, 391};
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -495,7 +496,7 @@ void populate_symboltables(struct tree *n)
                 child = child->kids[0];
             }
             if (child != NULL && child->leaf != NULL && child->leaf->category == 407) {
-                printf("Found leaf with category 407: %s\n", child->leaf->text);
+                // printf("Found leaf with category 407: %s\n", child->leaf->text);
             }
             // insert_sym(current,child->leaf->text,alctype(ARRAY_TYPE),false);
             break;
@@ -663,7 +664,7 @@ SymbolTable find_table(char *table_name){
 typeptr alcarraytype(struct tree * s, struct tree * e)
 {
    typeptr rv = alctype(ARRAY_TYPE);
-   printf("in alcarraytype\n------------------\n");
+//    printf("in alcarraytype\n------------------\n");
    if (rv == NULL) return NULL; 
    if (s == NULL) {
        rv->u.a.size = -1; // default size is -1 (unspecified/unknown size)
@@ -675,24 +676,23 @@ typeptr alcarraytype(struct tree * s, struct tree * e)
  
     struct tree *child = NULL; // Assuming this is the child node for element type
    if (e->kids[1]->kids[1]!= NULL) { /* check if it is a array of arrays*/ 
-    printf("in child\n------------------\n");
         child = e->kids[1]->kids[1];
         while (child != NULL && (child->leaf == NULL || child->leaf->category != 400)) {
             child = child->kids[0];
         } 
         if (child != NULL && child->leaf != NULL && child->leaf->category == 400) {
-            printf("Found leaf with category 400: %s\n", child->leaf->text);
+            // printf("Found leaf with category 400: %s\n", child->leaf->text);
             rv->u.a.elemtype = assignType(child->leaf->text ); // Assuming STRING_TYPE for the element type
         } 
    } else {
        rv->u.a.elemtype = alctype(NULL_TYPE); // Assuming STRING_TYPE for the element type
    }
-   if (rv != NULL) {
-       printf("Array type: %d\n", rv->u.a.elemtype ? rv->u.a.elemtype->basetype : -1);
-       printf("Array size: %d\n", rv->u.a.size);
-   } else {
-       fprintf(stderr, "Error: rv is NULL. Cannot print array type or size.\n");
-   }
+//    if (rv != NULL) {
+//        printf("Array type: %d\n", rv->u.a.elemtype ? rv->u.a.elemtype->basetype : -1);
+//        printf("Array size: %d\n", rv->u.a.size);
+//    } else {
+//        fprintf(stderr, "Error: rv is NULL. Cannot print array type or size.\n");
+//    }
  
    return rv;
 }
@@ -760,7 +760,7 @@ void symboltable_type_init(struct tree *t) {
                     while(b->kids[0] != NULL){ /* traverse down to the actual value*/
                         b = b->kids[0];
                         if (b->leaf != NULL) { /* found value*/
-                            //printf("Value:%s\n", b->leaf->text);
+                            // printf("from get type Value:%s\n", b->leaf->text);
                             insert_type(current,c->leaf->text,get_type(b->leaf->category));
 
                         }
@@ -783,7 +783,7 @@ void symboltable_type_init(struct tree *t) {
                             child = child->kids[0];
                         }
                         if (child != NULL && child->leaf != NULL && child->leaf->category == 407) {
-                            printf("Found leaf with category 407: %s\n", child->leaf->text);
+                            // printf("Found leaf with category 407: %s\n", child->leaf->text);
                             arrayname = child->leaf->text;
                         } 
                     }
@@ -792,7 +792,7 @@ void symboltable_type_init(struct tree *t) {
 
             for (i = 0; i < t->nkids; i++) {
                 if (t->kids[i] != NULL && t->kids[i]->prodrule == 1026) { 
-                    printf("Found opt_eq_exp\n-----------\n");
+                    // printf("Found opt_eq_exp\n-----------\n");
                     child2 = t->kids[i]->kids[1]; //expression 
                     while (child2 != NULL &&  child2->prodrule != 2000) {
                         child2 = child2->kids[0];
@@ -1024,10 +1024,10 @@ struct param * mk_nparams(struct tree *n)
 
 struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2) 
 {
-    if (operator = 0 && e1 == NULL) // no operator
-        return e2->basetype;
-    else if (operator = 0 && e2 == NULL)
-        return e1->basetype;
+    if (operator == 0 && e1 == NULL) // no operator
+        return alctype(e2->basetype);
+    else if (operator == 0 && e2 == NULL)
+        return alctype(e1->basetype);
     
     if (e1 == NULL || e2 == NULL) {
         fprintf(stderr, "Error: Null type information provided.\n");
@@ -1041,20 +1041,21 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
     }
 
     switch (operator) {
-        case INCR: 
+        case ADD: 
             if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
                 result->basetype = INT_TYPE;
             } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
                        (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
                        (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
                 result->basetype = FLOAT_TYPE;
-            } else if (e1->basetype == STRING_TYPE && e2->basetype == STRING_TYPE ||
-                (e1->basetype == STRING_TYPE && e2->basetype == INT_TYPE) ||
-                (e1->basetype == STRING_TYPE && e2->basetype == FLOAT_TYPE)||
-                (e1->basetype == STRING_TYPE && e2->basetype == BOOL_TYPE)) {
-                result->basetype = STRING_TYPE;
-            } else if (e1->basetype == BOOL_TYPE && e2->basetype == BOOL_TYPE) {
-                result->basetype = BOOL_TYPE;
+            } else if ((e1->basetype == DOUBLE_TYPE && e2->basetype == INT_TYPE) ||
+                       (e1->basetype == INT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                       (e1->basetype == DOUBLE_TYPE && e2->basetype == FLOAT_TYPE) ||
+                       (e1->basetype == FLOAT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                       (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
+                result->basetype = DOUBLE_TYPE;
+            } else if (e1->basetype == STRING_TYPE && e2->basetype == STRING_TYPE) {
+                result->basetype = STRING_TYPE; 
             } else if (e1->basetype == ARRAY_TYPE && e2->basetype == ARRAY_TYPE) {
                 result->basetype = ARRAY_TYPE;     
             } else {
@@ -1063,13 +1064,19 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             }
             break;
         
-        case DECR: 
+        case SUB: 
             if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
                 result->basetype = INT_TYPE;
             } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
                     (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
                     (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
                 result->basetype = FLOAT_TYPE;  
+            } else if ((e1->basetype == DOUBLE_TYPE && e2->basetype == INT_TYPE) ||
+                    (e1->basetype == INT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                    (e1->basetype == DOUBLE_TYPE && e2->basetype == FLOAT_TYPE) ||
+                    (e1->basetype == FLOAT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                    (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
+                result->basetype = DOUBLE_TYPE;
             } else {
                 fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
                 exit(1);
@@ -1083,6 +1090,12 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
                     (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
                 result->basetype = FLOAT_TYPE;  
+            } else if ((e1->basetype == DOUBLE_TYPE && e2->basetype == INT_TYPE) ||
+                    (e1->basetype == INT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                    (e1->basetype == DOUBLE_TYPE && e2->basetype == FLOAT_TYPE) ||
+                    (e1->basetype == FLOAT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                    (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
+                result->basetype = DOUBLE_TYPE;
             } else {
                 fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
                 exit(1);
@@ -1091,28 +1104,42 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             
         case DIV: 
             if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
-                result->basetype = INT_TYPE;
+            result->basetype = INT_TYPE;
             } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
-                    (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
-                    (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
-                result->basetype = FLOAT_TYPE;  
+                (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
+                (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
+            result->basetype = FLOAT_TYPE;  
+            } else if ((e1->basetype == DOUBLE_TYPE && e2->basetype == INT_TYPE) ||
+                (e1->basetype == INT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                (e1->basetype == DOUBLE_TYPE && e2->basetype == FLOAT_TYPE) ||
+                (e1->basetype == FLOAT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
+            result->basetype = DOUBLE_TYPE;
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
-                exit(1);
+            fprintf(stderr, "Type error: Unsupported types for '/' operator.\n");
+            exit(1);
             }
             break;
         case MOD:
             if (e1->basetype == INT_TYPE && e2->basetype == INT_TYPE) {
-                result->basetype = INT_TYPE;
+            result->basetype = INT_TYPE;
             } else if ((e1->basetype == FLOAT_TYPE && e2->basetype == INT_TYPE) ||
-                    (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
-                    (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
-                result->basetype = FLOAT_TYPE;  
+                (e1->basetype == INT_TYPE && e2->basetype == FLOAT_TYPE) ||
+                (e1->basetype == FLOAT_TYPE && e2->basetype == FLOAT_TYPE)) {
+            result->basetype = FLOAT_TYPE;  
+            } else if ((e1->basetype == DOUBLE_TYPE && e2->basetype == INT_TYPE) ||
+                (e1->basetype == INT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                (e1->basetype == DOUBLE_TYPE && e2->basetype == FLOAT_TYPE) ||
+                (e1->basetype == FLOAT_TYPE && e2->basetype == DOUBLE_TYPE) ||
+                (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
+            result->basetype = DOUBLE_TYPE;
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
-                exit(1);
+            fprintf(stderr, "Type error: Unsupported types for '%%' operator.\n");
+            exit(1);
             }
-        break;
+            break;
+
+              
         default:
             fprintf(stderr, "Error: Unknown operator.\n");
             exit(1);
@@ -1120,6 +1147,213 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
 
     return result;
 }
+void print_symbol_table_entry(SymbolTableEntry entry) {
+    if (entry == NULL) {
+        printf("SymbolTableEntry is NULL.\n");
+        return;
+    }
+
+    printf("Symbol: %s\n", entry->s);
+    if (entry->type != NULL) {
+        printf("Type: %d\n", entry->type->basetype);
+    } else {
+        printf("Type: NULL\n");
+    }
+    printf("Mutability: %s\n", entry->mutability ? "mutable" : "immutable");
+    printf("Nullability: %s\n", entry->nullable ? "nullable" : "non-nullable");
+
+    if (entry->table != NULL) {
+        printf("Sub-scope: %s\n", entry->table->name);
+    } else {
+        printf("Sub-scope: None\n");
+    }
+}
+
+struct tree *find_node_by_prodrule(struct tree *t, int prodrule) {
+    if (t == NULL) {
+        return NULL;
+    }
+
+    if (t->prodrule == prodrule) {
+        return t;
+    }
+
+    for (int i = 0; i < t->nkids; i++) {
+        struct tree *result = find_node_by_prodrule(t->kids[i], prodrule);
+        if (result != NULL) {
+            return result;
+        }
+    }
+
+    return NULL;
+}
+
+struct tree *find_leaf(struct tree *t, int category) {
+    if (t == NULL) {
+        return NULL;
+    }
+
+    if (t->leaf != NULL && t->leaf->category == category) {
+        return t;
+    }
+
+    for (int i = 0; i < t->nkids; i++) {
+        struct tree *result = find_leaf(t->kids[i], category);
+        if (result != NULL) {
+            return result;
+        }
+    }
+
+    return NULL;
+}
+struct typeinfo *find_typeinfo(struct tree *n){
+    struct tree *op = find_leaf(n, 407);
+    int array[5] = {385, 392, 383, 386, 391};
+            SymbolTableEntry se = NULL;
+            struct typeinfo *e = NULL;
+    if (op != NULL){
+        se = lookup_st(current, op->leaf->text);
+        e = se->type;
+    } else{
+        struct tree *op1 = NULL;
+        for (int i = 0; i < 5; i++) {
+            op1 = find_leaf(n, array[i]);
+            if (op1 != NULL) {
+                break; 
+            }
+        }
+        if (op1 != NULL){
+            e = get_type(op1->leaf->category);
+        }
+        return e;
+    }
+    
+
+}
+struct typeinfo* handle_three_children(struct tree *n) {
+    if (n->nkids == 3) {
+        struct typeinfo *left_type = NULL;
+        struct typeinfo *right_type = NULL; 
+        struct typeinfo *result = NULL;
+
+        // Handle left-hand side
+        if (n->kids[0]->nkids == 3 && n->kids[0]->kids[1]->leaf != NULL) {
+            left_type = handle_three_children(n->kids[0]); // Recursively handle left-hand side
+        } else {
+            left_type = find_typeinfo(n->kids[0]); // Handle literals or other types
+            printf("Left type: %d\n", left_type->basetype);
+        }
+ 
+        // Handle right-hand side
+        if (n->kids[2]->nkids == 3 && n->kids[2]->kids[1]->leaf != NULL) {
+            right_type = handle_three_children(n->kids[2]); // Recursively handle right-hand side
+        } else {
+            right_type = find_typeinfo(n->kids[2]); // Handle literals or other types
+            printf("Right type: %d\n", right_type->basetype);
+        }
+
+        // Check types and determine the result type
+        if (left_type && right_type) {
+            printf("Both left_type and right_type are present.\n");
+            result = check_types(n->kids[1]->leaf->category, left_type, right_type);
+        } else if (left_type) {
+            printf("Only left_type is present.\n");
+            result = check_types(n->kids[1]->leaf->category, left_type, NULL);
+        } else if (right_type) {
+            printf("Only right_type is present.\n");
+            result = check_types(n->kids[1]->leaf->category, NULL, right_type);
+        } 
+        return result;
+    }
+    return NULL;
+}
+
+ 
+void typecheck(struct tree *n) {
+    if (n == NULL) return;
+    
+    int changeable = 0;
+
+    // Perform type checking based on production rules
+    switch (n->prodrule) { 
+        int i;
+
+        case 1004: /* rule for functions for pushing the scope*/
+            for (i = 0; i < n->nkids; i++) {
+                if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 407) {
+            char *function_name = n->kids[i]->leaf->text; 
+            SymbolTable name = find_table(function_name); 
+            pushscope(name); 
+            break;
+                }
+            }
+            break;
+
+        case 1043:  // Assignment
+        
+            if (n->kids[0] != NULL && n->kids[1] != NULL) {
+                printf("From typecheck lhs:\n------------------\n");
+
+                struct tree *lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
+                SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
+
+                SymbolTable temp = current; // Use a temporary variable
+                while (se == NULL && temp != NULL) {
+                    temp = temp->parent; // Move to the parent scope
+                    if (temp != NULL) {
+                        se = lookup_st(temp, lhs->leaf->text); // Check in the parent scope
+                        if (se != NULL) {
+                            changeable = 1; // Set changeable to 1 if se is not null
+                        }
+                    }
+                } 
+                if (se == NULL) {
+                    fprintf(stderr, "Error: Undeclared variable '%s' at line %d\n", lhs->leaf->text, lhs->leaf->lineno);
+                    exit(3);
+                } 
+                
+                struct typeinfo *lhs_type = se->type;
+                printf("lhs type: %d\n", lhs_type->basetype);
+
+                struct tree *rhs = n->kids[1]; // Assuming the right-hand side is the second child
+                printf("From typecheck rhs:\n------------------\n");
+                printnode(rhs); // Print the right-hand side node for debugging
+                
+            }
+            changeable = 0; // Reset changeable for the next iteration
+            break;
+
+        case 1094:
+        struct typeinfo *result = handle_three_children(n); // Handle the three children case
+        if (result != NULL) {
+            printf("Final Result type: %d\n", result->basetype);
+        }
+        break;
+
+        }
+
+
+
+                
+        // Recursively typecheck all children
+        for (int i = 0; i < n->nkids; i++) typecheck(n->kids[i]);   
+
+        /* Post-order activity */
+        switch (n->prodrule) {
+
+            case 1004: /* End of function scope */ {
+                //printsymbols(current, SCOPE);
+                //printf("---\n");
+                if (current != NULL) {
+                    popscope(); // Pop the current scope to return to the parent scope
+                }
+                break;
+            }
+        }
+
+}
+
+
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
@@ -1185,6 +1419,7 @@ int main(int argc, char **argv) {
                 populate_symboltables(root);
                 symboltable_type_init(root);
                 build_function_parameter(root);
+                typecheck(root);
 
 
 
@@ -1198,8 +1433,12 @@ int main(int argc, char **argv) {
 
 // Handle the -dot option
     if (generate_dot) {
-        char dot_filename[256];
-        snprintf(dot_filename, sizeof(dot_filename), "%s.dot", filename);
+        char dot_filename[512]; // Increase buffer size to handle longer filenames
+        int written = snprintf(dot_filename, sizeof(dot_filename), "%s.dot", filename);
+        if (written < 0 || written >= sizeof(dot_filename)) {
+            fprintf(stderr, "Error: Filename too long for buffer.\n");
+            exit(EXIT_FAILURE);
+        }
         print_graph(root, dot_filename);  // Generate a .dot file
         printf("Dot file generated: %s\n", dot_filename);
     }

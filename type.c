@@ -47,21 +47,27 @@ typeptr get_type(int category){
       //int
          rv = integer_typeptr;
       break;
+
       case 392:
       //string 
          rv = string_typeptr;
       break;
+
       case 383:
       //float 
          rv = float_typeptr;
+      break;
+
       case 386:
       //char literal 
          rv = char_typeptr;
       break;
+
       case 391:
       //bool literal 
          rv = boolean_typeptr;
       break;
+      
       default:
          //fprintf(stderr, "Unknown type name: %s\n", typeName);
          return NULL;
