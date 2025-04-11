@@ -1231,6 +1231,10 @@ struct typeinfo *find_typeinfo(struct tree *n){
 
 }
 struct typeinfo* handle_three_children(struct tree *n) {
+    if( n->nkids == 1 && n->kids[0]->nkids == 3){
+        struct typeinfo *result = handle_three_children(n->kids[0]); // Recursively handle the first child
+        return result; 
+    }
     if (n->nkids == 3) {
         struct typeinfo *left_type = NULL;
         struct typeinfo *right_type = NULL; 
@@ -1263,7 +1267,9 @@ struct typeinfo* handle_three_children(struct tree *n) {
             printf("Only right_type is present.\n");
             result = check_types(n->kids[1]->leaf->category, NULL, right_type);
         } 
+        printf("Result type: %d\n", result->basetype);
         return result;
+        
     }
     return NULL;
 }
@@ -1320,14 +1326,26 @@ void typecheck(struct tree *n) {
                 printnode(rhs); // Print the right-hand side node for debugging
                 
             }
-            changeable = 0; // Reset changeable for the next iteration
             break;
 
         case 1094:
         struct typeinfo *result = handle_three_children(n); // Handle the three children case
         if (result != NULL) {
             printf("Final Result type: %d\n", result->basetype);
+            // if (changeable == 1 && (result->basetype != )){
+            //     fprintf(stderr, "Cannot change types\n", lhs->leaf->text, lhs->leaf->lineno);
+            //         exit(3);
+            //     } 
+            //     struct tree *lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
+            //     SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
+            //     if (se != NULL) {
+            //         se->type = result; // Update the type of the symbol in the symbol table
+            //     } else {
+            //         fprintf(stderr, "Error: Variable '%s' not found in symbol table.\n", lhs->leaf->text);
+            //     }
+            // }
         }
+
         break;
 
         }
