@@ -548,6 +548,18 @@ void populate_symboltables(struct tree *n)
                 exit(3);
             }
             break;
+
+        case 1052:
+        SymbolTableEntry ste;
+        if(n->kids[0]->kids[0] != NULL && n->kids[1] != NULL){
+            ste = lookup_st(current, n->kids[0]->kids[0]->leaf->text);
+            //printnode(n->kids[0]->kids[0]);
+            if (ste != NULL && ste->mutability == 0){
+                fprintf(stderr, "line %d: Error: symbol '%s' declared with val cannot be reassigned\n", n->kids[0]->kids[0]->leaf->lineno, n->kids[0]->kids[0]->leaf->text);
+                    exit(3);
+            }   
+        }
+        break;
     }
     /* Visit children (Recursive traversal of child nodes) */
     for (i = 0; i < n->nkids; i++) {
@@ -882,13 +894,13 @@ void printsymbols(SymbolTable st, int level) {
 
             if (ste->type != NULL) {
                 // Print the type information if available
-                printf("Type: %d\n", ste->type->basetype);
+                printf("Type: %s\n", get_typename(ste->type->basetype));
             } else {
                 // printf("Type: NULL\n");
             }
             printf("Mutability: %x\n", ste->mutability);
             printf("Nullability: %x\n", ste->nullable);
-
+            printf("\n");
             // If the symbol has a sub-scope, print it recursively
             //if (ste->table != NULL && ste->table != st) {
               // printsymbols(ste->table, level + 1);
@@ -1060,13 +1072,13 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
     
     if (e1 == NULL || e2 == NULL) {
         fprintf(stderr, "Error: Null type information provided.\n");
-        exit(1);
+        exit(3);
     }
 
     struct typeinfo *result = malloc(sizeof(struct typeinfo));
     if (!result) {
         fprintf(stderr, "Error: Memory allocation failed for typeinfo.\n");
-        exit(1);
+        exit(3);
     }
 
     switch (operator) {
@@ -1089,7 +1101,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 result->basetype = ARRAY_TYPE;     
             } else {
                 fprintf(stderr, "Type error: Unsupported types for '+' operator.\n");
-                exit(1);
+                exit(3);
             }
             break;
         
@@ -1108,7 +1120,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 result->basetype = DOUBLE_TYPE;
             } else {
                 fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
-                exit(1);
+                exit(3);
             }
             break;
         
@@ -1127,7 +1139,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 result->basetype = DOUBLE_TYPE;
             } else {
                 fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
-                exit(1);
+                exit(3);
             }
             break;
             
@@ -1146,7 +1158,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             result->basetype = DOUBLE_TYPE;
             } else {
             fprintf(stderr, "Type error: Unsupported types for '/' operator.\n");
-            exit(1);
+            exit(3);
             }
             break;
         case MOD:
@@ -1164,7 +1176,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             result->basetype = DOUBLE_TYPE;
             } else {
             fprintf(stderr, "Type error: Unsupported types for '%%' operator.\n");
-            exit(1);
+            exit(3);
             }
             break;
             
@@ -1204,15 +1216,15 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     result->basetype = e1->basetype;
                 } else {
                     fprintf(stderr, "Type mismatch in compound assignment: cannot assign '%s' to '%s'.\n", 
-                            get_typename(operation_result_type), get_typename(e1->basetype));
-                    exit(1);
+                    get_typename(operation_result_type), get_typename(e1->basetype));
+                    exit(3);
                 }
                 break;
             }
 
         default:
             fprintf(stderr, "Error: Unknown operator.\n");
-            exit(1);
+            exit(3);
     }
 
     return result;
@@ -1437,7 +1449,38 @@ void typecheck(struct tree *n) {
         }
 
         break;
-        //case 
+
+        case 1052:
+        
+        if(n->kids[0]->kids[0] != NULL && n->kids[1] != NULL){
+            //ste = lookup_st(current, n->kids[0]->kids[0]->leaf->text);
+            //printnode(n->kids[0]->kids[0]); 
+            struct token *val = n->kids[0]->kids[0]->leaf; 
+            SymbolTableEntry se3 = NULL;
+            struct typeinfo *post_type = NULL;
+
+            if (val != NULL && val->category == 407) {
+                se3 = lookup_st(current, val->text);
+                post_type = se3->type;
+                
+                if(post_type->basetype == BOOL_TYPE || post_type->basetype == STRING_TYPE || post_type->basetype == ARRAY_TYPE){
+                    fprintf(stderr, "Type error: Unsupported types for '%s' operator.\n", n->kids[1]->kids[1]->kids[0]->leaf->text);
+                    exit(3);
+                }
+                    
+                
+            }
+            
+
+        }else if(n->kids[0] != NULL && n->kids[1] != NULL){
+            //printnode(n->kids[0]); 
+            fprintf(stderr, "Error: Variable expected at line %d\n", n->kids[0]->leaf->lineno);
+            exit(3);
+
+        }
+            
+        
+        break;
 
         }
 
