@@ -1614,7 +1614,7 @@ YY_RULE_SETUP
 case 70:
 YY_RULE_SETUP
 #line 129 "k0lex.l"
-{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
+{ yydval = atof(removeSeparators(yytext)); return alctoken(DOUBLE_LITERAL);}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP

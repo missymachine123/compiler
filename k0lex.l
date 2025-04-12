@@ -126,7 +126,7 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "Array"                 { return alctoken(ARRAYTYPELITERAL);}
 "Float"|"Double"|"Int"|"Short"|"Long"|"Boolean"|"Char"|"Byte"|"String"    { return alctoken(TYPELITERAL);} 
 "-"?{FloatLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
-"-"?{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(FLOAT_LITERAL);}
+"-"?{DoubleLiteral}							{ yydval = atof(removeSeparators(yytext)); return alctoken(DOUBLE_LITERAL);}
 "-"?{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return alctoken(INTEGER_LITERAL);}  
 {HexLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext), NULL, 16); return alctoken(INTEGER_LITERAL);} 
 {BinLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext+2), NULL, 2); return alctoken(INTEGER_LITERAL);}

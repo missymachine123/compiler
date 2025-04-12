@@ -5,8 +5,8 @@
 #include "symtab.h"
 #include "k0gram.tab.h" 
 #include <string.h>
+#include <stdbool.h>
  
-
 struct typeinfo null_type = { NULL_TYPE };
 struct typeinfo byte_type = { BYTE_TYPE };
 struct typeinfo short_type = { SHORT_TYPE };
@@ -58,6 +58,11 @@ typeptr get_type(int category){
          rv = float_typeptr;
       break;
 
+      case 384:
+      //double 
+         rv = double_typeptr;
+      break;
+
       case 386:
       //char literal 
          rv = char_typeptr;
@@ -74,6 +79,41 @@ typeptr get_type(int category){
    }
    return rv;
 
+}
+
+char* get_typename(int basetype){
+   switch(basetype){
+      case 1000000:
+            return "NULL";
+        case 1000001:
+            return "Byte";
+        case 1000002:
+            return "Short";
+        case 1000003:
+            return "Int";
+        case 1000004:
+            return "Long";
+        case 1000005:
+            return "Float";
+        case 1000006:
+            return "Double";
+        case 1000007:
+            return "Boolean";
+        case 1000008:
+            return "String";
+        case 1000009:
+            return "Char";
+        case 1000010:
+            return "Array";
+        case 1000011:
+            return "Function";
+        case 1000012:
+            return "Class";
+        case 1000013:
+            return "Package";
+        default:
+            return "UNKNOWN_TYPE";
+    }
 }
  
 char *typenam[] =
@@ -203,6 +243,32 @@ char *typename(typeptr t)
    else if (t->basetype < FIRST_TYPE || t->basetype > LAST_TYPE)
       return "(BOGUS)";
    else return typenam[t->basetype-1000000];
+}
+
+bool can_assign_to(int target_type, int value_type) {
+   if (target_type == value_type)
+       return true;
+   
+   if (target_type == DOUBLE_TYPE && 
+       (value_type == FLOAT_TYPE || value_type == LONG_TYPE || 
+        value_type == INT_TYPE || value_type == SHORT_TYPE || value_type == BYTE_TYPE))
+       return true;
+       
+   if (target_type == FLOAT_TYPE && 
+       (value_type == INT_TYPE || value_type == SHORT_TYPE || value_type == BYTE_TYPE))
+       return true;
+       
+   if (target_type == LONG_TYPE && 
+       (value_type == INT_TYPE || value_type == SHORT_TYPE || value_type == BYTE_TYPE))
+       return true;
+       
+   if (target_type == INT_TYPE && 
+       (value_type == SHORT_TYPE || value_type == BYTE_TYPE))
+       return true;
+       
+   if (target_type == SHORT_TYPE && value_type == BYTE_TYPE)
+       return true;
+   return false;
 }
 
 

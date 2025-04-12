@@ -65,6 +65,7 @@ void printnode(struct tree *t);
 
 typeptr assignType(char *typeName);
 typeptr get_type(int category);
+char* get_typename(int basetype);
 
 extern struct sym_table *global_table;
 extern typeptr integer_typeptr;

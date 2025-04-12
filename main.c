@@ -8,6 +8,7 @@
 #include "symtab.h"
 #include "type.h" 
 #include <math.h>
+#include <stdbool.h>
 
 extern FILE *yyin;
 extern int yyparse(void);
@@ -33,6 +34,7 @@ int SCOPE = 0;
 int variable_declaration = 0;
 #define pushscope(stp) do { stp->parent = current; current = stp; SCOPE++; } while (0)
 #define popscope() do { current = current->parent; SCOPE--; } while(0)
+bool can_assign_to(int target_type, int value_type);
 void printsymbols(SymbolTable st, int level);
 SymbolTable find_table(char *table_name);
 bool nullable = false;
@@ -977,50 +979,77 @@ char* removeSeparators(char* yytext) {
     return cleanText;
 } 
  
-struct param * mk_nparams(struct tree *n)
-{ 
-   if (n->prodrule == 1007) { /* base case: Parameter*/
-      struct param *parameter = malloc(sizeof(struct param));
-      if (!parameter) {
-         fprintf(stderr, "Memory allocation failed for parameter.\n");
-         return NULL;
-      }
-      parameter->name = n->kids[0]->leaf->text; // Assuming the name is in the first child 
-       
-      if(n->kids[2]){ 
-        if (n->kids[2]->kids[0]->kids[0]->prodrule == 2001)
-            parameter->type = alcarraytype(NULL, n->kids[2]->kids[0]->kids[0]);
-        else if (n->kids[2]->kids[0]->prodrule == 1024) //nullabletype
-            parameter->type = assignType(n->kids[2]->kids[0]->kids[0]->leaf->text); // Assuming the type is in the second child
-        else {
-            parameter->type = assignType(n->kids[2]->kids[0]->leaf->text); // Assuming the type is in the second child
-        }
-    }
-    printf("Parameter Info:\n");
-    printf("Name: %s\n", parameter->name);
-    if (parameter->type != NULL) {
-        printf("Type: %d\n", parameter->type->basetype);
-    } else {
-        printf("Type: NULL\n");
-    }
-      parameter->next = NULL;
-      return parameter;
+struct param *mk_nparams(struct tree *n) {
+    if (!n) return NULL;
 
-   } else if (n->prodrule == 1009) { /* recursive case */
-      struct param *firstParameter = mk_nparams(n->kids[0]->kids[0]);
-      struct param *remainingParameters = NULL;
-      if (n->kids[1] != NULL){
-           remainingParameters = mk_nparams(n->kids[1]->kids[2]->kids[0]);
-      }
-      if (!firstParameter) return remainingParameters;
-      struct param *currentParameter = firstParameter;
-      while (currentParameter->next != NULL) currentParameter = currentParameter->next;
-      currentParameter->next = remainingParameters;
-      return firstParameter;
-   }
-   
-   return NULL;
-}  
+    // Case: multi_comma_functionParameter (recursive case)
+    if (n->prodrule == 1008) {
+        struct param *p1 = mk_nparams(n->kids[0]);  // Process first parameter
+        struct param *p2 = mk_nparams(n->kids[2]);  // Process next parameter
+
+        if (!p1) return p2;  // If first parameter is NULL, return second
+
+        struct param *temp = p1;
+        while (temp->next != NULL) temp = temp->next;  // Traverse to last element
+        temp->next = p2;  // Link parameter lists together
+
+        return p1;
+    }
+
+    // Case: functionValueParameter (base case)
+    if (n->prodrule == 1006) {
+        return mk_nparams(n->kids[0]);  // Process single parameter
+    }
+
+    // Case: parameter (base case)
+    if (n->prodrule == 1007) {
+        struct param *parameter = malloc(sizeof(struct param));
+        if (!parameter) {
+            fprintf(stderr, "Memory allocation failed for parameter.\n");
+            return NULL;
+        }
+        parameter->name = n->kids[0]->leaf->text;
+
+        // Process type information
+        if (n->kids[2]) {
+            struct tree *typeNode = n->kids[2]->kids[0];
+            if (typeNode->prodrule == 2001) {
+                parameter->type = alcarraytype(NULL, typeNode);
+            } else if (typeNode->prodrule == 1024) {
+                parameter->type = assignType(typeNode->kids[0]->leaf->text);
+            } else {
+                parameter->type = assignType(typeNode->leaf->text);
+            }
+        }
+
+        // Print parameter information for debugging
+        printf("Parameter Info:\nName: %s\n", parameter->name);
+        if (parameter->type) {
+            printf("Type: %d\n", parameter->type->basetype);
+        } else {
+            printf("Type: NULL\n");
+        }
+
+        parameter->next = NULL;
+        return parameter;
+    }
+
+    // Case: opt_functionValueParameter (recursive case)
+    if (n->prodrule == 1009) {
+        struct param *p1 = mk_nparams(n->kids[0]);  // Process first parameter
+        struct param *p2 = mk_nparams(n->kids[1]);  // Process remaining parameters
+
+        if (!p1) return p2;
+
+        struct param *temp = p1;
+        while (temp->next) temp = temp->next;  // Traverse to last parameter
+        temp->next = p2;  // Link the parameters together
+
+        return p1;
+    }
+
+    return NULL;
+}
 
 struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2) 
 {
@@ -1138,8 +1167,49 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             exit(1);
             }
             break;
+            
+        case ASSIGNMENT:
+        if (e1->basetype == e2->basetype ) {
+            result->basetype = e1->basetype;
+            } else {
+            fprintf(stderr, "Assignment type mismatch: actual type is '%s', but '%s' was expected.\n", get_typename(e2->basetype), get_typename(e1->basetype));
+            exit(1);
+            }
+            break;  
+            case ADD_ASSIGNMENT: case SUB_ASSIGNMENT: case MULT_ASSIGNMENT: case DIV_ASSIGNMENT: case MOD_ASSIGNMENT:
+            {
+                // determine the result type of the operation part 
+                int operation_result_type;
+                
+                if (e1->basetype == DOUBLE_TYPE || e2->basetype == DOUBLE_TYPE) {
+                    operation_result_type = DOUBLE_TYPE;
+                } else if (e1->basetype == FLOAT_TYPE || e2->basetype == FLOAT_TYPE) {
+                    operation_result_type = FLOAT_TYPE;
+                } else if (e1->basetype == LONG_TYPE || e2->basetype == LONG_TYPE) {
+                    operation_result_type = LONG_TYPE;
+                } else if (e1->basetype == INT_TYPE || e2->basetype == INT_TYPE) {
+                    operation_result_type = INT_TYPE;
+                } else {
+                    operation_result_type = e1->basetype;
+                }
+                
+                // ADD_ASSIGNMENT with strings
+                if (operator == ADD_ASSIGNMENT && e1->basetype == STRING_TYPE) {
+                    result->basetype = STRING_TYPE;
+                    break;
+                }
+                
+                // Check if operation result can be assigned back to lhs
+                if (can_assign_to(e1->basetype, operation_result_type)) {
+                    result->basetype = e1->basetype;
+                } else {
+                    fprintf(stderr, "Type mismatch in compound assignment: cannot assign '%s' to '%s'.\n", 
+                            get_typename(operation_result_type), get_typename(e1->basetype));
+                    exit(1);
+                }
+                break;
+            }
 
-              
         default:
             fprintf(stderr, "Error: Unknown operator.\n");
             exit(1);
@@ -1208,7 +1278,7 @@ struct tree *find_leaf(struct tree *t, int category) {
 }
 struct typeinfo *find_typeinfo(struct tree *n){
     struct tree *op = find_leaf(n, 407);
-    int array[5] = {385, 392, 383, 386, 391};
+    int array[6] = {385, 392, 383, 384, 386, 391};
             SymbolTableEntry se = NULL;
             struct typeinfo *e = NULL;
     if (op != NULL){
@@ -1295,8 +1365,7 @@ void typecheck(struct tree *n) {
             }
             break;
 
-        case 1043:  // Assignment
-        
+        case 1043:  // Assignment    
             if (n->kids[0] != NULL && n->kids[1] != NULL) {
                 printf("From typecheck lhs:\n------------------\n");
 
@@ -1318,12 +1387,33 @@ void typecheck(struct tree *n) {
                     exit(3);
                 } 
                 
-                struct typeinfo *lhs_type = se->type;
-                printf("lhs type: %d\n", lhs_type->basetype);
-
+                
                 struct tree *rhs = n->kids[1]; // Assuming the right-hand side is the second child
+                struct tree *value = NULL;
+                struct typeinfo *lhs_type = se->type; printf("lhs type: %d\n", lhs_type->basetype);
+                struct typeinfo *rhs_type = NULL;
+                struct token *operator = n->kids[0]->kids[1]->leaf;
+                SymbolTableEntry se2 = NULL;
                 printf("From typecheck rhs:\n------------------\n");
-                printnode(rhs); // Print the right-hand side node for debugging
+                int array[7] = {385, 392, 383, 384, 386, 391, 407};
+                for (int i = 0; i < 5; i++) {
+                    value = find_leaf(n, array[i]);
+                    if (value != NULL) {
+                        if (i == 407){
+                            se2 = lookup_st(current, value->leaf->text);
+                            rhs_type = se2->type;
+                        }else {
+                            rhs_type = get_type(value->leaf->category);
+                        }
+                        break; 
+                    }
+            }
+                //printnode(rhs); // Print the right-hand side node for debugging
+                //printf("\n here: %d\n", operator->category);
+                //printnode(n->kids[0]->kids[1]);
+                check_types(operator->category, lhs_type, rhs_type);
+
+                //if(rhs_type )
                 
             }
             break;
@@ -1347,6 +1437,7 @@ void typecheck(struct tree *n) {
         }
 
         break;
+        //case 
 
         }
 

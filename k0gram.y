@@ -596,6 +596,7 @@ primaryExpression:
     | STRING_LITERAL 
     | BOOLEAN_LITERAL
     | FLOAT_LITERAL
+    | DOUBLE_LITERAL
     | NULL_LITERAL
     | arrayExpression   { $$ = alctree(1035, "primaryExpression", 1, $1);}
     | CHARACTER_LITERAL
@@ -610,6 +611,7 @@ primaryExpression:
   | STRING_LITERAL 
   | BOOLEAN_LITERAL
   | FLOAT_LITERAL
+  | DOUBLE_LITERAL
   | CHARACTER_LITERAL
 ;
 

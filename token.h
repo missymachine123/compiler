@@ -72,5 +72,6 @@ typedef enum{
         CHAR,
         STRING,
         BYTE,
+        DOUBLE_LITERAL,
         T_EOF = 0
 } ktokens_t;
