@@ -39,7 +39,8 @@ bool nullable = false;
 bool mutability = false; 
 void insert_type(SymbolTable st, char *s, typeptr t);
 int literal[] = {385, 392, 383, 386, 391};
-
+char* get_typename(int basetype);
+bool can_assign_to(int target_type, int value_type) ;
 struct token {
    int category;   /* the integer code returned by yylex */
    char *text;     /* the actual string (lexeme) matched */
@@ -976,51 +977,78 @@ char* removeSeparators(char* yytext) {
     cleanText[j] = '\0';
     return cleanText;
 } 
- 
-struct param * mk_nparams(struct tree *n)
-{ 
-   if (n->prodrule == 1007) { /* base case: Parameter*/
-      struct param *parameter = malloc(sizeof(struct param));
-      if (!parameter) {
-         fprintf(stderr, "Memory allocation failed for parameter.\n");
-         return NULL;
-      }
-      parameter->name = n->kids[0]->leaf->text; // Assuming the name is in the first child 
-       
-      if(n->kids[2]){ 
-        if (n->kids[2]->kids[0]->kids[0]->prodrule == 2001)
-            parameter->type = alcarraytype(NULL, n->kids[2]->kids[0]->kids[0]);
-        else if (n->kids[2]->kids[0]->prodrule == 1024) //nullabletype
-            parameter->type = assignType(n->kids[2]->kids[0]->kids[0]->leaf->text); // Assuming the type is in the second child
-        else {
-            parameter->type = assignType(n->kids[2]->kids[0]->leaf->text); // Assuming the type is in the second child
-        }
-    }
-    printf("Parameter Info:\n");
-    printf("Name: %s\n", parameter->name);
-    if (parameter->type != NULL) {
-        printf("Type: %d\n", parameter->type->basetype);
-    } else {
-        printf("Type: NULL\n");
-    }
-      parameter->next = NULL;
-      return parameter;
+struct param *mk_nparams(struct tree *n) {
+    if (!n) return NULL;
 
-   } else if (n->prodrule == 1009) { /* recursive case */
-      struct param *firstParameter = mk_nparams(n->kids[0]->kids[0]);
-      struct param *remainingParameters = NULL;
-      if (n->kids[1] != NULL){
-           remainingParameters = mk_nparams(n->kids[1]->kids[2]->kids[0]);
-      }
-      if (!firstParameter) return remainingParameters;
-      struct param *currentParameter = firstParameter;
-      while (currentParameter->next != NULL) currentParameter = currentParameter->next;
-      currentParameter->next = remainingParameters;
-      return firstParameter;
-   }
-   
-   return NULL;
-}  
+    // Case: multi_comma_functionParameter (recursive case)
+    if (n->prodrule == 1008) {
+        struct param *p1 = mk_nparams(n->kids[0]);  // Process first parameter
+        struct param *p2 = mk_nparams(n->kids[2]);  // Process next parameter
+
+        if (!p1) return p2;  // If first parameter is NULL, return second
+
+        struct param *temp = p1;
+        while (temp->next != NULL) temp = temp->next;  // Traverse to last element
+        temp->next = p2;  // Link parameter lists together
+
+        return p1;
+    }
+
+    // Case: functionValueParameter (base case)
+    if (n->prodrule == 1006) {
+        return mk_nparams(n->kids[0]);  // Process single parameter
+    }
+
+    // Case: parameter (base case)
+    if (n->prodrule == 1007) {
+        struct param *parameter = malloc(sizeof(struct param));
+        if (!parameter) {
+            fprintf(stderr, "Memory allocation failed for parameter.\n");
+            return NULL;
+        }
+        parameter->name = n->kids[0]->leaf->text;
+
+        // Process type information
+        if (n->kids[2]) {
+            struct tree *typeNode = n->kids[2]->kids[0];
+            if (typeNode->prodrule == 2001) {
+                parameter->type = alcarraytype(NULL, typeNode);
+            } else if (typeNode->prodrule == 1024) {
+                parameter->type = assignType(typeNode->kids[0]->leaf->text);
+            } else {
+                parameter->type = assignType(typeNode->leaf->text);
+            }
+        }
+
+        // Print parameter information for debugging
+        printf("Parameter Info:\nName: %s\n", parameter->name);
+        if (parameter->type) {
+            printf("Type: %d\n", parameter->type->basetype);
+        } else {
+            printf("Type: NULL\n");
+        }
+
+        parameter->next = NULL;
+        return parameter;
+    }
+
+    // Case: opt_functionValueParameter (recursive case)
+    if (n->prodrule == 1009) {
+        struct param *p1 = mk_nparams(n->kids[0]);  // Process first parameter
+        struct param *p2 = mk_nparams(n->kids[1]);  // Process remaining parameters
+
+        if (!p1) return p2;
+
+        struct param *temp = p1;
+        while (temp->next) temp = temp->next;  // Traverse to last parameter
+        temp->next = p2;  // Link the parameters together
+
+        return p1;
+    }
+
+    return NULL;
+}
+
 
 struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2) 
 {
@@ -1138,8 +1166,72 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             exit(1);
             }
             break;
+            
+       case ASSIGNMENT:
+        if (e1->basetype == e2->basetype ) {
+            result->basetype = e1->basetype;
+            } else {
+            fprintf(stderr, "Assignment type mismatch: actual type is '%s', but '%s' was expected.\n", get_typename(e2->basetype), get_typename(e1->basetype));
+            exit(1);
+            }
+            break;  
+            case ADD_ASSIGNMENT: case SUB_ASSIGNMENT: case MULT_ASSIGNMENT: case DIV_ASSIGNMENT: case MOD_ASSIGNMENT:
+            {
+                // determine the result type of the operation part 
+                int operation_result_type;
+                
+                if (e1->basetype == DOUBLE_TYPE || e2->basetype == DOUBLE_TYPE) {
+                    operation_result_type = DOUBLE_TYPE;
+                } else if (e1->basetype == FLOAT_TYPE || e2->basetype == FLOAT_TYPE) {
+                    operation_result_type = FLOAT_TYPE;
+                } else if (e1->basetype == LONG_TYPE || e2->basetype == LONG_TYPE) {
+                    operation_result_type = LONG_TYPE;
+                } else if (e1->basetype == INT_TYPE || e2->basetype == INT_TYPE) {
+                    operation_result_type = INT_TYPE;
+                } else {
+                    operation_result_type = e1->basetype;
+                }
+                
+                // ADD_ASSIGNMENT with strings
+                if (operator == ADD_ASSIGNMENT && e1->basetype == STRING_TYPE) {
+                    result->basetype = STRING_TYPE;
+                    break;
+                }
+                
+                // Check if operation result can be assigned back to lhs
+                if (can_assign_to(e1->basetype, operation_result_type)) {
+                    result->basetype = e1->basetype;
+                } else {
+                    fprintf(stderr, "Type mismatch in compound assignment: cannot assign '%s' to '%s'.\n", 
+                    get_typename(operation_result_type), get_typename(e1->basetype));
+                    exit(3);
+                }
+                break;
+            }
 
-              
+
+        case LE: 
+        case GE:
+        case CONJ:
+        case DISJ:
+        case LANGLE:
+        case RANGLE:
+        case EQEQ:
+        case EXCL_EQ:
+        case EXCL_EQEQ:
+            if (e1->basetype == e2->basetype) {
+                result->basetype = BOOL_TYPE;
+            } else if ((e1->basetype == INT_TYPE || e1->basetype == FLOAT_TYPE || e1->basetype == DOUBLE_TYPE) &&
+                       (e2->basetype == INT_TYPE || e2->basetype == FLOAT_TYPE || e2->basetype == DOUBLE_TYPE)) {
+                result->basetype = BOOL_TYPE; // Allow numeric comparisons
+
+            } else {
+                fprintf(stderr, "Comparison type mismatch: '%s' and '%s'.\n", get_typename(e1->basetype), get_typename(e2->basetype));
+                exit(1);
+            }
+            
+            break;
+
         default:
             fprintf(stderr, "Error: Unknown operator.\n");
             exit(1);
@@ -1255,6 +1347,7 @@ struct typeinfo* handle_three_children(struct tree *n) {
             right_type = find_typeinfo(n->kids[2]); // Handle literals or other types
             printf("Right type: %d\n", right_type->basetype);
         }
+        printf("category: %d \n----------------\n",n->kids[1]->leaf->category);
 
         // Check types and determine the result type
         if (left_type && right_type) {
@@ -1277,12 +1370,40 @@ struct typeinfo* handle_three_children(struct tree *n) {
  
 void typecheck(struct tree *n) {
     if (n == NULL) return;
+    struct tree *lhs = NULL;
+    struct tree *rhs = NULL; // Assuming the right-hand side is the second child
+    struct typeinfo *lhs_type = NULL;
+    struct typeinfo *rhs_type = NULL;
+    struct typeinfo *comparison = NULL;
     
-    int changeable = 0;
+    struct typeinfo *equality = NULL;
+    
 
     // Perform type checking based on production rules
     switch (n->prodrule) { 
         int i;
+        
+        case 1090: 
+            if (n->nkids == 3){ 
+                printf("comparison \n");
+                comparison = handle_three_children(n);
+                if (comparison != NULL){
+                printf("comparison print: %d\n",comparison->basetype);
+                }
+            }
+            break;
+
+        case 1089:
+            if (n->nkids == 3 ){ 
+                    printf("equality \n");
+                    equality = handle_three_children(n);
+                    if (equality != NULL){
+                    printf("equality print: %d\n",equality->basetype);
+                    }
+                }
+                break;
+
+
 
         case 1004: /* rule for functions for pushing the scope*/
             for (i = 0; i < n->nkids; i++) {
@@ -1300,7 +1421,7 @@ void typecheck(struct tree *n) {
             if (n->kids[0] != NULL && n->kids[1] != NULL) {
                 printf("From typecheck lhs:\n------------------\n");
 
-                struct tree *lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
+                lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
                 SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
 
                 SymbolTable temp = current; // Use a temporary variable
@@ -1308,9 +1429,7 @@ void typecheck(struct tree *n) {
                     temp = temp->parent; // Move to the parent scope
                     if (temp != NULL) {
                         se = lookup_st(temp, lhs->leaf->text); // Check in the parent scope
-                        if (se != NULL) {
-                            changeable = 1; // Set changeable to 1 if se is not null
-                        }
+                         
                     }
                 } 
                 if (se == NULL) {
@@ -1318,35 +1437,66 @@ void typecheck(struct tree *n) {
                     exit(3);
                 } 
                 
-                struct typeinfo *lhs_type = se->type;
-                printf("lhs type: %d\n", lhs_type->basetype);
-
-                struct tree *rhs = n->kids[1]; // Assuming the right-hand side is the second child
-                printf("From typecheck rhs:\n------------------\n");
-                printnode(rhs); // Print the right-hand side node for debugging
                 
-            }
+                rhs = n->kids[1]; // Assuming the right-hand side is the second child
+                struct tree *value = NULL;
+                lhs_type = se->type; printf("lhs type: %d\n", lhs_type->basetype);
+
+                
+
+                // Walk through the rhs child to find cases with three children
+                struct tree *current_node = rhs;
+                struct typeinfo *expressions =NULL;
+                while (current_node != NULL) {
+                    if (current_node->nkids == 3) {
+                        printf("Found a node with three children.\n");
+                        expressions = handle_three_children(current_node);
+                        if (expressions != NULL) {
+                            printf("Result type from three children: %d\n", expressions->basetype);
+                        }
+                        break;
+                    }
+                    current_node = current_node->kids[0]; // Traverse to the next child
+                }
+                if (expressions){
+                    rhs_type= expressions;
+                    printf("lhs_type:%d\n---------------------\n", lhs_type->basetype);
+                    printf("rhs_type:%d\n---------------------\n", rhs_type->basetype);
+                    if (lhs_type->basetype != rhs_type->basetype ){
+                    fprintf(stderr, "Error: Type miss match '%s' at line %d\n", lhs->leaf->text, lhs->leaf->lineno);
+                    exit(3);
+                    }
+                    
+                }else {
+                    struct token *operator = n->kids[0]->kids[1]->leaf;
+                    SymbolTableEntry se2 = NULL;
+                    printf("From typecheck rhs:\n------------------\n");
+                    int array[7] = {385, 392, 383, 384, 386, 391, 407};
+                    for (int i = 0; i < 7; i++) {
+                        value = find_leaf(n, array[i]);
+                        if (value != NULL) {
+                            if (array[i] == 407){
+                                se2 = lookup_st(current, value->leaf->text);
+                                rhs_type = se2->type;
+                            }else {
+                                rhs_type = get_type(value->leaf->category);
+                            }
+                            break; 
+                        }
+                } 
+                    check_types(operator->category, lhs_type, rhs_type);
+    
+                }}
             break;
 
         case 1094:
+
         struct typeinfo *result = handle_three_children(n); // Handle the three children case
         if (result != NULL) {
             printf("Final Result type: %d\n", result->basetype);
-            // if (changeable == 1 && (result->basetype != )){
-            //     fprintf(stderr, "Cannot change types\n", lhs->leaf->text, lhs->leaf->lineno);
-            //         exit(3);
-            //     } 
-            //     struct tree *lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
-            //     SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
-            //     if (se != NULL) {
-            //         se->type = result; // Update the type of the symbol in the symbol table
-            //     } else {
-            //         fprintf(stderr, "Error: Variable '%s' not found in symbol table.\n", lhs->leaf->text);
-            //     }
-            // }
         }
 
-        break;
+        break; 
 
         }
 
