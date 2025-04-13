@@ -1359,13 +1359,38 @@ struct typeinfo* handle_three_children(struct tree *n) {
  
 void typecheck(struct tree *n) {
     if (n == NULL) return;
+    struct tree *lhs = NULL;
+    struct tree *rhs = NULL; // Assuming the right-hand side is the second child
+    struct typeinfo *lhs_type = NULL;
+    struct typeinfo *rhs_type = NULL;
+    struct typeinfo *comparison = NULL;
     
-    int changeable = 0;
+    struct typeinfo *equality = NULL;
+    
 
     // Perform type checking based on production rules
     switch (n->prodrule) { 
         int i;
+        
+        case 1090: 
+            if (n->nkids == 3){ 
+                printf("comparison \n");
+                comparison = handle_three_children(n);
+                if (comparison != NULL){
+                printf("comparison print: %d\n",comparison->basetype);
+                }
+            }
+            break;
 
+        case 1089:
+            if (n->nkids == 3 ){ 
+                    printf("equality \n");
+                    equality = handle_three_children(n);
+                    if (equality != NULL){
+                    printf("equality print: %d\n",equality->basetype);
+                    }
+                }
+                break;
         case 1004: /* rule for functions for pushing the scope*/
             for (i = 0; i < n->nkids; i++) {
                 if (n->kids[i] != NULL && n->kids[i]->leaf != NULL && n->kids[i]->leaf->category == 407) {
@@ -1377,11 +1402,11 @@ void typecheck(struct tree *n) {
             }
             break;
 
-        case 1043:  // Assignment    
+            case 1043:  // Assignment    
             if (n->kids[0] != NULL && n->kids[1] != NULL) {
                 printf("From typecheck lhs:\n------------------\n");
 
-                struct tree *lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
+                lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
                 SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
 
                 SymbolTable temp = current; // Use a temporary variable
@@ -1389,9 +1414,7 @@ void typecheck(struct tree *n) {
                     temp = temp->parent; // Move to the parent scope
                     if (temp != NULL) {
                         se = lookup_st(temp, lhs->leaf->text); // Check in the parent scope
-                        if (se != NULL) {
-                            changeable = 1; // Set changeable to 1 if se is not null
-                        }
+                         
                     }
                 } 
                 if (se == NULL) {
@@ -1400,35 +1423,57 @@ void typecheck(struct tree *n) {
                 } 
                 
                 
-                struct tree *rhs = n->kids[1]; // Assuming the right-hand side is the second child
+                rhs = n->kids[1]; // Assuming the right-hand side is the second child
                 struct tree *value = NULL;
-                struct typeinfo *lhs_type = se->type; printf("lhs type: %d\n", lhs_type->basetype);
-                struct typeinfo *rhs_type = NULL;
-                struct token *operator = n->kids[0]->kids[1]->leaf;
-                SymbolTableEntry se2 = NULL;
-                printf("From typecheck rhs:\n------------------\n");
-                int array[7] = {391, 385, 392, 383, 384, 386, 407};
-                for (int i = 0; i < 7; i++) {
-                    value = find_leaf(rhs, array[i]);
-                    if (value != NULL) {
-                        if (array[i] == 407){
-                            se2 = lookup_st(current, value->leaf->text);
-                            rhs_type = se2->type;
-                        }else {
-                            rhs_type = get_type(value->leaf->category);
-                        }
-                        break; 
-                    }
-            }
-                //printnode(rhs); // Print the right-hand side node for debugging
-                //printf("\n here: %d\n", operator->category);
-                //printnode(n->kids[0]->kids[1]);
-                check_types(operator->category, lhs_type, rhs_type);
+                lhs_type = se->type; printf("lhs type: %d\n", lhs_type->basetype);
 
-                //if(rhs_type )
                 
-            }
+
+                // Walk through the rhs child to find cases with three children
+                struct tree *current_node = rhs;
+                struct typeinfo *expressions =NULL;
+                while (current_node != NULL) {
+                    if (current_node->nkids == 3) {
+                        printf("Found a node with three children.\n");
+                        expressions = handle_three_children(current_node);
+                        if (expressions != NULL) {
+                            printf("Result type from three children: %d\n", expressions->basetype);
+                        }
+                        break;
+                    }
+                    current_node = current_node->kids[0]; // Traverse to the next child
+                }
+                if (expressions){
+                    rhs_type= expressions;
+                    printf("lhs_type:%d\n---------------------\n", lhs_type->basetype);
+                    printf("rhs_type:%d\n---------------------\n", rhs_type->basetype);
+                    if (lhs_type->basetype != rhs_type->basetype ){
+                    fprintf(stderr, "Error: Type miss match '%s' at line %d\n", lhs->leaf->text, lhs->leaf->lineno);
+                    exit(3);
+                    }
+                    
+                }else {
+                    struct token *operator = n->kids[0]->kids[1]->leaf;
+                    SymbolTableEntry se2 = NULL;
+                    printf("From typecheck rhs:\n------------------\n");
+                    int array[7] = {385, 392, 383, 384, 386, 391, 407};
+                    for (int i = 0; i < 7; i++) {
+                        value = find_leaf(n, array[i]);
+                        if (value != NULL) {
+                            if (array[i] == 407){
+                                se2 = lookup_st(current, value->leaf->text);
+                                rhs_type = se2->type;
+                            }else {
+                                rhs_type = get_type(value->leaf->category);
+                            }
+                            break; 
+                        }
+                } 
+                    check_types(operator->category, lhs_type, rhs_type);
+    
+                }}
             break;
+
 
         //case 1029:
         case 1028: /* rule for property declaration*/

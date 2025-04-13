@@ -2,9 +2,9 @@
 fun assignments() {
    var a : Int =  1;
    var bab = true;
-   var b : Float = 2.0;
+   var b : Float = 2.0F;
    b = a
-   b = a + b
+   //a = a + b
    var bob: Float = 2.2f;
    //var bib: Double = 2.2;
    //var c : Int = 3;
