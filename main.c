@@ -1222,13 +1222,35 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 break;
             }
 
-        default:
-            fprintf(stderr, "Error: Unknown operator.\n");
-            exit(3);
+            case LE: 
+            case GE:
+            case CONJ:
+            case DISJ:
+            case LANGLE:
+            case RANGLE:
+            case EQEQ:
+            case EXCL_EQ:
+            case EXCL_EQEQ:
+                if (e1->basetype == e2->basetype) {
+                    result->basetype = BOOL_TYPE;
+                } else if ((e1->basetype == INT_TYPE || e1->basetype == FLOAT_TYPE || e1->basetype == DOUBLE_TYPE) &&
+                           (e2->basetype == INT_TYPE || e2->basetype == FLOAT_TYPE || e2->basetype == DOUBLE_TYPE)) {
+                    result->basetype = BOOL_TYPE; // Allow numeric comparisons
+    
+                } else {
+                    fprintf(stderr, "Comparison type mismatch: '%s' and '%s'.\n", get_typename(e1->basetype), get_typename(e2->basetype));
+                    exit(1);
+                }
+                
+                break;
+    
+            default:
+                fprintf(stderr, "Error: Unknown operator.\n");
+                exit(1);
+        }
+    
+        return result;
     }
-
-    return result;
-}
 void print_symbol_table_entry(SymbolTableEntry entry) {
     if (entry == NULL) {
         printf("SymbolTableEntry is NULL.\n");
