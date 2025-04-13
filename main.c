@@ -1407,11 +1407,11 @@ void typecheck(struct tree *n) {
                 struct token *operator = n->kids[0]->kids[1]->leaf;
                 SymbolTableEntry se2 = NULL;
                 printf("From typecheck rhs:\n------------------\n");
-                int array[7] = {385, 392, 383, 384, 386, 391, 407};
-                for (int i = 0; i < 5; i++) {
-                    value = find_leaf(n, array[i]);
+                int array[7] = {391, 385, 392, 383, 384, 386, 407};
+                for (int i = 0; i < 7; i++) {
+                    value = find_leaf(rhs, array[i]);
                     if (value != NULL) {
-                        if (i == 407){
+                        if (array[i] == 407){
                             se2 = lookup_st(current, value->leaf->text);
                             rhs_type = se2->type;
                         }else {
