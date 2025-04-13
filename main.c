@@ -41,6 +41,7 @@ bool nullable = false;
 bool mutability = false; 
 void insert_type(SymbolTable st, char *s, typeptr t);
 int literal[] = {385, 392, 383, 386, 391};
+struct tree *find_leaf(struct tree *t, int category) ;
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -591,7 +592,7 @@ void printsyms(struct tree *t) {
         printsyms(t->kids[i]);
     }
 }
-
+struct tree *find_node_by_prodrule(struct tree *t, int prodrule) ;
 void build_function_parameter(struct tree *t) {
     int i;
     if (t == NULL) return; 
@@ -601,12 +602,14 @@ void build_function_parameter(struct tree *t) {
     char *function_name = NULL;
     /* pre-order activity */
     switch (t->prodrule) {
-        case 1004: /* rule for functions */ 
+        case 1004: /* rule for functions */  
 
-            if (t->kids[4] != NULL && t->kids[4]->prodrule == 1100) { 
-                // printnode(t->kids[4]->kids[1]); // Assuming the return type is the first child of the 4th kid
-                returntype = t->kids[4]->kids[0]->leaf->text; // Assuming the return type is the first child of the 4th kid
-                printf("Return type: %s\n", returntype);
+            if (find_node_by_prodrule(t,1100)) {   
+            struct tree *node = find_node_by_prodrule(t,1100); 
+            struct tree *leaf = find_leaf(node,400);
+            printnode(leaf);
+               returntype = leaf->leaf->text; // Assuming the return type is the first child of the 4th kid
+                // printf("Return type: %s\n", returntype);
             }
         
             for (i = 0; i < t->nkids; i++) {
@@ -1035,12 +1038,12 @@ struct param *mk_nparams(struct tree *n) {
         }
 
         // Print parameter information for debugging
-        printf("Parameter Info:\nName: %s\n", parameter->name);
-        if (parameter->type) {
-            printf("Type: %d\n", parameter->type->basetype);
-        } else {
-            printf("Type: NULL\n");
-        }
+        // printf("Parameter Info:\nName: %s\n", parameter->name);
+        // if (parameter->type) {
+        //     printf("Type: %d\n", parameter->type->basetype);
+        // } else {
+        //     printf("Type: NULL\n");
+        // }
 
         parameter->next = NULL;
         return parameter;
@@ -1430,6 +1433,7 @@ void typecheck(struct tree *n) {
 
                 lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
                 SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
+                print_symbol_table_entry(se);
 
                 SymbolTable temp = current; // Use a temporary variable
                 while (se == NULL && temp != NULL) {
@@ -1464,7 +1468,7 @@ void typecheck(struct tree *n) {
                         break;
                     }
                     current_node = current_node->kids[0]; // Traverse to the next child
-                }
+                } 
                 if (expressions){
                     rhs_type= expressions;
                     printf("lhs_type:%d\n---------------------\n", lhs_type->basetype);
@@ -1572,6 +1576,61 @@ void typecheck(struct tree *n) {
         break;
 
         case 1052:
+
+        if (n->kids[0]->kids[0] != NULL && n->kids[0]->kids[0]->prodrule == 1068) {
+            printf("Now in funcall\n");
+            struct tree *function_node = n->kids[0]->kids[0]; //where the functioncall node is at
+            struct tree *function_name_node = n->kids[0]->kids[0]->kids[0]; //first child have function_name
+            char *function_name = function_name_node->leaf->text;
+            SymbolTableEntry function_entry = NULL;
+            SymbolTable temp = current; // Use a temporary variable in case it doesn't exist in current scope
+
+                while (function_entry == NULL && temp != NULL) {
+                    temp = temp->parent; // Move to the parent scope
+                    if (temp != NULL) {
+                        function_entry = lookup_st(temp, function_name); // Check in the parent scope
+                    }
+                }
+
+                if (function_entry == NULL) {
+                    fprintf(stderr, "Error: Undefined function '%s' at line %d\n", function_name, function_name_node->leaf->lineno);
+                    exit(3);
+                }
+
+                if (function_entry->type == NULL || function_entry->type->basetype != FUNC_TYPE) {
+                    fprintf(stderr, "Error: '%s' is not a function at line %d\n", function_name, function_name_node->leaf->lineno);
+                    exit(3);
+                }
+            
+                if (function_entry) {
+                    printf("Function entry exists with type: %d\n", function_entry->type->basetype);
+                    struct param *param = function_entry->type->u.f.parameters;
+                    while (param != NULL) {
+                        printf("Parameter name: %s, type: %d\n", param->name, param->type->basetype);
+                        param = param->next;
+                    }
+                }
+
+            // Check function parameters
+            struct param *expected_params = function_entry->type->u.f.parameters;
+            struct tree *actual_params_node = function_node->kids[2]; // Assuming the actual parameters are the third child
+            struct param *actual_params = mk_nparams(actual_params_node);
+
+            while (expected_params != NULL && actual_params != NULL) {
+                if (expected_params->type->basetype != actual_params->type->basetype) {
+                fprintf(stderr, "Error: Parameter type mismatch in function '%s' at line %d\n", function_name, function_name_node->leaf->lineno);
+                exit(3);
+                }
+                expected_params = expected_params->next;
+                actual_params = actual_params->next;
+            }
+
+            if (expected_params != NULL || actual_params != NULL) {
+                fprintf(stderr, "Error: Parameter count mismatch in function '%s' at line %d\n", function_name, function_name_node->leaf->lineno);
+                exit(3);
+            }
+            }
+        
         
         if(n->kids[0]->kids[0] != NULL && n->kids[1] != NULL){
             //ste = lookup_st(current, n->kids[0]->kids[0]->leaf->text);

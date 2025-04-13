@@ -122,29 +122,60 @@ char *typenam[] =
 
 
 typeptr assignType(char *typeName) {
-    if (strcmp(typeName, "null") == 0) return null_typeptr;
-    else if (strcmp(typeName, "Byte") == 0) return byte_typeptr;
-    else if (strcmp(typeName, "Short") == 0) return short_typeptr;
-    else if (strcmp(typeName, "Int") == 0) return integer_typeptr;
-    else if (strcmp(typeName, "Long") == 0) return long_typeptr;
-    else if (strcmp(typeName, "Float") == 0) return float_typeptr;
-    else if (strcmp(typeName, "Double") == 0) return double_typeptr;
-    else if (strcmp(typeName, "Boolean") == 0) return boolean_typeptr;
-    else if (strcmp(typeName, "String") == 0) return string_typeptr;
-    else if (strcmp(typeName, "Char") == 0) return char_typeptr;
-    else if (strcmp(typeName, "Array") == 0) return array_typeptr;
-    else if (strcmp(typeName, "func") == 0) return func_typeptr;
-    else if (strcmp(typeName, "class") == 0) return class_typeptr;
-    else if (strcmp(typeName, "package") == 0) return package_typeptr;
-    else if (strcmp(typeName, "any") == 0) return any_typeptr;
-   else {
-      // Handle unknown type names
-      fprintf(stderr, "Unknown type name: %s\n", typeName);
+   if (typeName == NULL) {
+      fprintf(stderr, "Type name is NULL\n");
       return NULL;
    }
+
+   switch (typeName[0]) { // Use the first character to narrow down cases
+      case 'n':
+         if (strcmp(typeName, "null") == 0) return null_typeptr;
+         break;
+      case 'B':
+         if (strcmp(typeName, "Byte") == 0) return byte_typeptr;
+         else if (strcmp(typeName, "Boolean") == 0) return boolean_typeptr;
+
+         break;
+      case 'S':
+         if (strcmp(typeName, "Short") == 0) return short_typeptr;
+         else if (strcmp(typeName, "String") == 0) return string_typeptr;
+         break;
+      case 'I':
+         if (strcmp(typeName, "Int") == 0) return integer_typeptr;
+         break;
+      case 'L':
+         if (strcmp(typeName, "Long") == 0) return long_typeptr;
+         break;
+      case 'F':
+         if (strcmp(typeName, "Float") == 0) return float_typeptr;
+         break;
+      case 'D':
+         if (strcmp(typeName, "Double") == 0) return double_typeptr;
+         break;
+      case 'C':
+         if (strcmp(typeName, "Char") == 0) return char_typeptr;
+         else if (strcmp(typeName, "class") == 0) return class_typeptr;
+         break;
+      case 'A':
+         if (strcmp(typeName, "Array") == 0) return array_typeptr;
+         break;
+      case 'f':
+         if (strcmp(typeName, "func") == 0) return func_typeptr;
+         break;
+      case 'p':
+         if (strcmp(typeName, "package") == 0) return package_typeptr;
+         break;
+      case 'a':
+         if (strcmp(typeName, "any") == 0) return any_typeptr;
+         break;
+      default:
+         fprintf(stderr, "Unknown type name: %s\n", typeName);
+         return NULL;
+   }
+ 
 }
 typeptr alctype(int base)
-{
+{  
    typeptr rv;
    if (base == NULL_TYPE) return null_typeptr;
    else if (base == BYTE_TYPE) return byte_typeptr;
@@ -207,7 +238,7 @@ typeptr alcfunctype(char *returntype, struct tree *p, SymbolTable st)
 
  
    // Process the return type subtree
-   if (returntype != NULL) {  
+   if (returntype) {  
       rv->u.f.returntype = assignType(returntype); // Assuming returntype is a string 
    } else {
       rv->u.f.returntype = null_typeptr; // Default to null if no return type is provided
@@ -228,7 +259,7 @@ typeptr alcfunctype(char *returntype, struct tree *p, SymbolTable st)
 
    while (param != NULL) {
       insert_type(st, param->name, param->type); // Insert parameter into the symbol table
-      printf("Parameter: %s, Type: %s\n", param->name, typename(param->type));
+      // printf("Parameter: %s, Type: %s\n", param->name, typename(param->type));
       param = param->next;
    } 
    
