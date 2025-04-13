@@ -1,16 +1,15 @@
 
 fun assignments() {
-   var a : Int = 1;
-   //val b : Int = "hi" should cause error
-   var bob: Float = 2.2F;
-   var bib: Double = 2.2;
-   var c : Int = 3;
-   var d = 2.2;
-   //a = 2
-   bob += 1
-   //d = 1
-   d--
-   //10++
+   var a : Int =  1;
+   var bab = true;
+   val b : Int = "hi"
+   var bob: Float = 2.2f;
+   //var bib: Double = 2.2;
+   //var c : Int = 3;
+   //var frog: Int = "hello"
+   //c = "hi" expected error - works
+   /* var d = true;  expected error - works
+   d++ */
 }
 
 fun subtract(a: Int): Int {

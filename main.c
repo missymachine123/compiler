@@ -1430,6 +1430,60 @@ void typecheck(struct tree *n) {
             }
             break;
 
+        //case 1029:
+        case 1028: /* rule for property declaration*/
+        struct tree *c; 
+        struct tree *b; 
+        struct tree *type_lit = NULL;
+        struct typeinfo *type_specifier = NULL;
+        struct typeinfo *symbol_type = NULL;
+
+        /* get type specifier */
+        if (n->kids[3] != NULL) { /* multivariable_variableDeclaration */
+            c = n->kids[3];
+            if (c->kids[0] != NULL){
+                c = c->kids[0];
+                
+                if(c->nkids == 3 && c->kids[2] != NULL){ 
+                    type_lit = find_leaf(c->kids[2], 400);
+                    type_specifier = assignType(type_lit->leaf->text);
+                    //printnode(type_lit);
+                }
+            }
+
+            if (n->kids[4] != NULL && c->nkids == 3) { 
+                b = n->kids[4];
+                if(b->kids[1] != NULL) { /* at the rule for expression*/
+                    b = b->kids[1];
+                    while(b->kids[0] != NULL){ /* traverse down to the actual value*/
+                        b = b->kids[0];
+                        if (b->leaf != NULL) { /* found value*/
+                            // printf("from get type Value:%s\n", b->leaf->text);
+                            if (b->leaf->category == 407){
+                                SymbolTableEntry se_var = lookup_st(current, b->leaf->text);
+                                symbol_type = se_var->type;
+                            }else {
+                                symbol_type = get_type(b->leaf->category);
+                                //printf("\nsymbol!! %d\n", symbol_type->basetype);
+                            }
+
+                        }
+
+                    }
+                }      
+            }
+        }
+        if( type_specifier != NULL && symbol_type != NULL){
+            if(type_specifier->basetype != symbol_type->basetype ){
+                fprintf(stderr, "Initializer type mismatch: expected '%s', actual '%s'\n", get_typename(type_specifier->basetype), get_typename(symbol_type->basetype));
+                exit(3);
+               
+        }
+        }
+
+
+        break;
+
         case 1094:
         struct typeinfo *result = handle_three_children(n); // Handle the three children case
         if (result != NULL) {
@@ -1483,6 +1537,7 @@ void typecheck(struct tree *n) {
         break;
 
         }
+        
 
 
 
