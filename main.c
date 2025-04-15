@@ -1418,6 +1418,59 @@ struct typeinfo* handle_three_children(struct tree *n) {
         
     }
     return NULL;
+
+}
+
+// Helper function to create a param from an expression node
+struct param *mk_param(struct tree *expr_node) {
+    if (!expr_node) return NULL;
+    
+    // The expression node should have prodrule 1086 and 1 kid (disjunction)
+    if (expr_node->prodrule == 1086 && expr_node->nkids == 1) {
+        struct tree *node = find_node_by_prodrule(expr_node->kids[0], 1052);
+        // Continue walking down the expression tree if needed
+        // For simplicity, we'll assume we can get the type directly from the expression
+        
+        struct param *argument = malloc(sizeof(struct param));
+        if (!argument) {
+            fprintf(stderr, "Memory allocation failed for argument.\n");
+            return NULL;
+        }
+
+        argument->name = NULL;  // Arguments don't have names
+        argument->type = check_types(0,get_type(node->kids[0]->prodrule),NULL);  // You might need to adjust this
+        argument->next = NULL;
+
+        return argument;
+    }
+    
+    return NULL;
+}
+struct param *mk_functionArguments(struct tree *n) {
+    if (!n) return NULL;
+
+    // Case: functionArguments COMMA expression (recursive case)
+    if (n->prodrule == 1070 && n->nkids == 3) {
+        struct param *p1 = mk_functionArguments(n->kids[0]);  // Process previous arguments
+        struct param *p2 = mk_param(n->kids[2]);             // Process new argument
+
+        if (!p1) return p2;  // If no previous arguments, return the new one
+        if (!p2) return p1;   // If no new argument, return previous ones
+
+        // Link the new argument to the end of the list
+        struct param *temp = p1;
+        while (temp->next != NULL) temp = temp->next;
+        temp->next = p2;
+
+        return p1;
+    }
+
+    // Case: single expression (base case)
+    if (n->prodrule == 1069 && n->nkids == 1) {
+        return mk_param(n->kids[0]);  // Process the single expression
+    }
+
+    return NULL;
 }
 
  
@@ -1630,19 +1683,19 @@ void typecheck(struct tree *n) {
                     exit(3);
                 }
             
-                // if (function_entry) {
-                //     // printf("Function entry exists with type: %d\n", function_entry->type->basetype);
-                //     struct param *param = function_entry->type->u.f.parameters;
-                //     while (param != NULL) {
-                //         // printf("Parameter name: %s, type: %d\n", param->name, param->type->basetype);
-                //         param = param->next;
-                //     }
-                // }
+                if (function_entry) {
+                    // printf("Function entry exists with type: %d\n", function_entry->type->basetype);
+                    struct param *param = function_entry->type->u.f.parameters;
+                    while (param != NULL) {
+                        printf("Parameter name: %s, type: %d\n", param->name, param->type->basetype);
+                        param = param->next;
+                    }
+                }
 
             // Check function parameters
             struct param *expected_params = function_entry->type->u.f.parameters;
             struct tree *actual_params_node = function_node->kids[2]; // Assuming the actual parameters are the third child
-            struct param *actual_params = mk_nparams(actual_params_node);
+            struct param *actual_params = mk_functionArguments(actual_params_node);
 
             while (expected_params != NULL && actual_params != NULL) {
                 if (expected_params->type->basetype != actual_params->type->basetype) {
@@ -1713,7 +1766,6 @@ void typecheck(struct tree *n) {
         }
 
 }
-
 
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option

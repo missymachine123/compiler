@@ -6,7 +6,7 @@ fun subtract(a: Int,b:Int): Int {
 }
 fun assignments(c:Int):Int {
    var a : Int =  1;  
-   a = subtract(2,3);
+   a = subtract(2,"string");
   
    a = 3+2
 }
