@@ -13,8 +13,8 @@ fun mains (s:Int, a: Int) {
     val myBoolean: Boolean = true     // Boolean
     val boolean: Boolean = false    // Boolean
     val myText: String = "Hello"      // String
-    val myFloat: Float = 19.99f       // Float
-    val myLong: Long = 150000   // Long
+    // val myFloat: Float = 19.99       // Float
+    val myLong: Long = 15000000000L   // Long
     val myShort: Short = 5000         // Short
     val myByte: Byte? = 100            // Byte
     val myLetter: Char? = 'D'          // Char

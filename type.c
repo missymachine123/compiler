@@ -115,7 +115,25 @@ char* get_typename(int basetype){
             return "UNKNOWN_TYPE";
     }
 }
- 
+
+typeptr mktype(int kind)
+{
+   typeptr new_type = (typeptr)malloc(sizeof(struct typeinfo));
+   if (new_type == NULL) {
+      fprintf(stderr, "Error: Memory allocation failed for type creation.\n");
+      exit(EXIT_FAILURE);
+   }
+   new_type->basetype = kind;
+   if (kind == FUNC_TYPE) {
+      new_type->u.f.st = NULL; // Initialize symbol table for function types
+      new_type->u.f.parameters = NULL; // Initialize parameters to NULL
+      new_type->u.f.returntype = NULL; // Initialize return type to NULL
+      new_type->u.f.nparams = 0; // Initialize number of parameters to 0
+      new_type->u.f.defined = 0; // Default to prototype (not defined)
+   }
+   return new_type;
+}
+
 char *typenam[] =
    {"null","byte","short", "int", "long","float", "double","bool", "string","char",
     "array", "func", "class", "package", "any"}; /* "list", "dict", ... */
@@ -134,7 +152,6 @@ typeptr assignType(char *typeName) {
       case 'B':
          if (strcmp(typeName, "Byte") == 0) return byte_typeptr;
          else if (strcmp(typeName, "Boolean") == 0) return boolean_typeptr;
-
          break;
       case 'S':
          if (strcmp(typeName, "Short") == 0) return short_typeptr;
@@ -172,8 +189,9 @@ typeptr assignType(char *typeName) {
          fprintf(stderr, "Unknown type name: %s\n", typeName);
          return NULL;
    }
- 
+   return NULL;
 }
+
 typeptr alctype(int base)
 {  
    typeptr rv;
@@ -188,7 +206,7 @@ typeptr alctype(int base)
    else if (base == STRING_TYPE) return string_typeptr;
    else if (base == CHAR_TYPE) return char_typeptr;
    else if (base == ARRAY_TYPE) return array_typeptr;
-   else if (base == FUNC_TYPE) return func_typeptr;
+   else if (base == FUNC_TYPE) return mktype(1000011);
    else if (base == CLASS_TYPE) return class_typeptr;
    else if (base == PACKAGE_TYPE) return package_typeptr;
    else if (base == ANY_TYPE) return any_typeptr;
@@ -245,7 +263,7 @@ typeptr alcfunctype(char *returntype, struct tree *p, SymbolTable st)
    }
 
    int nparams = calc_nparams(p);
-   printf("Number of parameters: %d\n", nparams);
+   // printf("Number of parameters: %d\n", nparams);
    rv->u.f.nparams = nparams; // Set the number of parameters
    
    // Process the parameter list subtree
@@ -259,7 +277,8 @@ typeptr alcfunctype(char *returntype, struct tree *p, SymbolTable st)
 
    while (param != NULL) {
       insert_type(st, param->name, param->type); // Insert parameter into the symbol table
-      // printf("Parameter: %s, Type: %s\n", param->name, typename(param->type));
+
+      // printf("Parameter: %s, Type: %s\n-----------\n", param->name, typename(param->type));
       param = param->next;
    } 
    

@@ -293,6 +293,17 @@ int hash(SymbolTable st, char *s)
    return h % st->nBuckets;
 }
 
+/**
+ * @brief Inserts a symbol into the symbol table.
+ *
+ * This function is responsible for adding a new symbol to the symbol table.
+ * It ensures that the symbol is properly stored and can be retrieved or
+ * referenced later during compilation or interpretation.
+ *
+ * @param symbol The symbol to be inserted into the table.
+ * @param table The symbol table where the symbol will be stored.
+ * @return int Returns 0 on success, or an error code if the insertion fails.
+ */
 /*
  * Insert a symbol into a symbol table.
  */
@@ -335,8 +346,11 @@ void enter_newscope(char *s) {
     SymbolTable newTable = mksymtab(101, s);
 
     // Step 2: Allocate the corresponding type for the new scope
-    typeptr t;
-    t = alctype(FUNC_TYPE); // Assuming FUNC_TYPE for function scope
+    typeptr t = alctype(FUNC_TYPE);
+    if (t == NULL) {
+        fprintf(stderr, "Error: Failed to allocate type for new scope '%s'.\n", s);
+        return;
+    }
     // Allocate a function type and associate it with the symbol table 
     
 
@@ -593,6 +607,7 @@ void printsyms(struct tree *t) {
     }
 }
 struct tree *find_node_by_prodrule(struct tree *t, int prodrule) ;
+
 void build_function_parameter(struct tree *t) {
     int i;
     if (t == NULL) return; 
@@ -600,46 +615,40 @@ void build_function_parameter(struct tree *t) {
     struct tree *p = NULL;
     char *returntype = NULL;
     char *function_name = NULL;
+    SymbolTable name = NULL;
     /* pre-order activity */
     switch (t->prodrule) {
         case 1004: /* rule for functions */  
 
             if (find_node_by_prodrule(t,1100)) {   
-            struct tree *node = find_node_by_prodrule(t,1100); 
+            struct tree *node = find_node_by_prodrule(t,1100);  
             struct tree *leaf = find_leaf(node,400);
-            printnode(leaf);
+            // printnode(leaf);
                returntype = leaf->leaf->text; // Assuming the return type is the first child of the 4th kid
                 // printf("Return type: %s\n", returntype);
             }
         
-            for (i = 0; i < t->nkids; i++) {
-                // printf("Child: %d: \n ---------------------------------\n", i);
-                // printnode(t->kids[i]);
+            for (i = 0; i < t->nkids; i++) { 
             
                 if (t->kids[i] != NULL && t->kids[i]->prodrule == 1005) {
-                    p = t->kids[i];                 
+                    p = t->kids[i];  //functionvalueparamters        
+                    break;        
                 }
             } 
             for (i = 0; i < t->nkids; i++) {
                 if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
                 function_name = t->kids[i]->leaf->text;
             //    printf("Function new name: %s\n", function_name);
-               SymbolTable name = find_table(function_name);
+               name = find_table(function_name);
                pushscope(name); 
                break;
                 }
             }
-            insert_type(current,function_name,alcfunctype(returntype,p,current)); // Assuming FUNC_TYPE for function scope
-            
-            
-
-            break;  
+            struct typeinfo *functype = alcfunctype(returntype,p,current);
+            insert_type(current->parent,function_name,functype); // Assuming FUNC_TYPE for function scope
+            break;      
 
     }
-    for (i = 0; i < t->nkids; i++) {
-        build_function_parameter(t->kids[i]);
-    }
-    
     /* Post-order activity */
     switch (t->prodrule) {
         case 1004: /* End of class scope */ {
@@ -647,25 +656,49 @@ void build_function_parameter(struct tree *t) {
             break;
         }
     }
+    
+    for (i = 0; i < t->nkids; i++) {
+        build_function_parameter(t->kids[i]);
+    }
+    
 }
 
 
-void insert_type(SymbolTable st, char *s, typeptr t){
-    //  register int i;
-     int h;
-     SymbolTableEntry se;
-    
-     h = hash(st, s);
-     for (se = st->tbl[h]; se != NULL; se = se->next)
-        if (!strcmp(s, se->s)) { 
+void insert_type(SymbolTable st, char *s, typeptr t) {
+    if (st == NULL || s == NULL || t == NULL) {
+        fprintf(stderr, "Error: Null parameter in insert_type\n");
+        return;
+    }
+    int h;
+    SymbolTableEntry se = NULL;
+
+    h = hash(st, s);
+    for (se = st->tbl[h]; se != NULL; se = se->next) {
+        if (!strcmp(s, se->s)) {
             se->type = t; // Update the type of the existing symbol
-           /*
-            *  Return a pointer to the symbol table entry.
-            
-            */
-           return ;
-           }
-     return;
+            return;
+        }
+    }
+
+    // If the symbol is not found, insert a new entry
+    se = (SymbolTableEntry)alloc(sizeof(struct sym_entry));
+    if (se == NULL) {
+        fprintf(stderr, "Error: Out of memory while inserting type.\n");
+        exit(EXIT_FAILURE);
+    }
+    se->s = strdup(s);
+    if (se->s == NULL) {
+        fprintf(stderr, "Error: Out of memory while duplicating string.\n");
+        free(se);
+        exit(EXIT_FAILURE);
+    }
+    se->type = t;
+    se->mutability = false; // Default values for new entry
+    se->nullable = false;
+    se->table = NULL;
+    se->next = st->tbl[h];
+    st->tbl[h] = se;
+    st->nEntries++;
 }
 
 /* given table name, find table */
@@ -995,9 +1028,9 @@ char* removeSeparators(char* yytext) {
 } 
  
 struct param *mk_nparams(struct tree *n) {
+    // Case: multi_comma_functionParameter (recursive case)
     if (!n) return NULL;
 
-    // Case: multi_comma_functionParameter (recursive case)
     if (n->prodrule == 1008) {
         struct param *p1 = mk_nparams(n->kids[0]);  // Process first parameter
         struct param *p2 = mk_nparams(n->kids[2]);  // Process next parameter
@@ -1028,8 +1061,9 @@ struct param *mk_nparams(struct tree *n) {
         // Process type information
         if (n->kids[2]) {
             struct tree *typeNode = n->kids[2]->kids[0];
-            if (typeNode->prodrule == 2001) {
-                parameter->type = alcarraytype(NULL, typeNode);
+            // printnode(typeNode);
+            if (typeNode->kids[0]->prodrule == 2001) {
+                parameter->type = alcarraytype(NULL, typeNode->kids[0]);
             } else if (typeNode->prodrule == 1024) {
                 parameter->type = assignType(typeNode->kids[0]->leaf->text);
             } else {
@@ -1313,17 +1347,20 @@ struct tree *find_leaf(struct tree *t, int category) {
 
     return NULL;
 }
+
 struct typeinfo *find_typeinfo(struct tree *n){
     struct tree *op = find_leaf(n, 407);
     int array[6] = {385, 392, 383, 384, 386, 391};
-            SymbolTableEntry se = NULL;
-            struct typeinfo *e = NULL;
+    SymbolTableEntry se = NULL;
+    struct typeinfo *e = NULL;
+    
     if (op != NULL){
         se = lookup_st(current, op->leaf->text);
         e = se->type;
+        return e;
     } else{
         struct tree *op1 = NULL;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             op1 = find_leaf(n, array[i]);
             if (op1 != NULL) {
                 break; 
@@ -1334,6 +1371,8 @@ struct typeinfo *find_typeinfo(struct tree *n){
         }
         return e;
     }
+    return NULL;
+    
     
 
 }
@@ -1352,7 +1391,7 @@ struct typeinfo* handle_three_children(struct tree *n) {
             left_type = handle_three_children(n->kids[0]); // Recursively handle left-hand side
         } else {
             left_type = find_typeinfo(n->kids[0]); // Handle literals or other types
-            printf("Left type: %d\n", left_type->basetype);
+            // printf("Left type: %d\n", left_type->basetype);
         }
  
         // Handle right-hand side
@@ -1360,21 +1399,21 @@ struct typeinfo* handle_three_children(struct tree *n) {
             right_type = handle_three_children(n->kids[2]); // Recursively handle right-hand side
         } else {
             right_type = find_typeinfo(n->kids[2]); // Handle literals or other types
-            printf("Right type: %d\n", right_type->basetype);
+            // printf("Right type: %d\n", right_type->basetype);
         }
 
         // Check types and determine the result type
         if (left_type && right_type) {
-            printf("Both left_type and right_type are present.\n");
+            // printf("Both left_type and right_type are present.\n");
             result = check_types(n->kids[1]->leaf->category, left_type, right_type);
         } else if (left_type) {
-            printf("Only left_type is present.\n");
+            // printf("Only left_type is present.\n");
             result = check_types(n->kids[1]->leaf->category, left_type, NULL);
         } else if (right_type) {
-            printf("Only right_type is present.\n");
+            // printf("Only right_type is present.\n");
             result = check_types(n->kids[1]->leaf->category, NULL, right_type);
         } 
-        printf("Result type: %d\n", result->basetype);
+        // printf("Result type: %d\n", result->basetype);
         return result;
         
     }
@@ -1429,11 +1468,10 @@ void typecheck(struct tree *n) {
 
             case 1043:  // Assignment    
             if (n->kids[0] != NULL && n->kids[1] != NULL) {
-                printf("From typecheck lhs:\n------------------\n");
+                // printf("From typecheck lhs:\n------------------\n");
 
                 lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
                 SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
-                print_symbol_table_entry(se);
 
                 SymbolTable temp = current; // Use a temporary variable
                 while (se == NULL && temp != NULL) {
@@ -1451,7 +1489,9 @@ void typecheck(struct tree *n) {
                 
                 rhs = n->kids[1]; // Assuming the right-hand side is the second child
                 struct tree *value = NULL;
-                lhs_type = se->type; printf("lhs type: %d\n", lhs_type->basetype);
+
+
+                lhs_type = se->type; 
 
                 
 
@@ -1460,10 +1500,10 @@ void typecheck(struct tree *n) {
                 struct typeinfo *expressions =NULL;
                 while (current_node != NULL) {
                     if (current_node->nkids == 3) {
-                        printf("Found a node with three children.\n");
+                        // printf("Found a node with three children.\n");
                         expressions = handle_three_children(current_node);
                         if (expressions != NULL) {
-                            printf("Result type from three children: %d\n", expressions->basetype);
+                            // printf("Result type from three children: %d\n", expressions->basetype);
                         }
                         break;
                     }
@@ -1471,8 +1511,8 @@ void typecheck(struct tree *n) {
                 } 
                 if (expressions){
                     rhs_type= expressions;
-                    printf("lhs_type:%d\n---------------------\n", lhs_type->basetype);
-                    printf("rhs_type:%d\n---------------------\n", rhs_type->basetype);
+                    // printf("lhs_type:%d\n---------------------\n", lhs_type->basetype);
+                    // printf("rhs_type:%d\n---------------------\n", rhs_type->basetype);
                     if (lhs_type->basetype != rhs_type->basetype ){
                     fprintf(stderr, "Error: Type miss match '%s' at line %d\n", lhs->leaf->text, lhs->leaf->lineno);
                     exit(3);
@@ -1481,7 +1521,7 @@ void typecheck(struct tree *n) {
                 }else {
                     struct token *operator = n->kids[0]->kids[1]->leaf;
                     SymbolTableEntry se2 = NULL;
-                    printf("From typecheck rhs:\n------------------\n");
+                    // printf("From typecheck rhs:\n------------------\n");
                     int array[7] = {385, 392, 383, 384, 386, 391, 407};
                     for (int i = 0; i < 7; i++) {
                         value = find_leaf(n, array[i]);
@@ -1558,19 +1598,7 @@ void typecheck(struct tree *n) {
         case 1094:
         struct typeinfo *result = handle_three_children(n); // Handle the three children case
         if (result != NULL) {
-            printf("Final Result type: %d\n", result->basetype);
-            // if (changeable == 1 && (result->basetype != )){
-            //     fprintf(stderr, "Cannot change types\n", lhs->leaf->text, lhs->leaf->lineno);
-            //         exit(3);
-            //     } 
-            //     struct tree *lhs = find_leaf(n->kids[0], 407); // Find the leaf node with category variable
-            //     SymbolTableEntry se = lookup_st(current, lhs->leaf->text);
-            //     if (se != NULL) {
-            //         se->type = result; // Update the type of the symbol in the symbol table
-            //     } else {
-            //         fprintf(stderr, "Error: Variable '%s' not found in symbol table.\n", lhs->leaf->text);
-            //     }
-            // }
+            // printf("Final Result type: %d\n", result->basetype); 
         }
 
         break;
@@ -1578,7 +1606,7 @@ void typecheck(struct tree *n) {
         case 1052:
 
         if (n->kids[0]->kids[0] != NULL && n->kids[0]->kids[0]->prodrule == 1068) {
-            printf("Now in funcall\n");
+            // printf("Now in funcall\n");
             struct tree *function_node = n->kids[0]->kids[0]; //where the functioncall node is at
             struct tree *function_name_node = n->kids[0]->kids[0]->kids[0]; //first child have function_name
             char *function_name = function_name_node->leaf->text;
@@ -1602,14 +1630,14 @@ void typecheck(struct tree *n) {
                     exit(3);
                 }
             
-                if (function_entry) {
-                    printf("Function entry exists with type: %d\n", function_entry->type->basetype);
-                    struct param *param = function_entry->type->u.f.parameters;
-                    while (param != NULL) {
-                        printf("Parameter name: %s, type: %d\n", param->name, param->type->basetype);
-                        param = param->next;
-                    }
-                }
+                // if (function_entry) {
+                //     // printf("Function entry exists with type: %d\n", function_entry->type->basetype);
+                //     struct param *param = function_entry->type->u.f.parameters;
+                //     while (param != NULL) {
+                //         // printf("Parameter name: %s, type: %d\n", param->name, param->type->basetype);
+                //         param = param->next;
+                //     }
+                // }
 
             // Check function parameters
             struct param *expected_params = function_entry->type->u.f.parameters;
@@ -1693,6 +1721,7 @@ int main(int argc, char **argv) {
     int generate_symtab = 0;   // Flag for -symtab option
     int file_count = 0;        // Count of input files
     char **files = NULL;       // Array of input files
+    
 
     if (argc < 2) {
         fprintf(stderr, "Usage: %s [-dot] [-tree] [-symtab] <filename1> [<filename2> ...]\n", argv[0]);
@@ -1736,6 +1765,11 @@ int main(int argc, char **argv) {
         // yydebug = 1;
         int result = yyparse();
         printf("yyparse returns %d\n", result);
+        
+        globals = mksymtab(101, "Global");
+        current = globals;
+        predefined_symbols();
+        populate_symboltables(root);
 
         // Handle the -tree option
         if (generate_tree) {
@@ -1746,10 +1780,6 @@ int main(int argc, char **argv) {
         // Handle the -symtab option
         if (generate_symtab) {
             if (result == 0) {  // Only generate symbol tables if parsing succeeds
-                globals = mksymtab(101, "Global");
-                current = globals;
-                predefined_symbols();
-                populate_symboltables(root);
                 symboltable_type_init(root);
                 build_function_parameter(root);
                 typecheck(root);
