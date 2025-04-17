@@ -1438,7 +1438,7 @@ struct param *mk_param(struct tree *expr_node) {
         }
 
         argument->name = NULL;  // Arguments don't have names
-        argument->type = check_types(0,get_type(node->kids[0]->prodrule),NULL);  // You might need to adjust this
+        argument->type = find_typeinfo(node->kids[0]);  // You might need to adjust this
         argument->next = NULL;
 
         return argument;
@@ -1611,39 +1611,43 @@ void typecheck(struct tree *n) {
                 if(c->nkids == 3 && c->kids[2] != NULL){ 
                     type_lit = find_leaf(c->kids[2], 400);
                     type_specifier = assignType(type_lit->leaf->text);
-                    //printnode(type_lit);
+                    // printf("Type specifier: %s\n", type_lit->leaf->text);
+                    // printnode(type_lit);
                 }
             }
 
             if (n->kids[4] != NULL && c->nkids == 3) { 
-                b = n->kids[4];
-                if(b->kids[1] != NULL) { /* at the rule for expression*/
+                b = n->kids[4]; //opt_eq_exp 
+                if (b->kids[1] != NULL) { /* at the rule for expression */
                     b = b->kids[1];
-                    while(b->kids[0] != NULL){ /* traverse down to the actual value*/
+                    while (b->kids[0] != NULL) { /* traverse down to the actual value */
                         b = b->kids[0];
-                        if (b->leaf != NULL) { /* found value*/
-                            // printf("from get type Value:%s\n", b->leaf->text);
-                            if (b->leaf->category == 407){
+                        if (b->nkids == 3){
+                            symbol_type = handle_three_children(b);
+                            // printf("symbol type: %s \n",get_typename(symbol_type->basetype));
+                            break;
+                        }
+                        if (b->leaf != NULL) { /* found value */
+                            if (b->leaf->category == 407) {
                                 SymbolTableEntry se_var = lookup_st(current, b->leaf->text);
                                 symbol_type = se_var->type;
-                            }else {
+                            } else {
                                 symbol_type = get_type(b->leaf->category);
-                                //printf("\nsymbol!! %d\n", symbol_type->basetype);
                             }
-
                         }
-
                     }
-                }      
+                }
             }
-        }
-        if( type_specifier != NULL && symbol_type != NULL){
-            if(type_specifier->basetype != symbol_type->basetype ){
-                fprintf(stderr, "Initializer type mismatch: expected '%s', actual '%s'\n", get_typename(type_specifier->basetype), get_typename(symbol_type->basetype));
-                exit(3);
-               
-        }
-        }
+
+            // Ensure the rhs type matches the lhs type
+            if (type_specifier != NULL && symbol_type != NULL) {
+                if (type_specifier->basetype != symbol_type->basetype) {
+                    fprintf(stderr, "Initializer type mismatch: expected '%s', actual '%s'\n", 
+                            get_typename(type_specifier->basetype), get_typename(symbol_type->basetype));
+                    exit(3);
+                }
+            }
+        } 
 
 
         break;
@@ -1710,6 +1714,7 @@ void typecheck(struct tree *n) {
                 fprintf(stderr, "Error: Parameter count mismatch in function '%s' at line %d\n", function_name, function_name_node->leaf->lineno);
                 exit(3);
             }
+            
             }
         
         
@@ -1728,27 +1733,16 @@ void typecheck(struct tree *n) {
                     fprintf(stderr, "Type error: Unsupported types for '%s' operator.\n", n->kids[1]->kids[1]->kids[0]->leaf->text);
                     exit(3);
                 }
-                    
-                
             }
-            
-
         }else if(n->kids[0] != NULL && n->kids[1] != NULL){
             //printnode(n->kids[0]); 
             fprintf(stderr, "Error: Variable expected at line %d\n", n->kids[0]->leaf->lineno);
             exit(3);
 
         }
-            
-        
         break;
-
         }
         
-
-
-
-                
         // Recursively typecheck all children
         for (int i = 0; i < n->nkids; i++) typecheck(n->kids[i]);   
 

@@ -130,8 +130,8 @@ unsupported_mod         "companion"|"out"|"public"|"private"|"internal"|"enum"|"
 "-"?{IntegerLiteral}                                                { yyival = atoi(removeSeparators(yytext));  return alctoken(INTEGER_LITERAL);}  
 {HexLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext), NULL, 16); return alctoken(INTEGER_LITERAL);} 
 {BinLiteral}                                                    { yyival = (int)strtol(removeSeparators(yytext+2), NULL, 2); return alctoken(INTEGER_LITERAL);}
-"-"?([{IntegerLiteral}{HexLiteral}{BinLiteral}])"L"	                { return alctoken(INTEGER_LITERAL);}
-"true"|"false"						                            { return alctoken(BOOLEAN_LITERAL);}
+"-"?([{IntegerLiteral}{HexLiteral}{BinLiteral}])"L"	                { yyival = (long)strtol(removeSeparators(yytext), NULL, 10); return alctoken(LONG_LITERAL); }
+"true"|"false"						                            { return alctoken(BOOLEAN_LITERAL); }
 "null"							                                { return alctoken(NULL_LITERAL);}
 ["][^"]*["]				                                        { yysval = descape(yytext);return alctoken(STRING_LITERAL);}
 \'({EscapeSeq}|[^\r\n'\\])?\'                                   { return alctoken(CHARACTER_LITERAL); }

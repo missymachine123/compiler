@@ -1634,12 +1634,12 @@ YY_RULE_SETUP
 case 74:
 YY_RULE_SETUP
 #line 133 "k0lex.l"
-{ return alctoken(INTEGER_LITERAL);}
+{ yyival = (long)strtol(removeSeparators(yytext), NULL, 10); return alctoken(LONG_LITERAL); }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
 #line 134 "k0lex.l"
-{ return alctoken(BOOLEAN_LITERAL);}
+{ return alctoken(BOOLEAN_LITERAL); }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP

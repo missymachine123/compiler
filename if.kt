@@ -1,12 +1,14 @@
+var dd : Double = 3.14;
 
-
-
-fun subtract(a: Int,b:Int): Int {
-   return a 
+fun fib(f : Double, i : Int) : Double {
+   var x : Double = 3.14 * 2.0;
+   return x;
 }
-fun assignments(c:Int):Int {
-   var a : Int =  1;  
-   a = subtract(2,"string");
-  
-   a = 3+2
+
+fun main() {
+   var i : Double = 5.0;
+   val j : Int = 5;
+   i = 0.0 + fib(i, 3);
+   i = fib(i, "hello");
+   println("{j}");
 }
