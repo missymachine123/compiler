@@ -1354,10 +1354,22 @@ struct typeinfo *find_typeinfo(struct tree *n){
     SymbolTableEntry se = NULL;
     struct typeinfo *e = NULL;
     
-    if (op != NULL){
+    if (op != NULL) {
         se = lookup_st(current, op->leaf->text);
+        SymbolTable temp = current; // Use a temporary variable
+        while (se == NULL && temp != NULL) {
+            temp = temp->parent; // Move to the parent scope
+            if (temp != NULL) {
+            se = lookup_st(temp, op->leaf->text); // Check in the parent scope
+            }
+        }
+        if (se == NULL) {
+            fprintf(stderr, "Error: Undefined variable '%s' at line %d\n", op->leaf->text, op->leaf->lineno);
+            exit(3);
+        }
         e = se->type;
         return e;
+    
     } else{
         struct tree *op1 = NULL;
         for (int i = 0; i < 6; i++) {
@@ -1397,6 +1409,32 @@ struct typeinfo* handle_three_children(struct tree *n) {
         // Handle right-hand side
         if (n->kids[2]->nkids == 3 && n->kids[2]->kids[1]->leaf != NULL) {
             right_type = handle_three_children(n->kids[2]); // Recursively handle right-hand side
+        } else if (n->kids[2]->kids[0] != NULL && find_node_by_prodrule(n->kids[2],1068) != NULL) {
+            printf("inside handle right hand\n");
+            // Handle function call case
+            struct tree *function_node = find_node_by_prodrule(n->kids[2],1068);
+            char *function_name = function_node->kids[0]->leaf->text;
+            SymbolTableEntry function_entry = lookup_st(current, function_name);
+            SymbolTable temp = current;
+
+            while (function_entry == NULL && temp != NULL) {
+            temp = temp->parent;
+            if (temp != NULL) {
+                function_entry = lookup_st(temp, function_name);
+            }
+            }
+
+            if (function_entry == NULL) {
+            fprintf(stderr, "Error: Undefined function '%s' at line %d\n", function_name, function_node->kids[0]->leaf->lineno);
+            exit(3);
+            }
+
+            if (function_entry->type == NULL || function_entry->type->basetype != FUNC_TYPE) {
+            fprintf(stderr, "Error: '%s' is not a function at line %d\n", function_name, function_node->kids[0]->leaf->lineno);
+            exit(3);
+            }
+
+            right_type = function_entry->type->u.f.returntype;
         } else {
             right_type = find_typeinfo(n->kids[2]); // Handle literals or other types
             // printf("Right type: %d\n", right_type->basetype);

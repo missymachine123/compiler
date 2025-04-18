@@ -1,7 +1,7 @@
-
-fun mains (s:Int, a: Int) {
-    val myNum: Int = 5                 // Int 
-    var num2: Double = 23 - myNum
-
-}
- 
+fun elvis() : Int {
+    var x : Int? = 2
+    var y : Int = 2
+    var z : Int?
+    z = x + y
+    return z
+ }
