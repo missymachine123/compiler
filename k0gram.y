@@ -36,11 +36,20 @@
 %type <treeptr> typeRef_parenthesizedType nullableType multi_quest userType multi_dot_simpleUserType simpleUserType opt_modifier val_var multivariable_variableDeclaration parenthesizedExpression propertyDeclaration navigationSuffix identifier_expression_class
 %type <treeptr> memberAccessOperator typeArguments directlyAssignableExpression parenthesizedDirectlyAssignableExpression multi_postfixUnarySuffix postfixUnaryExpression postfixUnarySuffix postfixUnaryOperator multi_comma_expression callSuffix controlStructureBody 
 %type <treeptr>  control_structure_body_or_comma semis variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration multi_comma_variableDeclaration
-%type <treeptr> directly_assign classMembers  classBody classMember opt_colon_type  assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
+%type <treeptr> directly_assign classMembers  classBody classMember opt_colon_type  forStatement whileStatement doWhileStatement assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
 %type <treeptr> collectionLiteral whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression controls arrayType arrayExpression typeLiteral
-%left ADD SUB
-%left MULT DIV MOD
-%left AND OR
+
+%left DISJ             // ||
+%left CONJ             // &&
+%left EQUALITY_OP      // ==, !=
+%left LANGLE
+%left COMPARISON_OP    // <, >, <=, >=  (higher precedence than IN/RANGE)
+%precedence TYPE_ARGUMENT  // Higher than comparisons
+%left IN               // 'in' keyword
+%left RANGE            // '..'
+%left ADD SUB          // +, -
+%left MULT DIV MOD     // *, /, %
+%left prefixUnaryOp    // !, -, +
 
 %nonassoc ELSE
 %nonassoc LOWER_THAN_ELSE
@@ -182,9 +191,9 @@ userType:
  
 
 simpleUserType:
-  simpleIdentifier typeArguments{$$ = alctree(1022, "simpleUserType", 2, $1,$2);}
-  |simpleIdentifier {$$ = alctree(1022, "simpleUserType", 1, $1);}
-  ;
+    simpleIdentifier typeArguments %prec TYPE_ARGUMENT   {$$ = alctree(1022, "simpleUserType", 2, $1, $2);}
+    | simpleIdentifier  {$$ = alctree(1022, "simpleUserType", 1, $1);}
+    ;
 
 
 multi_quest:
@@ -326,8 +335,10 @@ assignableSuffix:
     ;
 
 typeArguments:
-    LANGLE typeProjection multi_comma_typeProjection opt_comma RANGLE  {$$ = alctree(1046, "typeArguments", 5, $1, $2, $3, $4, $5);}
-    ; 
+    LANGLE typeProjection multi_comma_typeProjection opt_comma RANGLE 
+    %prec TYPE_ARGUMENT
+    {$$ = alctree(1046, "typeArguments", 5, $1, $2, $3, $4, $5);}
+    ;
 
 multi_comma_typeProjection: 
   multi_comma_typeProjection COMMA typeProjection {$$ = alctree(1047, "multi_comma_typeProjection", 3, $1, $2, $3);}
@@ -471,9 +482,21 @@ control_structure_body_or_comma:
   ;
 /* Loops */
 loopStatement:
-    WHILE LPAREN expression RPAREN control_structure_body_or_comma  {$$ = alctree(1073,"loopStatement", 5 ,$1, $2, $3, $4,$5);}
-    | FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody  {$$ = alctree(1073,"loopStatement", 7 ,$1, $2, $3, $4,$5,$6,$7);}
-    | DO controlStructureBody WHILE LPAREN expression RPAREN  {$$ = alctree(1073,"loopStatement", 6 ,$1, $2, $3, $4,$5,$6);}
+  whileStatement { $$ = alctree(1073, "loopStatement", 1, $1);}
+  | forStatement  { $$ = alctree(1073, "loopStatement", 1, $1);}
+  | doWhileStatement  { $$ = alctree(1073, "loopStatement", 1, $1);}
+;
+
+whileStatement:
+  WHILE LPAREN expression RPAREN control_structure_body_or_comma {$$ = alctree(2020, "whileLoop", 5, $1, $2, $3, $4, $5);}
+;
+
+forStatement:
+  FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody {$$ = alctree(2021, "forLoop", 7, $1, $2, $3, $4, $5, $6, $7);}
+;
+
+doWhileStatement:
+  DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = alctree(2022, "doWhileLoop", 6, $1, $2, $3, $4, $5, $6);}
 ;
 
 
@@ -555,14 +578,15 @@ equality:
     | equality equality_operator comparison {$$ = alctree(1089, "equality", 3, $1, $2, $3);}
     ;
 
-comparison
-    : genericCallLikeComparison {$$ = alctree(1090, "comparison", 1, $1);}
+comparison: 
+    genericCallLikeComparison {$$ = alctree(1090, "comparison", 1, $1);}
+    | comparison LANGLE genericCallLikeComparison {$$ = alctree(1090, "comparison", 3, $1, $2, $3);}
     | comparison comparison_operator genericCallLikeComparison {$$ = alctree(1090, "comparison", 3, $1, $2, $3);}
     ;
 
 genericCallLikeComparison
     : elvisExpression {$$ = alctree(1091, "genericCallLikeComparison", 1, $1);}
-    | elvisExpression IN elvisExpression {$$ = alctree(1091, "genericCallLikeComparison", 3, $1, $2, $3);}
+    | genericCallLikeComparison IN elvisExpression {$$ = alctree(1091, "genericCallLikeComparison", 3, $1, $2, $3);}
     ;
 
 elvisExpression
@@ -628,10 +652,9 @@ collectionLiteral:
 
 
 comparison_operator: 
-  LANGLE 
-  |RANGLE 
-  |LE 
-  |GE 
+  RANGLE  { $$ = $1; }  // > 
+  | LE    { $$ = $1; }  // <=
+  | GE    { $$ = $1; }  // >=
   ;
 
 equality_operator:

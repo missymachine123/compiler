@@ -9,6 +9,7 @@
 #include "type.h" 
 #include <math.h>
 #include <stdbool.h>
+#include "tac.h"
 
 extern FILE *yyin;
 extern int yyparse(void);
@@ -1100,7 +1101,7 @@ struct param *mk_nparams(struct tree *n) {
     return NULL;
 }
 
-struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2) 
+struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2,int linenum) 
 {
     if (operator == 0 && e1 == NULL) // no operator
         return alctype(e2->basetype);
@@ -1221,7 +1222,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
         if (e1->basetype == e2->basetype ) {
             result->basetype = e1->basetype;
             } else {
-            fprintf(stderr, "Assignment type mismatch: actual type is '%s', but '%s' was expected.\n", get_typename(e2->basetype), get_typename(e1->basetype));
+            fprintf(stderr, "Assignment type mismatch: actual type is '%s', but '%s' was expected on line %d.\n", get_typename(e2->basetype), get_typename(e1->basetype),linenum);
             exit(1);
             }
             break;  
@@ -1348,7 +1349,7 @@ struct tree *find_leaf(struct tree *t, int category) {
     return NULL;
 }
 
-struct typeinfo *find_typeinfo(struct tree *n){
+struct typeinfo *find_typeinfo(struct tree *n,bool null){
     struct tree *op = find_leaf(n, 407);
     int array[6] = {385, 392, 383, 384, 386, 391};
     SymbolTableEntry se = NULL;
@@ -1365,6 +1366,10 @@ struct typeinfo *find_typeinfo(struct tree *n){
         }
         if (se == NULL) {
             fprintf(stderr, "Error: Undefined variable '%s' at line %d\n", op->leaf->text, op->leaf->lineno);
+            exit(3);
+        }
+        if (se->nullable == true && null == false) {
+            fprintf(stderr, "Error: Variable '%s' is nullable and cannot be used in this context at line %d\n", op->leaf->text, op->leaf->lineno);
             exit(3);
         }
         e = se->type;
@@ -1388,9 +1393,9 @@ struct typeinfo *find_typeinfo(struct tree *n){
     
 
 }
-struct typeinfo* handle_three_children(struct tree *n) {
+struct typeinfo* handle_three_children(struct tree *n,bool lhs_null) {
     if( n->nkids == 1 && n->kids[0]->nkids == 3){
-        struct typeinfo *result = handle_three_children(n->kids[0]); // Recursively handle the first child
+        struct typeinfo *result = handle_three_children(n->kids[0],lhs_null); // Recursively handle the first child
         return result; 
     }
     if (n->nkids == 3) {
@@ -1400,17 +1405,17 @@ struct typeinfo* handle_three_children(struct tree *n) {
 
         // Handle left-hand side
         if (n->kids[0]->nkids == 3 && n->kids[0]->kids[1]->leaf != NULL) {
-            left_type = handle_three_children(n->kids[0]); // Recursively handle left-hand side
+            left_type = handle_three_children(n->kids[0],lhs_null); // Recursively handle left-hand side
         } else {
-            left_type = find_typeinfo(n->kids[0]); // Handle literals or other types
+            left_type = find_typeinfo(n->kids[0],lhs_null); // Handle literals or other types
             // printf("Left type: %d\n", left_type->basetype);
         }
  
         // Handle right-hand side
         if (n->kids[2]->nkids == 3 && n->kids[2]->kids[1]->leaf != NULL) {
-            right_type = handle_three_children(n->kids[2]); // Recursively handle right-hand side
+            right_type = handle_three_children(n->kids[2],lhs_null); // Recursively handle right-hand side
         } else if (n->kids[2]->kids[0] != NULL && find_node_by_prodrule(n->kids[2],1068) != NULL) {
-            printf("inside handle right hand\n");
+            // printf("inside handle right hand\n");
             // Handle function call case
             struct tree *function_node = find_node_by_prodrule(n->kids[2],1068);
             char *function_name = function_node->kids[0]->leaf->text;
@@ -1418,13 +1423,14 @@ struct typeinfo* handle_three_children(struct tree *n) {
             SymbolTable temp = current;
 
             while (function_entry == NULL && temp != NULL) {
-            temp = temp->parent;
-            if (temp != NULL) {
-                function_entry = lookup_st(temp, function_name);
+                temp = temp->parent;
+                if (temp != NULL) {
+                    function_entry = lookup_st(temp, function_name);
+                }
             }
-            }
-
-            if (function_entry == NULL) {
+            if (lookup_st(predefined, function_name)) {
+                printf("found predefined function\n");
+            }else if (function_entry == NULL) {
             fprintf(stderr, "Error: Undefined function '%s' at line %d\n", function_name, function_node->kids[0]->leaf->lineno);
             exit(3);
             }
@@ -1436,20 +1442,19 @@ struct typeinfo* handle_three_children(struct tree *n) {
 
             right_type = function_entry->type->u.f.returntype;
         } else {
-            right_type = find_typeinfo(n->kids[2]); // Handle literals or other types
-            // printf("Right type: %d\n", right_type->basetype);
+            right_type = find_typeinfo(n->kids[2],lhs_null); // Handle literals or other types  
         }
 
         // Check types and determine the result type
         if (left_type && right_type) {
             // printf("Both left_type and right_type are present.\n");
-            result = check_types(n->kids[1]->leaf->category, left_type, right_type);
+            result = check_types(n->kids[1]->leaf->category, left_type, right_type,n->kids[1]->leaf->lineno);
         } else if (left_type) {
             // printf("Only left_type is present.\n");
-            result = check_types(n->kids[1]->leaf->category, left_type, NULL);
+            result = check_types(n->kids[1]->leaf->category, left_type, NULL,n->kids[1]->leaf->lineno);
         } else if (right_type) {
             // printf("Only right_type is present.\n");
-            result = check_types(n->kids[1]->leaf->category, NULL, right_type);
+            result = check_types(n->kids[1]->leaf->category, NULL, right_type,n->kids[1]->leaf->lineno);
         } 
         // printf("Result type: %d\n", result->basetype);
         return result;
@@ -1476,7 +1481,7 @@ struct param *mk_param(struct tree *expr_node) {
         }
 
         argument->name = NULL;  // Arguments don't have names
-        argument->type = find_typeinfo(node->kids[0]);  // You might need to adjust this
+        argument->type = find_typeinfo(node->kids[0],NULL);  // You might need to adjust this
         argument->next = NULL;
 
         return argument;
@@ -1521,6 +1526,7 @@ void typecheck(struct tree *n) {
     struct typeinfo *comparison = NULL;
     
     struct typeinfo *equality = NULL;
+    bool nullable_left = false; 
     
 
     // Perform type checking based on production rules
@@ -1530,7 +1536,7 @@ void typecheck(struct tree *n) {
         case 1090: 
             if (n->nkids == 3){ 
                 printf("comparison \n");
-                comparison = handle_three_children(n);
+                comparison = handle_three_children(n,nullable_left);
                 if (comparison != NULL){
                 printf("comparison print: %d\n",comparison->basetype);
                 }
@@ -1540,7 +1546,7 @@ void typecheck(struct tree *n) {
         case 1089:
             if (n->nkids == 3 ){ 
                     printf("equality \n");
-                    equality = handle_three_children(n);
+                    equality = handle_three_children(n,nullable_left);
                     if (equality != NULL){
                     printf("equality print: %d\n",equality->basetype);
                     }
@@ -1557,7 +1563,7 @@ void typecheck(struct tree *n) {
             }
             break;
 
-            case 1043:  // Assignment    
+            case 1043:  // Assignment: directly_assign expression 
             if (n->kids[0] != NULL && n->kids[1] != NULL) {
                 // printf("From typecheck lhs:\n------------------\n");
 
@@ -1575,7 +1581,7 @@ void typecheck(struct tree *n) {
                 if (se == NULL) {
                     fprintf(stderr, "Error: Undeclared variable '%s' at line %d\n", lhs->leaf->text, lhs->leaf->lineno);
                     exit(3);
-                } 
+                }
                 
                 
                 rhs = n->kids[1]; // Assuming the right-hand side is the second child
@@ -1583,8 +1589,9 @@ void typecheck(struct tree *n) {
 
 
                 lhs_type = se->type; 
-
-                
+                if (se->nullable == true) {
+                    nullable_left = true;
+                }               
 
                 // Walk through the rhs child to find cases with three children
                 struct tree *current_node = rhs;
@@ -1592,7 +1599,7 @@ void typecheck(struct tree *n) {
                 while (current_node != NULL) {
                     if (current_node->nkids == 3) {
                         // printf("Found a node with three children.\n");
-                        expressions = handle_three_children(current_node);
+                        expressions = handle_three_children(current_node,nullable_left);
                         if (expressions != NULL) {
                             // printf("Result type from three children: %d\n", expressions->basetype);
                         }
@@ -1626,7 +1633,7 @@ void typecheck(struct tree *n) {
                             break; 
                         }
                 } 
-                    check_types(operator->category, lhs_type, rhs_type);
+                    check_types(operator->category, lhs_type, rhs_type,operator->lineno); // Check types for assignment
     
                 }}
             break;
@@ -1661,7 +1668,7 @@ void typecheck(struct tree *n) {
                     while (b->kids[0] != NULL) { /* traverse down to the actual value */
                         b = b->kids[0];
                         if (b->nkids == 3){
-                            symbol_type = handle_three_children(b);
+                            symbol_type = handle_three_children(b,nullable_left);
                             // printf("symbol type: %s \n",get_typename(symbol_type->basetype));
                             break;
                         }
@@ -1691,7 +1698,7 @@ void typecheck(struct tree *n) {
         break;
 
         case 1094:
-        struct typeinfo *result = handle_three_children(n); // Handle the three children case
+        struct typeinfo *result = handle_three_children(n,nullable_left); // Handle the three children case
         if (result != NULL) {
             // printf("Final Result type: %d\n", result->basetype); 
         }
@@ -1714,6 +1721,10 @@ void typecheck(struct tree *n) {
                         function_entry = lookup_st(temp, function_name); // Check in the parent scope
                     }
                 }
+                if (lookup_st(predefined, function_name)) {
+                    function_entry = lookup_st(predefined, function_name);
+                    break;// temp fix for function_name in predefined so it doesn't check
+                }
 
                 if (function_entry == NULL) {
                     fprintf(stderr, "Error: Undefined function '%s' at line %d\n", function_name, function_name_node->leaf->lineno);
@@ -1729,7 +1740,7 @@ void typecheck(struct tree *n) {
                     // printf("Function entry exists with type: %d\n", function_entry->type->basetype);
                     struct param *param = function_entry->type->u.f.parameters;
                     while (param != NULL) {
-                        printf("Parameter name: %s, type: %d\n", param->name, param->type->basetype);
+                        // printf("Parameter name: %s, type: %d\n", param->name, param->type->basetype);
                         param = param->next;
                     }
                 }
@@ -1746,7 +1757,9 @@ void typecheck(struct tree *n) {
                 }
                 expected_params = expected_params->next;
                 actual_params = actual_params->next;
-            }
+            } 
+
+
 
             if (expected_params != NULL || actual_params != NULL) {
                 fprintf(stderr, "Error: Parameter count mismatch in function '%s' at line %d\n", function_name, function_name_node->leaf->lineno);
@@ -1893,6 +1906,9 @@ int main(int argc, char **argv) {
     // Default behavior when no flags are provided
     if (!generate_tree && !generate_symtab && !generate_dot) {
         if (result == 0) {
+            symboltable_type_init(root);
+            build_function_parameter(root);
+            typecheck(root);
             printf("No errors.\n");
         } else {
             printf("Errors encountered.\n");

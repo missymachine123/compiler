@@ -6,6 +6,7 @@
 #include "k0gram.tab.h" 
 #include <string.h>
 #include <stdbool.h>
+#include "tac.h"
  
 struct typeinfo null_type = { NULL_TYPE };
 struct typeinfo byte_type = { BYTE_TYPE };
@@ -22,6 +23,7 @@ struct typeinfo func_type = { FUNC_TYPE };
 struct typeinfo class_type = { CLASS_TYPE };
 struct typeinfo package_type = { PACKAGE_TYPE };
 struct typeinfo any_type = { ANY_TYPE };
+struct typeinfo void_type = { VOID_TYPE };
 
 typeptr null_typeptr = &null_type;
 typeptr byte_typeptr = &byte_type;
@@ -38,6 +40,7 @@ typeptr func_typeptr = &func_type;
 typeptr class_typeptr = &class_type;
 typeptr package_typeptr = &package_type;
 typeptr any_typeptr = &any_type;
+typeptr void_typeptr = &void_type;
 
 
 typeptr get_type(int category){
@@ -185,7 +188,11 @@ typeptr assignType(char *typeName) {
       case 'a':
          if (strcmp(typeName, "any") == 0) return any_typeptr;
          break;
+      case 'v':
+         if (strcmp(typeName, "void") == 0) return void_typeptr;
+         break;
       default:
+
          fprintf(stderr, "Unknown type name: %s\n", typeName);
          return NULL;
    }
@@ -210,6 +217,7 @@ typeptr alctype(int base)
    else if (base == CLASS_TYPE) return class_typeptr;
    else if (base == PACKAGE_TYPE) return package_typeptr;
    else if (base == ANY_TYPE) return any_typeptr;
+   else if (base == VOID_TYPE) return void_typeptr;
 
    rv = (typeptr) calloc(1, sizeof(struct typeinfo));
    if (rv == NULL) return rv;

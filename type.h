@@ -35,6 +35,7 @@ struct field {			/* members (fields) of structs */
 */
 #define ANY_TYPE     1000014
 #define LAST_TYPE    1000015
+#define VOID_TYPE    1000016
 
 // Define the structure for type information.
 typedef struct typeinfo {

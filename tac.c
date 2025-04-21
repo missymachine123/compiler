@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "tac.h"
+#include "tree.h"
+#include "k0gram.tab.h"
 
 char *regionnames[] = {"global","loc", "class", "lab", "const", "", "none"};
 char *regionname(int i) { return regionnames[i-R_GLOBAL]; }
@@ -49,7 +51,21 @@ struct addr *genlabel()
    
    return a; // Return the newly created label address.
 }
-
+void assign_first(struct tree *t)
+{
+   int i;
+   for(i=0; i<t->nkids; i++) assign_first(t->kids[i]);
+   switch(t->prodrule) {
+      /* Add cases that require a label */
+      case 1011://ifExpression
+      case 1073: //while, for ,do while  
+         t->first = genlabel();
+         break;
+      default:
+         t->first = NULL; // No label needed for other cases
+         break;
+   }
+}
 /**
  * @brief Generates a new instruction with the specified opcode and operands.
  *
