@@ -1101,7 +1101,7 @@ struct param *mk_nparams(struct tree *n) {
     return NULL;
 }
 
-struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2,int linenum) 
+struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2, int linenum) 
 {
     if (operator == 0 && e1 == NULL) // no operator
         return alctype(e2->basetype);
@@ -1138,7 +1138,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             } else if (e1->basetype == ARRAY_TYPE && e2->basetype == ARRAY_TYPE) {
                 result->basetype = ARRAY_TYPE;     
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '+' operator.\n");
+                fprintf(stderr, "Type error: Unsupported types for '+' operator on line %d.\n", linenum);
                 exit(3);
             }
             break;
@@ -1157,7 +1157,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
                 result->basetype = DOUBLE_TYPE;
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                fprintf(stderr, "Type error: Unsupported types for '-' operator on line %d.\n", linenum);
                 exit(3);
             }
             break;
@@ -1176,7 +1176,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
                 result->basetype = DOUBLE_TYPE;
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                fprintf(stderr, "Type error: Unsupported types for '-' operator on line %d.\n", linenum);
                 exit(3);
             }
             break;
@@ -1195,7 +1195,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
             result->basetype = DOUBLE_TYPE;
             } else {
-            fprintf(stderr, "Type error: Unsupported types for '/' operator.\n");
+            fprintf(stderr, "Type error: Unsupported types for '/' operator on line %d.\n", linenum);
             exit(3);
             }
             break;
@@ -1213,7 +1213,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
             result->basetype = DOUBLE_TYPE;
             } else {
-            fprintf(stderr, "Type error: Unsupported types for '%%' operator.\n");
+            fprintf(stderr, "Type error: Unsupported types for '%%' operator on line %d.\n", linenum);
             exit(3);
             }
             break;
@@ -1253,8 +1253,8 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 if (can_assign_to(e1->basetype, operation_result_type)) {
                     result->basetype = e1->basetype;
                 } else {
-                    fprintf(stderr, "Type mismatch in compound assignment: cannot assign '%s' to '%s'.\n", 
-                    get_typename(operation_result_type), get_typename(e1->basetype));
+                    fprintf(stderr, "Type mismatch in compound assignment: cannot assign '%s' to '%s' on line %d.\n", 
+                    get_typename(operation_result_type), get_typename(e1->basetype), linenum);
                     exit(3);
                 }
                 break;
@@ -1276,14 +1276,14 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     result->basetype = BOOL_TYPE; // Allow numeric comparisons
     
                 } else {
-                    fprintf(stderr, "Comparison type mismatch: '%s' and '%s'.\n", get_typename(e1->basetype), get_typename(e2->basetype));
+                    fprintf(stderr, "Comparison type mismatch: '%s' and '%s' on line %d.\n", get_typename(e1->basetype), get_typename(e2->basetype), linenum);
                     exit(1);
                 }
                 
                 break;
     
             default:
-                fprintf(stderr, "Error: Unknown operator.\n");
+                fprintf(stderr, "Error: Unknown operator on line %d.\n", linenum);
                 exit(1);
         }
     
