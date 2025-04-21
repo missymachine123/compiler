@@ -1100,7 +1100,7 @@ struct param *mk_nparams(struct tree *n) {
     return NULL;
 }
 
-struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2) 
+struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo *e2, int linenum) 
 {
     if (operator == 0 && e1 == NULL) // no operator
         return alctype(e2->basetype);
@@ -1137,7 +1137,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             } else if (e1->basetype == ARRAY_TYPE && e2->basetype == ARRAY_TYPE) {
                 result->basetype = ARRAY_TYPE;     
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '+' operator.\n");
+                fprintf(stderr, "Type error: Unsupported types for '+' operator on line %d.\n", linenum);
                 exit(3);
             }
             break;
@@ -1156,7 +1156,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
                 result->basetype = DOUBLE_TYPE;
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                fprintf(stderr, "Type error: Unsupported types for '-' operator on line %d.\n", linenum);
                 exit(3);
             }
             break;
@@ -1175,7 +1175,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
                 result->basetype = DOUBLE_TYPE;
             } else {
-                fprintf(stderr, "Type error: Unsupported types for '-' operator.\n");
+                fprintf(stderr, "Type error: Unsupported types for '-' operator on line %d.\n", linenum);
                 exit(3);
             }
             break;
@@ -1194,7 +1194,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
             result->basetype = DOUBLE_TYPE;
             } else {
-            fprintf(stderr, "Type error: Unsupported types for '/' operator.\n");
+            fprintf(stderr, "Type error: Unsupported types for '/' operator on line %d.\n", linenum);
             exit(3);
             }
             break;
@@ -1212,7 +1212,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 (e1->basetype == DOUBLE_TYPE && e2->basetype == DOUBLE_TYPE)) {
             result->basetype = DOUBLE_TYPE;
             } else {
-            fprintf(stderr, "Type error: Unsupported types for '%%' operator.\n");
+            fprintf(stderr, "Type error: Unsupported types for '%%' operator on line %d.\n", linenum);
             exit(3);
             }
             break;
@@ -1221,7 +1221,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
         if (e1->basetype == e2->basetype ) {
             result->basetype = e1->basetype;
             } else {
-            fprintf(stderr, "Assignment type mismatch: actual type is '%s', but '%s' was expected.\n", get_typename(e2->basetype), get_typename(e1->basetype));
+            fprintf(stderr, "Assignment type mismatch: actual type is '%s', but '%s' was expected on line %d.\n", get_typename(e2->basetype), get_typename(e1->basetype), linenum);
             exit(1);
             }
             break;  
@@ -1252,8 +1252,8 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                 if (can_assign_to(e1->basetype, operation_result_type)) {
                     result->basetype = e1->basetype;
                 } else {
-                    fprintf(stderr, "Type mismatch in compound assignment: cannot assign '%s' to '%s'.\n", 
-                    get_typename(operation_result_type), get_typename(e1->basetype));
+                    fprintf(stderr, "Type mismatch in compound assignment: cannot assign '%s' to '%s' on line %d.\n", 
+                    get_typename(operation_result_type), get_typename(e1->basetype), linenum);
                     exit(3);
                 }
                 break;
@@ -1275,14 +1275,14 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
                     result->basetype = BOOL_TYPE; // Allow numeric comparisons
     
                 } else {
-                    fprintf(stderr, "Comparison type mismatch: '%s' and '%s'.\n", get_typename(e1->basetype), get_typename(e2->basetype));
+                    fprintf(stderr, "Comparison type mismatch: '%s' and '%s' on line %d.\n", get_typename(e1->basetype), get_typename(e2->basetype), linenum);
                     exit(1);
                 }
                 
                 break;
     
             default:
-                fprintf(stderr, "Error: Unknown operator.\n");
+                fprintf(stderr, "Error: Unknown operator on line %d.\n", linenum);
                 exit(1);
         }
     
@@ -1443,13 +1443,13 @@ struct typeinfo* handle_three_children(struct tree *n) {
         // Check types and determine the result type
         if (left_type && right_type) {
             // printf("Both left_type and right_type are present.\n");
-            result = check_types(n->kids[1]->leaf->category, left_type, right_type);
+            result = check_types(n->kids[1]->leaf->category, left_type, right_type, n->kids[1]->leaf->lineno);
         } else if (left_type) {
             // printf("Only left_type is present.\n");
-            result = check_types(n->kids[1]->leaf->category, left_type, NULL);
+            result = check_types(n->kids[1]->leaf->category, left_type, NULL, n->kids[1]->leaf->lineno);
         } else if (right_type) {
             // printf("Only right_type is present.\n");
-            result = check_types(n->kids[1]->leaf->category, NULL, right_type);
+            result = check_types(n->kids[1]->leaf->category, NULL, right_type, n->kids[1]->leaf->lineno);
         } 
         // printf("Result type: %d\n", result->basetype);
         return result;
@@ -1626,7 +1626,7 @@ void typecheck(struct tree *n) {
                             break; 
                         }
                 } 
-                    check_types(operator->category, lhs_type, rhs_type);
+                    check_types(operator->category, lhs_type, rhs_type,  operator->lineno);
     
                 }}
             break;
@@ -1893,6 +1893,9 @@ int main(int argc, char **argv) {
     // Default behavior when no flags are provided
     if (!generate_tree && !generate_symtab && !generate_dot) {
         if (result == 0) {
+            symboltable_type_init(root);
+            build_function_parameter(root);
+            typecheck(root);
             printf("No errors.\n");
         } else {
             printf("Errors encountered.\n");
