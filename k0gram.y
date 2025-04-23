@@ -35,9 +35,9 @@
 %type <treeptr> functionValueParameter functionValueParameters opt_functionValueParameter multi_comma_functionParameter opt_functionBody opt_eq_exp  parenthesizedType 
 %type <treeptr> typeRef_parenthesizedType nullableType multi_quest userType multi_dot_simpleUserType simpleUserType opt_modifier val_var multivariable_variableDeclaration parenthesizedExpression propertyDeclaration navigationSuffix identifier_expression_class
 %type <treeptr> memberAccessOperator typeArguments directlyAssignableExpression parenthesizedDirectlyAssignableExpression multi_postfixUnarySuffix postfixUnaryExpression postfixUnarySuffix postfixUnaryOperator multi_comma_expression callSuffix controlStructureBody 
-%type <treeptr>  control_structure_body_or_comma semis variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration multi_comma_variableDeclaration
+%type <treeptr>  control_structure_body_or_comma semis variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration multi_comma_variableDeclaration opt_else
 %type <treeptr> directly_assign classMembers  classBody classMember opt_colon_type  forStatement whileStatement doWhileStatement assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
-%type <treeptr> collectionLiteral whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression controls arrayType arrayExpression typeLiteral
+%type <treeptr> collectionLiteral whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression  arrayType arrayExpression typeLiteral
 
 %left DISJ             // ||
 %left CONJ             // &&
@@ -445,12 +445,13 @@ parenthesizedExpression:
 
     
 ifExpression:
-  IF LPAREN expression RPAREN controls {$$ = alctree(1011,"ifExpression",5, $1, $2, $3, $4, $5);}
+  IF LPAREN expression RPAREN controlStructureBody opt_else {$$ = alctree(1067, "ifExpression", 6, $1, $2, $3, $4, $5, $6);}
   ;
-  
-controls:
-  controlStructureBody ELSE controlStructureBody {$$ = alctree(1012,"controls",3,$1, $2, $3);}
-  | controlStructureBody {$$ = alctree(1012,"controls",1,$1);}
+
+opt_else:
+  ELSE controlStructureBody {$$ = alctree(1012, "opt_else", 2, $1, $2);}
+  | /* empty */ {$$ = NULL;}
+  ;
 
 
 /* Function Call */
@@ -624,10 +625,10 @@ primaryExpression:
     | NULL_LITERAL
     | arrayExpression   { $$ = alctree(1035, "primaryExpression", 1, $1);}
     | CHARACTER_LITERAL
-    | jumpExpression  {$$ = alctree(1011, "primaryExpression", 1, $1);}
-    | collectionLiteral {$$ = alctree(1011, "primaryExpression", 1, $1);}
-    | ifExpression {$$ = alctree(1011, "primaryExpression", 1, $1);}
-    | whenExpression   {$$ = alctree(1067, "primaryExpression", 1, $1);}
+    | jumpExpression  {$$ = alctree(1035, "primaryExpression", 1, $1);}
+    | collectionLiteral {$$ = alctree(1035, "primaryExpression", 1, $1);}
+    | ifExpression {$$ = alctree(1035, "primaryExpression", 1, $1);}
+    | whenExpression   {$$ = alctree(1035, "primaryExpression", 1, $1);}
     ; 
   
   typeLiteral:

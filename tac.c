@@ -53,17 +53,133 @@ struct addr *genlabel()
 }
 void assign_first(struct tree *t)
 {
+   
+   if (t == NULL) return;
    int i;
    for(i=0; i<t->nkids; i++) assign_first(t->kids[i]);
    switch(t->prodrule) {
       /* Add cases that require a label */
-      case 1011://ifExpression
-      case 1073: //while, for ,do while  
+      case 1067://ifExpression
+      case 2020: //while
+      case 2021: //for
+      case 2022: //dowhile
+      case 1016:
          t->first = genlabel();
+         t->firstflag = true;
          break;
       default:
          t->first = NULL; // No label needed for other cases
          break;
+   }
+}
+void assign_follow(struct tree *t) {
+   
+   if (t== NULL) return;
+   int i;
+   switch(t->prodrule) {
+
+   case 1014: //statement sequence
+   if (t->nkids > 1) {
+      t->kids[0]->follow = t->kids[1]->first;  
+      t->kids[0]->followFlag = true;           // Set follow flag
+   } else {
+      t->kids[0]->follow = t->follow;
+      t->kids[0]->followFlag = true;           // Set follow flag
+   }
+   break;
+
+   // If Expression (1067) - follow moves to the control block
+   case 1067: {  
+       t->kids[4]->follow = t->follow;  
+       t->kids[4]->followFlag = true;          // Set follow flag
+       if (t->kids[5]) {
+           t->kids[5]->kids[1]->follow = t->follow;
+           t->kids[5]->kids[1]->followFlag = true; // Set follow flag
+       }
+       break;
+   } 
+
+   // While Statement (2020) - body follows the condition check
+   case 2020: {  
+       t->kids[4]->follow = t->kids[2]->first;  
+       t->kids[4]->followFlag = true;          // Set follow flag
+       break;
+   }
+
+   // For Statement (2021) - body follows the iteration condition
+   case 2021: {  
+       t->kids[6]->follow = t->kids[4]->first;  
+       t->kids[6]->followFlag = true;          // Set follow flag
+       break;
+   }
+
+   // Do-While Statement (2022) - body follows the condition
+   case 2022: {  
+       t->kids[1]->follow = t->kids[4]->first;  // Body follows the condition
+       t->kids[1]->followFlag = true;           // Set follow flag
+       break;
+   }
+   default:
+      t->follow = NULL; // No follow needed for other cases
+      break;
+   
+
+      
+   for(i=0; i<t->nkids; i++) assign_follow(t->kids[i]);
+   }
+}
+void assign_onTrue_onFalse(struct tree *t) {
+   int i;
+   if (t == NULL) return;
+   switch (t->prodrule) {
+
+   // If Expression (1067) - Branch to appropriate block based on condition
+   case 1067: {  
+       t->kids[2]->onTrue = t->kids[4]->first;  // If true, go into the statement block
+       t->kids[2]->onTrueFlag = true;           // Set onTrue flag
+       if (t->kids[5] != NULL) {  
+           t->kids[2]->onFalse = t->kids[5]->kids[1]->first;  // If false, go into else block
+           t->kids[2]->onFalseFlag = true;                   // Set onFalse flag
+       } else {
+           t->kids[2]->onFalse = t->follow;  // No else block, so jump to follow
+           t->kids[2]->onFalseFlag = true;   // Set onFalse flag
+       }
+       break;
+   }
+
+   // While Statement (2020) - Loop continues if condition is true
+   case 2020: {  
+       t->kids[2]->onTrue = t->kids[4]->first;  // If true, go into the loop body
+       t->kids[2]->onTrueFlag = true;           // Set onTrue flag
+       t->kids[2]->onFalse = t->follow;        // If false, exit the loop
+       t->kids[2]->onFalseFlag = true;         // Set onFalse flag
+       break;
+   }
+
+   // For Statement (2021) - Loop iteration depends on boolean condition
+   case 2021: {  
+       t->kids[4]->onTrue = t->kids[6]->first;  // If condition is true, go into loop body
+       t->kids[4]->onTrueFlag = true;           // Set onTrue flag
+       t->kids[4]->onFalse = t->follow;        // If false, exit the loop
+       t->kids[4]->onFalseFlag = true;         // Set onFalse flag
+       break;
+   }
+
+   // Do-While Statement (2022) - Loop continues if condition is true
+   case 2022: {  
+       t->kids[4]->onTrue = t->kids[1]->first;  // If true, repeat loop body
+       t->kids[4]->onTrueFlag = true;           // Set onTrue flag
+       t->kids[4]->onFalse = t->follow;        // If false, exit loop
+       t->kids[4]->onFalseFlag = true;         // Set onFalse flag
+       break;
+   }
+
+   default:
+       // Recursively assign labels to children
+       for (i = 0; i < t->nkids; i++) {
+           assign_onTrue_onFalse(t->kids[i]);
+       }
+       break;
    }
 }
 /**

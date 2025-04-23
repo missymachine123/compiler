@@ -204,9 +204,11 @@ extern int yydebug;
     SUB = 405,                     /* SUB  */
     ARRAYTYPELITERAL = 406,        /* ARRAYTYPELITERAL  */
     IDENTIFIER = 407,              /* IDENTIFIER  */
-    AND = 408,                     /* AND  */
-    OR = 409,                      /* OR  */
-    LOWER_THAN_ELSE = 410          /* LOWER_THAN_ELSE  */
+    EQUALITY_OP = 408,             /* EQUALITY_OP  */
+    COMPARISON_OP = 409,           /* COMPARISON_OP  */
+    TYPE_ARGUMENT = 410,           /* TYPE_ARGUMENT  */
+    prefixUnaryOp = 411,           /* prefixUnaryOp  */
+    LOWER_THAN_ELSE = 412          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -219,7 +221,7 @@ union YYSTYPE
 
    struct tree *treeptr;
 
-#line 223 "k0gram.tab.h"
+#line 225 "k0gram.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

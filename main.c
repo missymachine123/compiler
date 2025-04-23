@@ -1811,6 +1811,54 @@ void typecheck(struct tree *n) {
         }
 
 }
+void assign_first(struct tree *t);
+void assign_follow(struct tree *t);
+void assign_onTrue_onFalse(struct tree *t);
+void print_tree_flags(struct tree *t) {
+    if (t == NULL) {
+        return;
+    }
+
+    if (t->first || t->follow || t->onTrue || t->onFalse) {
+        printf("Tree Node Flags:\n");
+        printf("\tNode ID: %d\n", t->id);
+        printf("\tProduction Rule: %d\n", t->prodrule);
+        printf("\tNumber of Children: %d\n", t->nkids);
+
+        if (t->symbolname != NULL) {
+            printf("\tSymbol Name: %s\n", t->symbolname);
+        } else {
+            printf("\tSymbol Name: NULL\n");
+        }
+
+        if (t->leaf != NULL) {
+            printf("\tLeaf Node Information:\n");
+            printf("\t\tCategory: %d\n", t->leaf->category);
+            printf("\t\tText: %s\n", t->leaf->text ? t->leaf->text : "NULL");
+            printf("\t\tLine Number: %d\n", t->leaf->lineno);
+            printf("\t\tFilename: %s\n", t->leaf->filename ? t->leaf->filename : "NULL");
+        } else {
+            printf("\tLeaf Node: NULL\n");
+        }
+
+        if (t->first) {
+            printf("\tFirst: %p\n", (void *)t->first);
+        }
+        if (t->follow) {
+            printf("\tFollow: %p\n", (void *)t->follow);
+        }
+        if (t->onTrue) {
+            printf("\tOnTrue: %p\n", (void *)t->onTrue);
+        }
+        if (t->onFalse) {
+            printf("\tOnFalse: %p\n", (void *)t->onFalse);
+        }
+    }
+
+    for (int i = 0; i < t->nkids; i++) {
+        print_tree_flags(t->kids[i]);
+    }
+}
 
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
@@ -1909,6 +1957,11 @@ int main(int argc, char **argv) {
             symboltable_type_init(root);
             build_function_parameter(root);
             typecheck(root);
+            assign_first(root);
+            assign_follow(root);
+            assign_onTrue_onFalse(root);
+            print_tree_flags(root);
+            
             printf("No errors.\n");
         } else {
             printf("Errors encountered.\n");
