@@ -162,7 +162,7 @@ void assign_follow(struct tree *t) {
         }
             
         case 2020: { // While Statement
-            t->kids[2]->onTrue = t->kids[4]->first;  // condition true: enter body
+            t->kids[2]->onTrue = t->kids[4]->kids[0]->first;  // condition true: enter body
             t->kids[2]->onTrueFlag = true;
             t->kids[2]->onFalse = t->follow;        // condition false: exit loop
             t->kids[2]->onFalseFlag = true;
