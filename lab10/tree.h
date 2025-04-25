@@ -1,7 +1,6 @@
 #ifndef TREE_H
 #define TREE_H
 #include <stdbool.h>
-#include "tac.h"
 
 struct tree {
     int prodrule;          // Production rule associated with this node
@@ -19,10 +18,6 @@ struct tree {
     bool followFlag;
     bool onTrueFlag;
     bool onFalseFlag;
-    struct addr address;
-    struct instr *icode; 
-
-
 };
 
 

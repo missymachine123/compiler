@@ -43,7 +43,6 @@ bool mutability = false;
 void insert_type(SymbolTable st, char *s, typeptr t);
 int literal[] = {385, 392, 383, 386, 391};
 struct tree *find_leaf(struct tree *t, int category) ;
-void codegen(struct tree *t);
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -1961,8 +1960,6 @@ int main(int argc, char **argv) {
             assign_first(root);
             assign_follow(root);
             assign_onTrue_onFalse(root);
-            codegen(root);
-
             print_tree_flags(root);
             
             printf("No errors.\n");
