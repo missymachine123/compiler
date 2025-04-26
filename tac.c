@@ -6,6 +6,7 @@
 #include "tac.h"
 #include "tree.h"
 #include "k0gram.tab.h"
+void printnode(struct tree *t);
 
 char *regionnames[] = {"global","loc", "class", "lab", "const", "", "none"};
 char *regionname(int i) { return regionnames[i-R_GLOBAL]; }
@@ -21,6 +22,9 @@ char *pseudonames[] = {
 char *pseudoname(int i) { return pseudonames[i-D_GLOB]; }
 
 int labelcounter;
+int local_offset;
+int global_offset;
+int temp_offset;
 
 /**
  * @brief Generates a new label address.
@@ -51,6 +55,29 @@ struct addr *genlabel()
    
    return a; // Return the newly created label address.
 }
+
+struct addr genvar(int region) {
+   struct addr a;
+
+   a.region = region;
+   switch(region) {
+       case R_GLOBAL:
+           a.u.offset = global_offset++;
+           break;
+       case R_LOCAL:
+           a.u.offset = local_offset + 8;
+           break;
+       case R_CONST:
+           a.u.offset = temp_offset++;
+           break;
+       default:
+           fprintf(stderr, "Unknown region\n");
+           exit(4);
+   }
+
+   return a;
+}
+
 void assign_first(struct tree *t)
 {
    
@@ -266,6 +293,45 @@ struct instr *concat(struct instr *l1, struct instr *l2)
    return append(copylist(l1), l2);
 }
 
+void print_addr(struct addr a) {
+   switch (a.region) {
+       case R_GLOBAL: printf("global:%d", a.u.offset); break;
+       case R_LOCAL:  printf("loc:%d", a.u.offset); break;
+       case R_CONST:  printf("const:%d", a.u.offset); break;
+       case R_LABEL:  printf("%d", a.u.offset); break;
+       default:       printf("?(%d)", a.u.offset); break;
+   }
+}
+const char *opcode_to_string(int opcode) {
+   switch (opcode) {
+       case O_ADD: return "add";
+       case O_SUB: return "sub";
+       // ... extend
+       default: return "???";
+   }
+}
+
+void printcode(struct instr *L) {
+   struct instr *p = L;
+   while (p != NULL) {
+       printf("%s ", opcode_to_string(p->opcode));
+       print_addr(p->dest);
+       printf(", ");
+       print_addr(p->src1);
+       printf(", ");
+       print_addr(p->src2);
+       printf("\n");
+
+       p = p->next;
+   }
+}
+
+void assignaddr(struct tree *t){
+   if (t==NULL) return;
+
+}
+
+
 void codegen(struct tree *t)
 {
    int i, j;
@@ -283,12 +349,20 @@ void codegen(struct tree *t)
     * another, is assign t->code
     */
    switch (t->prodrule) {
-   case ADD: {
-      t->icode = concat(t->kids[0]->icode, t->kids[1]->icode);
+   case 1094: {
+
+      if(t->nkids == 3){
+      t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
       struct instr* g; 
-      g = gen(ADD, t->address,
-              t->kids[0]->address, t->kids[1]->address);
+      //t->address = genvar(R_LOCAL);
+      //t->kids[0]->address = genvar(R_CONST);
+      //if(t->kids[2] != NULL)
+      // t->kids[2]->address = genvar(R_CONST);
+      g = gen(O_ADD, t->address,
+              t->kids[0]->address, t->kids[2]->address);
       t->icode = concat(t->icode, g);
+      printcode(t->icode);
+      }
       break;
       }
    /*
@@ -299,6 +373,7 @@ void codegen(struct tree *t)
       /* default is: concatenate our children's code */
       t->icode = NULL;
       for(i=0;i<t->nkids;i++)
+         if(t->icode != NULL && t->kids[i]->icode != NULL)
          t->icode = concat(t->icode, t->kids[i]->icode);
    }
 }

@@ -24,6 +24,9 @@ extern int yydebug;
 extern const char *yyname(int sym);
 extern void yyrestart(FILE *input_file);
 extern struct tree *root;
+extern int local_offset;
+extern int global_offset;
+extern int temp_offset;
 struct token yytoken; 
 char *filename;
 int serial = 0;
@@ -1861,6 +1864,53 @@ void print_tree_flags(struct tree *t) {
     }
 }
 
+//write some tree traveral similar to populate_symbol table 
+//before entering any scope, set all regions for nodes to R_GLOBAL 
+//When we see a function, reset local offset 
+//set each address so set a.region = R_LOCAL and a.u.offset = to whatever 
+// if constant value is encountered like 10 + 2, get the text, and set a.u.offset = t->??->leaf->text
+void assign_address(struct tree *t)
+{
+    int i;
+    if (t == NULL) return;
+    /* pre-order activity */
+    switch (t->prodrule) {
+        case 1004: /* Production rule for function declaration */ {
+            local_offset = 0;
+            for (i = 0; i < t->nkids; i++) {
+                if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {\
+                  //might need to get function name here for label 
+                  break;
+                }
+            } 
+            break;
+        } 
+        case 1094: //addition 
+        if(t->nkids == 3){
+            t->address = genvar(R_LOCAL);
+            t->kids[0]->address = genvar(R_CONST);
+            t->kids[2]->address = genvar(R_CONST);
+        }
+        break;
+    }
+
+    for (i = 0; i < t->nkids; i++) {
+        assign_address(t->kids[i]);
+    }
+    /* Post-order activity */
+    switch (t->prodrule) {
+    
+        case 1004: /* End of function scope */ {
+            //printsymbols(current, SCOPE);
+            //printf("---\n");
+            if (current != NULL) {
+                //popscope(); // Pop the current scope to return to the parent scope
+            }
+            break;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
@@ -1961,8 +2011,8 @@ int main(int argc, char **argv) {
             assign_first(root);
             assign_follow(root);
             assign_onTrue_onFalse(root);
+            assign_address(root);
             codegen(root);
-
             print_tree_flags(root);
             
             printf("No errors.\n");

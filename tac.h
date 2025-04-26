@@ -56,11 +56,12 @@ struct instr {
 #define D_END   3055
 #define D_PROT  3056 /* prototype "declaration" */
 
-struct instr *gen(int, struct addr, struct addr, struct addr);
+struct instr *gen(int op, struct addr a1, struct addr a2, struct addr a3);
 struct instr *concat(struct instr *, struct instr *);
 char *regionname(int i);
 char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
+struct addr genvar(int region);
 
 #endif
