@@ -1935,7 +1935,7 @@ void assign_address(struct tree *t)
         case 1086:
         case 1087:
         case 1088:
-        case 1089: //addition    
+        case 1089: //equality    
         case 1090: //multiplication
         case 1091: //division
         case 1092: //modulus
@@ -1963,7 +1963,7 @@ void assign_address(struct tree *t)
                                 t->kids[2]->address = genvar(R_CONST);
                                 t->kids[0]->address->u.offset = atoi(value->leaf->text);
                             }
-                            break; 
+                             
                         }
                         value2 = find_leaf(t->kids[2], array[i]);
                         if (value2 != NULL) {

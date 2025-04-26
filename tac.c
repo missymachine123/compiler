@@ -6,6 +6,18 @@
 #include "tac.h"
 #include "tree.h"
 #include "k0gram.tab.h"
+#include <string.h>
+
+struct token {
+   int category;   /* the integer code returned by yylex */
+   char *text;     /* the actual string (lexeme) matched */
+   int lineno;     /* the line number on which the token occurs */
+   char *filename; /* the source file in which the token occurs */
+   int ival;       /* for integer constants, store binary value here */
+   double dval;	   /* for real constants, store binary value here */
+   char *sval;     /* for string constants, malloc space, de-escape, store */
+                   /*    the string (less quotes and after escapes) here */
+};
 void printnode(struct tree *t);
 
 char *regionnames[] = {"global","loc", "class", "lab", "const", "", "none"};
@@ -364,6 +376,22 @@ void printcode(struct instr *L) {
    }
 }
 
+int opertaor_to_opcode(char *op) {
+    if (strcmp(op, "+") == 0) return O_ADD;
+    else if (strcmp(op, "-") == 0) return O_SUB;
+    else if (strcmp(op, "*") == 0) return O_MUL;
+    else if (strcmp(op, "/") == 0) return O_DIV;
+    else if (strcmp(op, "==") == 0) return O_BEQ;
+    else if (strcmp(op, "!=") == 0) return O_BNE;
+    else if (strcmp(op, "<") == 0) return O_BLT;
+    else if (strcmp(op, "<=") == 0) return O_BLE;
+    else if (strcmp(op, ">") == 0) return O_BGT;
+    else if (strcmp(op, ">=") == 0) return O_BGE;
+    else {
+        printf("Unknown operator: %s\n", op);
+        return -1; // or some invalid opcode
+    }
+}
 void assignaddr(struct tree *t){
    if (t==NULL) return;
 
@@ -373,6 +401,7 @@ void assignaddr(struct tree *t){
 void codegen(struct tree *t)
 {
    int i, j;
+   int opcode_operator;
    if (t==NULL) return;
 
    /*
@@ -400,11 +429,22 @@ void codegen(struct tree *t)
 
         break;
     }
-   case 1094: {
+    case 1086:
+    case 1087:
+    case 1088:
+    case 1089: //addition    
+    case 1090: //multiplication
+    case 1091: //division
+    case 1092: //modulus
+    case 1093: //exponentiation
+    case 1094: //addition  
+    case 1095: //subtraction 
+    {
       if(t->nkids == 3){
       t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
       struct instr* g;
-      g = gen(O_ADD, *t->address, *t->kids[0]->address, *t->kids[2]->address);
+      opcode_operator = opertaor_to_opcode(t->kids[1]->leaf->text);
+      g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
       t->icode = concat(t->icode, g);
       printcode(t->icode);
       }
