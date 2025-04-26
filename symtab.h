@@ -18,6 +18,7 @@ typedef struct sym_entry {
    struct sym_entry *next;
    bool mutability;
    bool nullable;
+   struct addr *address;
       } *SymbolTableEntry;
 
 #endif

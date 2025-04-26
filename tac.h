@@ -62,6 +62,6 @@ char *regionname(int i);
 char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
-struct addr genvar(int region);
+struct addr *genvar(int region);
 
 #endif

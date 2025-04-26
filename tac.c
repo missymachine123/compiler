@@ -55,23 +55,37 @@ struct addr *genlabel()
    
    return a; // Return the newly created label address.
 }
+struct addr *genvar(int region) {
+   struct addr *a = malloc(sizeof(struct addr));
+   if (!a) {
+       fprintf(stderr, "Memory allocation failed\n");
+       exit(1);
+   }
 
-struct addr genvar(int region) {
-   struct addr a;
+   a->region = region;
 
-   a.region = region;
    switch(region) {
        case R_GLOBAL:
-           a.u.offset = global_offset++;
+           a->u.offset = global_offset;
+           global_offset += 8;  // Assume 8 bytes per variable
            break;
        case R_LOCAL:
-           a.u.offset = local_offset + 8;
+           a->u.offset = local_offset;
+           local_offset += 8;
            break;
+       // case R_PARAM:
+       //     a->u.offset = param_offset;
+       //     param_offset += 8;
+       //     break;
+       // case R_LABEL:
+       //     a->u.offset = label_counter++;
+       //     break;
        case R_CONST:
-           a.u.offset = temp_offset++;
+           //a->u.offset = temp_offset++;
            break;
        default:
            fprintf(stderr, "Unknown region\n");
+           free(a);
            exit(4);
    }
 
@@ -306,7 +320,31 @@ const char *opcode_to_string(int opcode) {
    switch (opcode) {
        case O_ADD: return "add";
        case O_SUB: return "sub";
-       // ... extend
+       case O_MUL: return "mul";
+       case O_DIV: return "div";
+       case O_NEG: return "neg";
+       case O_ASN: return "asn";
+       case O_ADDR: return "addr";
+       case O_LCONT: return "lcont";
+       case O_SCONT: return "scont";
+       case O_GOTO: return "goto";
+       case O_BLT: return "blt";
+       case O_BLE: return "ble";
+       case O_BGT: return "bgt";
+       case O_BGE: return "bge";
+       case O_BEQ: return "beq";
+       case O_BNE: return "bne";
+       case O_BIF: return "bif";
+       case O_BNIF: return "bnif";
+       case O_PARM: return "parm";
+       case O_CALL: return "call";
+       case O_RET: return "ret";
+       case D_GLOB: return "glob";
+       case D_PROC: return "proc";
+       case D_LOCAL: return "local";
+       case D_LABEL: return "label";
+       case D_END: return "end";
+       case D_PROT: return "prot";
        default: return "???";
    }
 }
@@ -349,17 +387,24 @@ void codegen(struct tree *t)
     * another, is assign t->code
     */
    switch (t->prodrule) {
-   case 1094: {
+        // Assignment : IDENT '=' AddExpr
+    case 1043: { // 
+        t->address = t->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
+            
+        // Assignment.icode = AddExpr.icode || gen(ASN, IDENT.addr, AddExpr.addr)
+        struct instr *assign = gen(O_ASN, *t->kids[0]->kids[0]->address, 
+            *t->kids[1]->address, 
+            (struct addr){R_NONE});
+        t->icode = concat(t->kids[1]->icode, assign);
+        printcode(t->icode);
 
+        break;
+    }
+   case 1094: {
       if(t->nkids == 3){
       t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
-      struct instr* g; 
-      //t->address = genvar(R_LOCAL);
-      //t->kids[0]->address = genvar(R_CONST);
-      //if(t->kids[2] != NULL)
-      // t->kids[2]->address = genvar(R_CONST);
-      g = gen(O_ADD, t->address,
-              t->kids[0]->address, t->kids[2]->address);
+      struct instr* g;
+      g = gen(O_ADD, *t->address, *t->kids[0]->address, *t->kids[2]->address);
       t->icode = concat(t->icode, g);
       printcode(t->icode);
       }

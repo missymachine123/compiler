@@ -19,7 +19,7 @@ struct tree {
     bool followFlag;
     bool onTrueFlag;
     bool onFalseFlag;
-    struct addr address;
+    struct addr *address;
     struct instr *icode; 
 
 

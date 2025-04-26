@@ -753,6 +753,7 @@ typeptr alcarraytype(struct tree * s, struct tree * e)
 }
 
 
+
 void symboltable_type_init(struct tree *t) {
     int i;
     if (t == NULL) return; 
@@ -1864,6 +1865,28 @@ void print_tree_flags(struct tree *t) {
     }
 }
 
+//iterate through symbol table and assign each address 
+void assign_addresses_in_scope(SymbolTable st){
+    int i;
+    SymbolTableEntry ste;
+    if (st == NULL) return;
+    printf("In Symbol table for: %s\n", st->name);
+    // Iterate over each bucket
+    for (i = 0; i < st->nBuckets; i++) {
+        for (ste = st->tbl[i]; ste != NULL; ste = ste->next) {   
+            
+            if (ste->address == NULL) {
+                ste->address = (struct addr *) malloc(sizeof(struct addr));
+            }   
+            //printf("setting address for %s\n", ste->s);
+                ste->address->region = R_LOCAL;
+                ste->address->u.offset = local_offset + 8;
+            
+        }
+    }
+    
+}
+
 //write some tree traveral similar to populate_symbol table 
 //before entering any scope, set all regions for nodes to R_GLOBAL 
 //When we see a function, reset local offset 
@@ -1872,27 +1895,112 @@ void print_tree_flags(struct tree *t) {
 void assign_address(struct tree *t)
 {
     int i;
+    SymbolTable temp;
     if (t == NULL) return;
     /* pre-order activity */
-    switch (t->prodrule) {
-        case 1004: /* Production rule for function declaration */ {
-            local_offset = 0;
-            for (i = 0; i < t->nkids; i++) {
-                if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {\
-                  //might need to get function name here for label 
-                  break;
-                }
-            } 
-            break;
-        } 
-        case 1094: //addition 
-        if(t->nkids == 3){
-            t->address = genvar(R_LOCAL);
-            t->kids[0]->address = genvar(R_CONST);
-            t->kids[2]->address = genvar(R_CONST);
+    switch (t->prodrule) {  
+        case 1004: /* rule for functions */
+        local_offset = 0;
+        for (i = 0; i < t->nkids; i++) {
+            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
+           char *function_name = t->kids[i]->leaf->text;
+           SymbolTable name = find_table(function_name);
+           pushscope(name); 
+           assign_addresses_in_scope(current);
+           //printf("table:%s\n",current->name);
+           break;
+            }
         }
         break;
-    }
+        case 1028: { /* Property declaration (variables) */
+            struct tree *var_decl = t->kids[3]; // multivariable_variableDeclaration
+            if (var_decl->prodrule == 1035) { // multiVariableDeclaration
+                // Handle multiple variables
+                struct tree *var_list = var_decl;
+                while (var_list) {
+                    if (var_list->kids[1]->leaf && var_list->kids[1]->leaf->category == 407) {
+                        var_list->kids[1]->address = genvar(R_LOCAL);
+                        
+                        // Store in symbol table
+                        SymbolTableEntry ste = lookup_st(current, var_list->kids[1]->leaf->text);
+                        if (ste) {
+                            ste->address = var_list->kids[1]->address;
+                        }
+                    }
+                    var_list = var_list->kids[2]; // multi_comma_variableDeclaration
+                }
+            }
+            break;
+        }
+        case 1086:
+        case 1087:
+        case 1088:
+        case 1089: //addition    
+        case 1090: //multiplication
+        case 1091: //division
+        case 1092: //modulus
+        case 1093: //exponentiation
+        case 1094: //addition  
+        case 1095: //subtraction
+        if(t->nkids == 3){
+            t->address = genvar(R_LOCAL); 
+            SymbolTableEntry se1 = NULL;
+            SymbolTableEntry se2 = NULL;
+            struct tree *value = NULL;
+            struct tree *value2 = NULL;
+            printnode(t->kids[0]);
+            find_leaf(t->kids[0], 407); 
+            int array[7] = {385, 392, 383, 384, 386, 391, 407};
+                    for (int i = 0; i < 7; i++) {
+                        value = find_leaf(t->kids[0], array[i]);
+                        if (value != NULL) {
+                            if (array[i] == 407){
+                                se1 = lookup_st(current, value->leaf->text);
+                                t->kids[0]->address = se1->address; 
+                            }else {
+                                t->kids[0]->address = genvar(R_CONST);
+                                t->kids[0]->address->u.offset = atoi(value->leaf->text);
+                                t->kids[2]->address = genvar(R_CONST);
+                                t->kids[0]->address->u.offset = atoi(value->leaf->text);
+                            }
+                            break; 
+                        }
+                        value2 = find_leaf(t->kids[2], array[i]);
+                        if (value2 != NULL) {
+                            if (array[i] == 407){
+                                se2 = lookup_st(current, value2->leaf->text);
+                                t->kids[2]->address = se2->address; 
+                            }else {
+                                t->kids[2]->address = genvar(R_CONST);
+                                t->kids[2]->address->u.offset = atoi(value2->leaf->text);
+                            }
+                            break; 
+                        }
+                } 
+        }
+        break;
+        case 385:   /* Integer literal */
+
+        // case 386:   /* Character literal */
+
+        case 391:   /* Boolean literal */
+        // case 392: { /* Boolean literal */
+            t->address = genvar(R_CONST);
+            if (t->leaf) {
+                if (t->leaf->category == 385 || t->leaf->category == 391) {
+                    t->address->u.offset = t->leaf->ival;
+                }
+                //  else if (t->leaf->category == 386) {
+                //     // For floats, we might need special handling
+                //     t->address->u.offset = (int)t->leaf->dval;
+                // } else if (t->leaf->category == 391) {
+                //     // Strings will go in .string section
+                //     t->address->u.offset = (int)(intptr_t)t->leaf->sval;
+                // }
+            }
+            break;
+        
+        }
 
     for (i = 0; i < t->nkids; i++) {
         assign_address(t->kids[i]);
@@ -1904,7 +2012,7 @@ void assign_address(struct tree *t)
             //printsymbols(current, SCOPE);
             //printf("---\n");
             if (current != NULL) {
-                //popscope(); // Pop the current scope to return to the parent scope
+                popscope(); // Pop the current scope to return to the parent scope
             }
             break;
         }
@@ -2008,6 +2116,7 @@ int main(int argc, char **argv) {
             symboltable_type_init(root);
             build_function_parameter(root);
             typecheck(root);
+            current = globals;
             assign_first(root);
             assign_follow(root);
             assign_onTrue_onFalse(root);
