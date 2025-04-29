@@ -1,10 +1,6 @@
-fun a(){
-var a = 10;
-}
-fun main() { 
-println(10+2); 
-5 / 12
-6 - 2
-100 > 12
-
-}
+fun main() {
+    var i : Int;
+    i = 5*2;
+    i = i * i + 1;
+    println("$i");
+ }

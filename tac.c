@@ -7,6 +7,7 @@
 #include "tree.h"
 #include "k0gram.tab.h"
 #include <string.h>
+#include "symtab.h"
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -362,18 +363,24 @@ const char *opcode_to_string(int opcode) {
 }
 
 void printcode(struct instr *L) {
-   struct instr *p = L;
-   while (p != NULL) {
-       printf("%s ", opcode_to_string(p->opcode));
-       print_addr(p->dest);
-       printf(", ");
-       print_addr(p->src1);
-       printf(", ");
-       print_addr(p->src2);
-       printf("\n");
+    struct instr *p = L;
+    while (p != NULL) {
+         printf("%s ", opcode_to_string(p->opcode));
+         if (p->dest.region != R_NONE) {
+              print_addr(p->dest);
+         }
+         if (p->src1.region != R_NONE) {
+              printf(", ");
+              print_addr(p->src1);
+         }
+         if (p->src2.region != R_NONE) {
+              printf(", ");
+              print_addr(p->src2);
+         }
+         printf("\n");
 
-       p = p->next;
-   }
+         p = p->next;
+    }
 }
 
 int opertaor_to_opcode(char *op) {
@@ -396,7 +403,9 @@ void assignaddr(struct tree *t){
    if (t==NULL) return;
 
 }
-
+extern SymbolTable current; // Current symbol table
+extern SymbolTable globals; // Global symbol table
+struct tree *find_leaf(struct tree *t, int category) ; 
 
 void codegen(struct tree *t)
 {
@@ -411,24 +420,42 @@ void codegen(struct tree *t)
       codegen(t->kids[i]);
 
    /*
+   
     * back from children, consider what we have to do with
     * this node. The main thing we have to do, one way or
     * another, is assign t->code
     */
    switch (t->prodrule) {
         // Assignment : IDENT '=' AddExpr
-    case 1043: { // 
-        t->address = t->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
-            
-        // Assignment.icode = AddExpr.icode || gen(ASN, IDENT.addr, AddExpr.addr)
-        struct instr *assign = gen(O_ASN, *t->kids[0]->kids[0]->address, 
-            *t->kids[1]->address, 
-            (struct addr){R_NONE});
-        t->icode = concat(t->kids[1]->icode, assign);
-        printcode(t->icode);
-
+    case 1028: //property declaration
+        if (t->kids[3] && t->kids[3]->prodrule == 1027) {
+            //struct tree *id = find_leaf(t->kids[3],407);  
+            struct tree *id = t->kids[3];
+            t->address = id->address; // PropertyDeclaration.addr = IDENT.addr
+            //struct tree *leaf = find_leaf(t->kids[4],1052); 
+            if (t->kids[4] && t->kids[4]->kids[1]) {// expression 
+               struct instr *assign = gen(O_ASN, *id->address, *t->kids[4]->kids[1]->address, (struct addr){R_NONE});
+                t->icode = concat(t->kids[4]->icode, assign);
+                printcode(t->icode);
+            } else {
+                
+            }
+        }
         break;
-    }
+        
+    
+        case 1043: { // 
+            t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
+            // printf("t->address in 1043: %d\n", *t->address);
+                
+            // Assignment.icode = AddExpr.icode || gen(ASN, IDENT.addr, AddExpr.addr)
+            struct instr *assign = gen(O_ASN, *t->kids[0]->kids[0]->kids[0]->address, 
+                *t->kids[1]->address, (struct addr){R_NONE});
+            t->icode = concat(t->kids[1]->icode, assign);
+            printcode(t->icode);
+    
+            break;
+        }
     case 1086:
     case 1087:
     case 1088:
@@ -441,12 +468,12 @@ void codegen(struct tree *t)
     case 1095: //subtraction 
     {
       if(t->nkids == 3){
-      t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
-      struct instr* g;
-      opcode_operator = opertaor_to_opcode(t->kids[1]->leaf->text);
-      g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
-      t->icode = concat(t->icode, g);
-      printcode(t->icode);
+        t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
+        struct instr* g;
+        opcode_operator = opertaor_to_opcode(t->kids[1]->leaf->text);
+        g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
+        t->icode = concat(t->icode, g);
+        printcode(t->icode);
       }
       break;
       }
