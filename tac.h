@@ -63,5 +63,6 @@ char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
 struct addr *genvar(int region);
-
+void printcode(struct instr *L);
+void print_tcode() ;
 #endif

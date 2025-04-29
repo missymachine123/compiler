@@ -64,7 +64,7 @@ struct addr *genlabel()
    a->u.offset = labelcounter++;
    
    // Print the generated label to the standard output.
-   printf("generated a label %d\n", a->u.offset);
+//    printf("generated a label %d\n", a->u.offset);
    
    return a; // Return the newly created label address.
 }
@@ -383,7 +383,7 @@ void printcode(struct instr *L) {
     }
 }
 
-int opertaor_to_opcode(char *op) {
+int operator_to_opcode(char *op) {
     if (strcmp(op, "+") == 0) return O_ADD;
     else if (strcmp(op, "-") == 0) return O_SUB;
     else if (strcmp(op, "*") == 0) return O_MUL;
@@ -406,86 +406,146 @@ void assignaddr(struct tree *t){
 extern SymbolTable current; // Current symbol table
 extern SymbolTable globals; // Global symbol table
 struct tree *find_leaf(struct tree *t, int category) ; 
+struct instr *tcode_head = NULL;
+struct instr *tcode_tail = NULL;
+
+void add_to_tcode(struct instr *new_instr) {
+    if (tcode_head == NULL) {
+        // If the list is empty, initialize head and tail
+        tcode_head = new_instr;
+        tcode_tail = new_instr;
+    } else {
+        // Append the new instruction to the tail
+        tcode_tail->next = new_instr;
+        tcode_tail = new_instr;
+    }
+}
+void print_tcode() {
+    struct instr *current = tcode_head;
+    while (current != NULL) {
+        printf("%s ", opcode_to_string(current->opcode));
+        if (current->dest.region != R_NONE) {
+            print_addr(current->dest);
+        }
+        if (current->src1.region != R_NONE) {
+            printf(", ");
+            print_addr(current->src1);
+        }
+        if (current->src2.region != R_NONE) {
+            printf(", ");
+            print_addr(current->src2);
+        }
+        printf("\n");
+        current = current->next;
+    }
+}
 
 void codegen(struct tree *t)
 {
-   int i, j;
-   int opcode_operator;
-   if (t==NULL) return;
+    int i, j;
+    int opcode_operator;
+    if (t == NULL) return;
 
-   /*
-    * this is a post-order traversal, so visit children first
-    */
-   for(i=0;i<t->nkids;i++)
-      codegen(t->kids[i]);
+    /*
+     * this is a post-order traversal, so visit children first
+     */
+    for (i = 0; i < t->nkids; i++)
+        codegen(t->kids[i]);
 
-   /*
-   
-    * back from children, consider what we have to do with
-    * this node. The main thing we have to do, one way or
-    * another, is assign t->code
-    */
-   switch (t->prodrule) {
-        // Assignment : IDENT '=' AddExpr
-    case 1028: //property declaration
-        if (t->kids[3] && t->kids[3]->prodrule == 1027) {
-            //struct tree *id = find_leaf(t->kids[3],407);  
-            struct tree *id = t->kids[3];
-            t->address = id->address; // PropertyDeclaration.addr = IDENT.addr
-            //struct tree *leaf = find_leaf(t->kids[4],1052); 
-            if (t->kids[4] && t->kids[4]->kids[1]) {// expression 
-               struct instr *assign = gen(O_ASN, *id->address, *t->kids[4]->kids[1]->address, (struct addr){R_NONE});
-                t->icode = concat(t->kids[4]->icode, assign);
-                printcode(t->icode);
-            } else {
-                
-            }
-        }
-        break;
-        
-    
-        case 1043: { // 
-            t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
-            // printf("t->address in 1043: %d\n", *t->address);
-                
-            // Assignment.icode = AddExpr.icode || gen(ASN, IDENT.addr, AddExpr.addr)
-            struct instr *assign = gen(O_ASN, *t->kids[0]->kids[0]->kids[0]->address, 
-                *t->kids[1]->address, (struct addr){R_NONE});
-            t->icode = concat(t->kids[1]->icode, assign);
-            printcode(t->icode);
-    
-            break;
-        }
-    case 1086:
-    case 1087:
-    case 1088:
-    case 1089: //addition    
-    case 1090: //multiplication
-    case 1091: //division
-    case 1092: //modulus
-    case 1093: //exponentiation
-    case 1094: //addition  
-    case 1095: //subtraction 
-    {
-      if(t->nkids == 3){
-        t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
-        struct instr* g;
-        opcode_operator = opertaor_to_opcode(t->kids[1]->leaf->text);
-        g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
-        t->icode = concat(t->icode, g);
-        printcode(t->icode);
-      }
-      break;
-      }
-   /*
-    * ... really, a bazillion cases, up to one for each
-    * production rule (in the worst case)
-    */
-   default:
-      /* default is: concatenate our children's code */
-      t->icode = NULL;
-      for(i=0;i<t->nkids;i++)
-         if(t->icode != NULL && t->kids[i]->icode != NULL)
-         t->icode = concat(t->icode, t->kids[i]->icode);
-   }
+    /*
+     * back from children, consider what we have to do with
+     * this node. The main thing we have to do, one way or
+     * another, is assign t->code
+     */
+    switch (t->prodrule) {
+          // Assignment : IDENT '=' AddExpr
+     case 1028: // property declaration
+          if (t->kids[3] && t->kids[3]->prodrule == 1027) {
+                struct tree *id = t->kids[3];
+                t->address = id->address; // PropertyDeclaration.addr = IDENT.addr
+                if (t->kids[4] && t->kids[4]->kids[1]) { // expression
+                     struct instr *assign = gen(O_ASN, *id->address, *t->kids[4]->kids[1]->address, (struct addr){R_NONE});
+                     t->icode = concat(t->kids[4]->icode, assign);
+                     add_to_tcode(assign);
+                }
+          }
+          break;
+
+     case 1043: { // Assignment with operators like =, +=, -=, *=, /=
+          t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
+
+          // Determine the operator
+          char *operator = t->kids[0]->kids[1]->leaf->text;
+
+          if (strcmp(operator, "=") == 0) {
+                // Simple assignment
+                struct instr *assign = gen(O_ASN, *t->address, *t->kids[1]->address, (struct addr){R_NONE});
+                t->icode = concat(t->kids[1]->icode, assign);
+                add_to_tcode(assign);
+          } else if (strcmp(operator, "+=") == 0 || strcmp(operator, "-=") == 0 ||
+                         strcmp(operator, "*=") == 0 || strcmp(operator, "/=") == 0) {
+                // Compound assignment (+=, -=, *=, /=)
+                int opcode_operator;
+                if (strcmp(operator, "+=") == 0) opcode_operator = O_ADD;
+                else if (strcmp(operator, "-=") == 0) opcode_operator = O_SUB;
+                else if (strcmp(operator, "*=") == 0) opcode_operator = O_MUL;
+                else if (strcmp(operator, "/=") == 0) opcode_operator = O_DIV;
+
+                // Generate a temporary variable to store the result
+                struct addr *temp = genvar(R_LOCAL);
+
+                // Generate the computation instruction
+                struct instr *compute = gen(opcode_operator, *temp, *t->address, *t->kids[1]->address);
+                add_to_tcode(compute);
+
+                // Generate the assignment instruction
+                struct instr *assign = gen(O_ASN, *t->address, *temp, (struct addr){R_NONE});
+                add_to_tcode(assign);
+
+                // Concatenate the instructions
+                t->icode = concat(t->kids[1]->icode, compute);
+                t->icode = concat(t->icode, assign);
+          } else {
+                fprintf(stderr, "Unsupported operator: %s\n", operator);
+                exit(1);
+          }
+          break;
+     }
+     case 1086:
+     case 1087:
+     case 1088:
+     case 1089: // equality    
+     case 1090: // comparison
+     case 1091: // genericCallLikeComparison
+     case 1092: // elvisExpression
+     case 1093: // rangeExpression
+     case 1094: // additiveExpression  
+     case 1095: // multiplicativeExpression 
+     {
+          if (t->nkids == 3) {
+                // Ensure t->address is initialized
+                if (t->address == NULL) {
+                     t->address = genvar(R_LOCAL); // Generate a temporary variable
+                }
+                t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
+                struct instr *g;
+                opcode_operator = operator_to_opcode(t->kids[1]->leaf->text);
+                g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
+                t->icode = concat(t->icode, g);
+                add_to_tcode(g);
+          }
+          break;
+     }
+     /*
+      * ... really, a bazillion cases, up to one for each
+      * production rule (in the worst case)
+      */
+     default:
+          /* default is: concatenate our children's code */
+          t->icode = NULL;
+          for (i = 0; i < t->nkids; i++)
+                if (t->icode != NULL && t->kids[i]->icode != NULL)
+                     t->icode = concat(t->icode, t->kids[i]->icode);
+     }
+
 }

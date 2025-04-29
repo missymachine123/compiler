@@ -1272,6 +1272,7 @@ struct typeinfo *check_types(int operator, struct typeinfo *e1, struct typeinfo 
             case LANGLE:
             case RANGLE:
             case EQEQ:
+            case EQEQEQ:
             case EXCL_EQ:
             case EXCL_EQEQ:
                 if (e1->basetype == e2->basetype) {
@@ -1945,8 +1946,8 @@ void assign_address(struct tree *t)
         }
         break;
         case 1028: { /* Property declaration (variables) */
-            printf("here\n");
-            printnode(t->kids[3]);
+            // printf("here\n");
+            // printnode(t->kids[3]);
             struct tree *var_decl = t->kids[3]; // multivariable_variableDeclaration
             if (var_decl->prodrule == 1035) { // multiVariableDeclaration
                 // Handle multiple variables
@@ -1954,7 +1955,7 @@ void assign_address(struct tree *t)
                 while (var_list) {
                     if (var_list->kids[1]->leaf && var_list->kids[1]->leaf->category == 407) {
                         var_list->kids[1]->address = genvar(R_LOCAL);
-                        printf("here: %s\n", var_list->kids[1]->leaf->text);
+                        // printf("here: %s\n", var_list->kids[1]->leaf->text);
                         // Store in symbol table
                         SymbolTableEntry ste = lookup_st(current, var_list->kids[1]->leaf->text);
                         if (ste) {
@@ -1974,9 +1975,7 @@ void assign_address(struct tree *t)
                     //printnode(c);
                 }
             }
-            //assign right hand side if it exists
-            printf("\nHERE:\n");
-            printnode(t);
+            //assign right hand side if it exists 
 
             if(t->kids[4] != NULL && t->kids[4]->prodrule == 1026){
             struct tree *value = NULL;
@@ -2059,6 +2058,13 @@ void assign_address(struct tree *t)
         case 1086: case 1087: case 1088: case 1089: /* Binary operations */
         case 1090: case 1091: case 1092: case 1093: 
         case 1094: case 1095:
+        if (t->prodrule == 1095 && t->nkids == 1) {
+            if (t->kids[0] != NULL && t->kids[0]->kids[0] != NULL && t->kids[0]->kids[0]->kids[0] != NULL) {
+                if (t->kids[0]->kids[0]->kids[0]->prodrule == 1066) {
+                    t->address = t->kids[0]->kids[0]->kids[0]->kids[1]->address; // Assign the address from the child
+                }
+            }
+        }
         if (t->nkids == 1) {
             // Synthesize the address from the child
             if (t->kids[0]->address) {
@@ -2108,6 +2114,8 @@ void assign_address(struct tree *t)
             }
         }
         break; 
+
+        
             
         case 1043: /* Assignment */
             if (t->kids[0]->address) {
@@ -2133,7 +2141,8 @@ void assign_address(struct tree *t)
                 break;
     }
 }
-int main(int argc, char **argv) {
+
+ int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
     int generate_symtab = 0;   // Flag for -symtab option
@@ -2238,6 +2247,8 @@ int main(int argc, char **argv) {
             assign_onTrue_onFalse(root);
             assign_address(root);
             codegen(root);
+            print_tcode();
+            
             // print_tree_flags(root);
             print_tree_with_addresses(root,0); // Print the tree with addresses
 
