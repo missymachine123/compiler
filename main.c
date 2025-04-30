@@ -2067,8 +2067,9 @@ void assign_address(struct tree *t)
         }
         if (t->nkids == 1) {
             // Synthesize the address from the child
-            if (t->kids[0]->address) {
+            if (t->kids[0]->address && t->address == NULL) {
             t->address = t->kids[0]->address;
+            
             }
         } else if (t->nkids == 3) {
             // Assign a new R_LOCAL address
@@ -2140,8 +2141,29 @@ void assign_address(struct tree *t)
                 }
                 break;
     }
+} 
+
+struct entry_list *global_entries = NULL;
+
+void add_global_or_function_to_list(const char *name) {
+    struct entry_list *new_entry = malloc(sizeof(struct entry_list));
+    if (!new_entry) {
+        fprintf(stderr, "Error: Memory allocation failed for global entry.\n");
+        exit(EXIT_FAILURE);
+    }
+    new_entry->name = strdup(name);
+    new_entry->next = global_entries;
+    global_entries = new_entry;
 }
 
+void collect_globals_and_functions() {
+    SymbolTableEntry ste;
+    for (int i = 0; i < globals->nBuckets; i++) {
+        for (ste = globals->tbl[i]; ste != NULL; ste = ste->next) {
+            add_global_or_function_to_list(ste->s);
+        }
+    }
+}
  int main(int argc, char **argv) {
     int generate_dot = 0;      // Flag for -dot option
     int generate_tree = 0;     // Flag for -tree option
@@ -2245,9 +2267,12 @@ void assign_address(struct tree *t)
             assign_first(root);
             assign_follow(root);
             assign_onTrue_onFalse(root);
+            
+            assign_addresses_in_scope(globals);
             assign_address(root);
             codegen(root);
-            print_tcode();
+            collect_globals_and_functions();
+            print_tcode(filename,global_entries);
             
             // print_tree_flags(root);
             print_tree_with_addresses(root,0); // Print the tree with addresses

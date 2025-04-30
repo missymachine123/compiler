@@ -420,8 +420,34 @@ void add_to_tcode(struct instr *new_instr) {
         tcode_tail = new_instr;
     }
 }
-void print_tcode() {
+void print_tcode(const char *filename, struct entry_list *global_entries) {
+    printf(".file\t\"%s\"\n", filename); // Print the file name at the beginning
+
+    printf(".string\n");
     struct instr *current = tcode_head;
+    while (current != NULL) {
+        if (current->dest.region == R_CONST) {
+            printf("const:%d\n", current->dest.u.offset);
+        }
+        current = current->next;
+    }
+ 
+    // Ensure global_entries is defined and initialized before use
+    if (global_entries != NULL) {
+        // Print global entries in a single line
+        printf(".data");
+        struct entry_list *entry = global_entries;
+        while (entry != NULL) {
+            printf(" %s", entry->name);
+            entry = entry->next;
+        }
+        printf("\n");
+    } else {
+        printf(".data\n");
+    }
+
+    printf(".code\n");
+    current = tcode_head;
     while (current != NULL) {
         printf("%s ", opcode_to_string(current->opcode));
         if (current->dest.region != R_NONE) {

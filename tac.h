@@ -11,7 +11,10 @@ struct addr {
   char *name;
   } u;
 };
-
+struct entry_list{
+  char *name; 
+  struct entry_list *next;
+};
 /* Regions: */
 #define R_GLOBAL 2001 /* can assemble as relative to the pc */
 #define R_LOCAL  2002 /* can assemble as relative to the ebp */
@@ -64,5 +67,5 @@ char *pseudoname(int i);
 struct addr *genlabel();
 struct addr *genvar(int region);
 void printcode(struct instr *L);
-void print_tcode() ;
-#endif
+void print_tcode(const char *filename, struct entry_list *global_entries);
+ #endif
