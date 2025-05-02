@@ -1903,6 +1903,9 @@ void print_tree_with_addresses(struct tree *t, int depth) {
         printf("Internal Node");
     }
 
+    // Print the node ID
+    printf(" [ID: %d]", t->id);
+
     // Print the address information if available
     if (t->address) {
         printf(" [Region: %s, Offset: %d]",
@@ -2274,8 +2277,8 @@ void collect_globals_and_functions() {
             collect_globals_and_functions();
             print_tcode(filename,global_entries);
             
-            // print_tree_flags(root);
-            print_tree_with_addresses(root,0); // Print the tree with addresses
+            print_tree_flags(root);
+            // print_tree_with_addresses(root,0); // Print the tree with addresses
 
             
             printf("No errors.\n");

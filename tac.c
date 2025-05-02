@@ -119,8 +119,10 @@ void assign_first(struct tree *t)
       case 2022: //dowhile
       case 1016:
       case 1086: //expression
-      case 1074:
-    //   case 1086: //expression
+      case 1087:        
+      case 1088:
+      case 1089: //equality operations
+      case 1074: 
          t->first = genlabel();
          t->firstflag = true;
          break; 
@@ -214,6 +216,30 @@ void assign_follow(struct tree *t) {
             t->kids[2]->onFalseFlag = true;
             break;
         }
+
+        case 1087://disjunction || conjunction
+
+        if (t->nkids == 3){
+            t->kids[0]->onTrue = t->onTrue;
+            t->kids[0]->onTrueFlag = true;
+            t->kids[0]->onFalse = t->kids[2]->first;  // EqExpr.onFalse = AndExpr1.first;
+            t->kids[2]->onTrue = t->onTrue;  // AndExpr1.onTrue = EqExpr.onTrue;
+            t->kids[2]->onTrueFlag = true;
+            t->kids[2]->onFalse = t->onFalse;  // AndExpr1.onFalse = EqExpr.onFalse;
+            t->kids[0]->onFalseFlag = true;
+        }
+        break;
+        case 1088: // conjunction && equality
+        if (t->nkids == 3){
+            t->kids[0]->onTrue = t->kids[2]->first;  // AndExpr1.onTrue = EqExpr.first;
+            t->kids[0]->onTrueFlag = true;
+            t->kids[0]->onFalse = t->follow;  // AndExpr1.onFalse = follow
+            t->kids[2]->onTrue = t->onTrue;  //  EqExpr.onTrue = AndExpr.onTrue;
+            t->kids[2]->onTrueFlag = true;
+            t->kids[2]->onFalse = t->onFalse;  // EqExpr.onFalse = AndExpr.onFalse;
+            t->kids[0]->onFalseFlag = true; 
+        }
+        break;
             
         case 2020: { // While Statement
             t->kids[2]->onTrue = t->kids[4]->kids[0]->first;  // condition true: enter body
@@ -496,7 +522,12 @@ void codegen(struct tree *t)
                 }
           }
           break;
-
+    
+    case 1067:
+          if (t->kids[5] != NULL && t->kids[5]->prodrule == 2026){// if else then
+            
+          }
+          break;
      case 1043: { // Assignment with operators like =, +=, -=, *=, /=
           t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
 

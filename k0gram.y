@@ -37,7 +37,7 @@
 %type <treeptr> memberAccessOperator typeArguments directlyAssignableExpression parenthesizedDirectlyAssignableExpression multi_postfixUnarySuffix postfixUnaryExpression postfixUnarySuffix postfixUnaryOperator multi_comma_expression callSuffix controlStructureBody 
 %type <treeptr>  control_structure_body_or_comma semis variable_multivariable valueArgument opt_Multi opt_simpleIdentifier_EQ valueArguments opt_valueArgument multi_comma_valueArgument assignableSuffix multiVariableDeclaration multi_comma_variableDeclaration opt_else
 %type <treeptr> directly_assign classMembers  classBody classMember opt_colon_type  forStatement whileStatement doWhileStatement assignableExpression assignmentAndOperator prefixUnaryExpression parenthesizedAssignableExpression indexingSuffix multi_unaryPrefix prefixUnaryOperator multi_comma_typeProjection typeProjection equality_operator
-%type <treeptr> collectionLiteral whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression  arrayType arrayExpression typeLiteral
+%type <treeptr> collectionLiteral ifElseTail whenCondition whenSubject whenEntry multi_comma_whenCondition multi_whenEntry whenExpression comparison_operator additiveExpression multiplicativeExpression jumpExpression ifExpression  arrayType arrayExpression typeLiteral
 
 %left DISJ             // ||
 %left CONJ             // &&
@@ -445,14 +445,19 @@ parenthesizedExpression:
 
     
 ifExpression:
-  IF LPAREN expression RPAREN controlStructureBody opt_else {$$ = alctree(1067, "ifExpression", 6, $1, $2, $3, $4, $5, $6);}
-  ;
+  IF LPAREN expression RPAREN opt_else {$$ = alctree(1067, "ifExpression", 5, $1, $2, $3, $4, $5);}
+  ; 
 
 opt_else:
-  ELSE controlStructureBody {$$ = alctree(1012, "opt_else", 2, $1, $2);}
-  | /* empty */ {$$ = NULL;}
+  controlStructureBody {$$ = alctree(2026, "opt_else", 1, $1);}
+  | SEMICOLON {$$ = $1;}
+  | controlStructureBody SEMICOLON ELSE ifElseTail {$$ = alctree(2027, "ifTail", 4, $1, $2,$3,$4);}
+  | controlStructureBody ELSE ifElseTail {$$ = alctree(2027, "ifTail", 3, $1,$2, $3);}
   ;
-
+ifElseTail:
+  controlStructureBody {$$ = alctree(2028, "ifElseTail", 1, $1);}
+  | SEMICOLON {$$ = $1;}
+  ;
 
 /* Function Call */
 functionCall:
