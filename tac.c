@@ -233,7 +233,7 @@ void assign_follow(struct tree *t) {
         if (t->nkids == 3){
             t->kids[0]->onTrue = t->kids[2]->first;  // AndExpr1.onTrue = EqExpr.first;
             t->kids[0]->onTrueFlag = true;
-            t->kids[0]->onFalse = t->follow;  // AndExpr1.onFalse = follow
+            t->kids[0]->onFalse = t->onFalse;  // AndExpr1.onFalse = follow
             t->kids[2]->onTrue = t->onTrue;  //  EqExpr.onTrue = AndExpr.onTrue;
             t->kids[2]->onTrueFlag = true;
             t->kids[2]->onFalse = t->onFalse;  // EqExpr.onFalse = AndExpr.onFalse;
@@ -567,11 +567,10 @@ void codegen(struct tree *t)
                 exit(1);
           }
           break;
-     }
-     case 1086:
+     } 
      case 1087:
-     case 1088:
-     case 1089: // equality    
+     case 1088: // disjunction || conjunction
+     case 1089:
      case 1090: // comparison
      case 1091: // genericCallLikeComparison
      case 1092: // elvisExpression
@@ -593,6 +592,18 @@ void codegen(struct tree *t)
           }
           break;
      }
+     
+    //  case 1087:
+    //  case 1088:
+    // //  case 1089: // equality    
+
+    //  {
+    //     if (t->nkids == 3) {
+    //         t->icode = concat(t->kids[0]->icode, gen(D_LABEL, *t->kids[2]->first, (struct addr){R_NONE}, (struct addr){R_NONE}));
+    //         t->icode = concat(t->icode, t->kids[2]->icode);
+    //     }
+    //     break;
+    //  }
      /*
       * ... really, a bazillion cases, up to one for each
       * production rule (in the worst case)

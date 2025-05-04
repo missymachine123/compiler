@@ -30,6 +30,40 @@ struct instr {
    struct instr *next;
 };
 /* Opcodes, per lecture notes */
+/*
+ * Operation Codes (O_*)
+ * ---------------------
+ * O_ADD   : Addition operation.
+ * O_SUB   : Subtraction operation.
+ * O_MUL   : Multiplication operation.
+ * O_DIV   : Division operation.
+ * O_NEG   : Negation operation (unary minus).
+ * O_ASN   : Assignment operation.
+ * O_ADDR  : Address-of operation.
+ * O_LCONT : Load content (dereference).
+ * O_SCONT : Store content (dereference assignment).
+ * O_GOTO  : Unconditional jump.
+ * O_BLT   : Branch if less than.
+ * O_BLE   : Branch if less than or equal.
+ * O_BGT   : Branch if greater than.
+ * O_BGE   : Branch if greater than or equal.
+ * O_BEQ   : Branch if equal.
+ * O_BNE   : Branch if not equal.
+ * O_BIF   : Branch if condition is true.
+ * O_BNIF  : Branch if condition is false.
+ * O_PARM  : Pass parameter to a function.
+ * O_CALL  : Function call.
+ * O_RET   : Return from function.
+ *
+ * Declaration/Pseudo Instruction Codes (D_*)
+ * -------------------------------------------
+ * D_GLOB  : Global variable declaration.
+ * D_PROC  : Procedure (function) declaration.
+ * D_LOCAL : Local variable declaration.
+ * D_LABEL : Label declaration.
+ * D_END   : End of procedure or program.
+ * D_PROT  : Prototype declaration.
+ */
 #define O_ADD   3001
 #define O_SUB   3002
 #define O_MUL   3003

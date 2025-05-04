@@ -1995,40 +1995,7 @@ void assign_address(struct tree *t)
             break;
         }
 
-        case 1043: /* Assignment */
-            if (t->kids[0]->kids[0]->kids[0] != NULL && t->kids[0]->kids[0]->kids[0]->leaf != NULL) {
-                struct token *var_token = t->kids[0]->kids[0]->kids[0]->leaf;
-                if (var_token->category == 407) { // Check if it's a variable
-                    SymbolTableEntry ste = lookup_st(current, var_token->text);
-                    if (ste != NULL) {
-                        
-                        // t->kids[0]->kids[0]->address = ste->address; // Create a new address for the variable
-                        t->kids[0]->kids[0]->kids[0]->address = ste->address; // Assign a local address
-                        t->kids[0]->address = ste->address; // Assign the address from the symbol table entry
-                    } else {
-                        fprintf(stderr, "Error: Variable '%s' not found in symbol table.\n", var_token->text);
-                        exit(3);
-                    }
-                }
-                if (t->kids[1] != NULL) {
-                    struct tree *value = NULL;
-                    int array[7] = {385, 392, 383, 384, 386, 391, 407};
-                    for (int i = 0; i < 7; i++) {
-                        value = find_leaf(t->kids[1], array[i]);
-                        if (value != NULL) {
-                            if (array[i] == 407) {
-                                SymbolTableEntry ste = lookup_st(current, value->leaf->text);
-                                t->kids[1]->address = ste->address;
-                            } else {
-                                t->kids[1]->address = genvar(R_CONST);
-                                t->kids[1]->address->u.offset = atoi(value->leaf->text);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-            }
+        
             
         case 385:   /* Integer literal */
 
@@ -2060,22 +2027,16 @@ void assign_address(struct tree *t)
     switch (t->prodrule) {
         case 1086: case 1087: case 1088: case 1089: /* Binary operations */
         case 1090: case 1091: case 1092: case 1093: 
-        case 1094: case 1095:
-        if (t->prodrule == 1095 && t->nkids == 1) {
-            if (t->kids[0] != NULL && t->kids[0]->kids[0] != NULL && t->kids[0]->kids[0]->kids[0] != NULL) {
-                if (t->kids[0]->kids[0]->kids[0]->prodrule == 1066) {
-                    t->address = t->kids[0]->kids[0]->kids[0]->kids[1]->address; // Assign the address from the child
-                }
-            }
-        }
+        case 1094: case 1095: 
         if (t->nkids == 1) {
             // Synthesize the address from the child
             if (t->kids[0]->address && t->address == NULL) {
             t->address = t->kids[0]->address;
-            
+
             }
         } else if (t->nkids == 3) {
             // Assign a new R_LOCAL address
+            printf("%s have three children, and id of %d\n", t->symbolname, t->id);
             if (!t->address) t->address = genvar(R_LOCAL);
 
             SymbolTableEntry se1 = NULL;
@@ -2083,12 +2044,19 @@ void assign_address(struct tree *t)
             struct tree *value = NULL;
             struct tree *value2 = NULL;
 
-            int array[7] = {385, 392, 383, 384, 386, 391, 407};  // Array of categories to check
+            if (find_node_by_prodrule(t->kids[0],1066)){
+                struct tree *parenthesis = find_node_by_prodrule(t->kids[0],1066);
+                t->kids[0]->address = parenthesis->kids[1]->address; // Assign the address from the child
+                assign_address(t->kids[0]);
+            }
+
+            int array[7] = { 407,385, 392, 383, 384, 386, 391};  // Array of categories to check
             for (int i = 0; i < 7; i++) {
             value = find_leaf(t->kids[0], array[i]);  // Find a matching leaf in the left child
             if (value != NULL) {
                 if (array[i] == 407) {  // If it's a variable
                 se1 = lookup_st(current, value->leaf->text);  // Lookup the symbol table entry
+                value->address = se1->address;  // Assign the address from the symbol table
                 if (!t->kids[0]->address) {  // Check if address already exists
                     t->kids[0]->address = se1->address;  // Assign the address from the symbol table
                 }
@@ -2099,14 +2067,19 @@ void assign_address(struct tree *t)
                 }
                 }
             }
-
+            if (find_node_by_prodrule(t->kids[2],1066)){
+                struct tree *parenthesis = find_node_by_prodrule(t->kids[2],1066);
+                t->kids[2]->address = parenthesis->kids[1]->address; // Assign the address from the child
+                 assign_address(t->kids[2]);
+            }
             value2 = find_leaf(t->kids[2], array[i]);  // Find a matching leaf in the right child
             if (value2 != NULL) {
                 if (array[i] == 407) {  // If it's a variable
-                se2 = lookup_st(current, value2->leaf->text);  // Lookup the symbol table entry
-                if (!t->kids[2]->address) {  // Check if address already exists
-                    t->kids[2]->address = se2->address;  // Assign the address from the symbol table
-                }
+                    se2 = lookup_st(current, value2->leaf->text);  // Lookup the symbol table entry
+                    value2->address = se2->address;  // Assign the address from the symbol table
+                    if (!t->kids[2]->address) {  // Check if address already exists
+                        t->kids[2]->address = se2->address;  // Assign the address from the symbol table
+                    }
                 } else {  // If it's a constant
                 if (!t->kids[2]->address) {  // Check if address already exists
                     t->kids[2]->address = genvar(R_CONST);  // Generate a constant address
@@ -2119,17 +2092,52 @@ void assign_address(struct tree *t)
         }
         break; 
 
-        
-            
         case 1043: /* Assignment */
-            if (t->kids[0]->address) {
-                /* Propagate LHS address to RHS */
-                t->address = t->kids[0]->address;
-                if (!t->kids[1]->address) {
-                    t->kids[1]->address = t->address;
+            if (t->kids[0]->kids[0]->kids[0] != NULL && t->kids[0]->kids[0]->kids[0]->leaf != NULL) {
+                struct token *var_token = t->kids[0]->kids[0]->kids[0]->leaf;
+                if (var_token->category == 407) { // Check if it's a variable
+                    SymbolTableEntry ste = lookup_st(current, var_token->text);
+                    if (ste != NULL) {
+                        
+                        // t->kids[0]->kids[0]->address = ste->address; // Create a new address for the variable
+                        t->kids[0]->kids[0]->kids[0]->address = ste->address; // Assign a local address
+                        t->kids[0]->address = ste->address; // Assign the address from the symbol table entry
+                    } else {
+                        fprintf(stderr, "Error: Variable '%s' not found in symbol table.\n", var_token->text);
+                        exit(3);
+                    }
                 }
+                if (t->kids[1] != NULL && t->kids[1]->address == NULL) {
+                    
+                    struct tree *value = NULL;
+                    int array[7] = {385, 392, 383, 384, 386, 391, 407};
+                    for (int i = 0; i < 7; i++) {
+                        value = find_leaf(t->kids[1], array[i]);
+                        if (value != NULL) {
+                            if (array[i] == 407) {
+                                SymbolTableEntry ste = lookup_st(current, value->leaf->text);
+                                t->kids[1]->address = ste->address;
+                            } else {
+                                t->kids[1]->address = genvar(R_CONST);
+                                t->kids[1]->address->u.offset = atoi(value->leaf->text);
+                            }
+                            break;
+                        }
+                    }
+                }
+
             }
             break;
+            
+        // case 1043: /* Assignment */
+        //     if (t->kids[0]->address) {
+        //         /* Propagate LHS address to RHS */
+        //         t->address = t->kids[0]->address;
+        //         if (!t->kids[1]->address) {
+        //             t->kids[1]->address = t->address;
+        //         }
+        //     }
+        //     break;
             
         case 1004: /* End function scope */
             if (current) popscope();
@@ -2277,8 +2285,8 @@ void collect_globals_and_functions() {
             collect_globals_and_functions();
             print_tcode(filename,global_entries);
             
-            print_tree_flags(root);
-            // print_tree_with_addresses(root,0); // Print the tree with addresses
+            // print_tree_flags(root);
+            print_tree_with_addresses(root,0); // Print the tree with addresses
 
             
             printf("No errors.\n");
