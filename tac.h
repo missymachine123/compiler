@@ -4,13 +4,25 @@
 #ifndef TAC_H
 #define TAC_H
 
+#define MAX_STRINGS 100
+#define ALIGNMENT 8
+
 struct addr {
   int region;
   union {
   int offset;
   char *name;
+  float dval;
   } u;
 };
+
+struct string_table{
+  char *strings[MAX_STRINGS];
+  int offsets[MAX_STRINGS];
+  int count;
+  int total_bytes;
+};
+
 struct entry_list{
   char *name; 
   struct entry_list *next;
@@ -22,7 +34,10 @@ struct entry_list{
 #define R_LABEL  2004 /* pseudo-region for labels in the code region */
 #define R_CONST  2005 /* pseudo-region for immediate mode constants */
 #define R_NAME   2006 /* pseudo-region for source names */
-#define R_NONE   2007 /* pseudo-region for unused addresses */
+#define R_FLOAT 2007 /* pseudo-region for function load addresses */
+#define R_STRING   2008 /* pseudo-region for strings*/
+
+#define R_NONE   2009 /* pseudo-region for unused addresses */
 
 struct instr {
    int opcode;
@@ -101,5 +116,5 @@ char *pseudoname(int i);
 struct addr *genlabel();
 struct addr *genvar(int region);
 void printcode(struct instr *L);
-void print_tcode(const char *filename, struct entry_list *global_entries);
+void print_tcode(const char *filename, struct entry_list *global_entries, struct string_table *table);
  #endif

@@ -38,6 +38,7 @@ int labelcounter;
 int local_offset;
 int global_offset;
 int temp_offset;
+int str_offset;
 
 /**
  * @brief Generates a new label address.
@@ -96,6 +97,12 @@ struct addr *genvar(int region) {
        case R_CONST:
            //a->u.offset = temp_offset++;
            break;
+        case R_STRING:
+              a->u.offset = str_offset;
+              str_offset += 8; // Assume 8 bytes for string
+              break;
+       case R_FLOAT:
+            break;
        default:
            fprintf(stderr, "Unknown region\n");
            free(a);
@@ -122,7 +129,8 @@ void assign_first(struct tree *t)
       case 1087:        
       case 1088:
       case 1089: //equality operations
-      case 1074: 
+      case 1074:
+      case 1015: //statements:  optional_statement_sequence
          t->first = genlabel();
          t->firstflag = true;
          break; 
@@ -136,16 +144,32 @@ void assign_follow(struct tree *t) {
     int i;
     
     switch(t->prodrule) { 
-        
+        case 1012: 
+            if (t->kids[1]->follow != NULL){
+                t->kids[1]->follow = genlabel();
+            }
+            break;
         case 1014: // statement sequence
+            t->follow = genlabel();
             if (t->kids[1]) {
                 t->kids[0]->follow = t->kids[1]->kids[2]->first;  
                 t->kids[0]->followFlag = true;
+                t->kids[1]->follow = t->follow; // Set follow for the second child
+                t->kids[1]->followFlag = true;
+                t->kids[1]->kids[2]->follow = t->follow; // Set follow for the second child's first child
+                t->kids[1]->kids[2]->followFlag = true;
             } else {
                 t->kids[0]->follow = t->follow;
                 t->kids[0]->followFlag = true;
             }
             break;
+        case 1015:
+            t->follow = genlabel();
+            if (t->kids[0]) { 
+                t->kids[0]->follow = t->follow;
+            }
+            break;
+            
             
         case 1067: { // If Expression
             if (t->kids[4] != NULL) {
@@ -164,6 +188,8 @@ void assign_follow(struct tree *t) {
                 t->kids[4]->follow = t->kids[2]->first;
                 t->kids[4]->followFlag = true;
             }
+            printf("Follow information:\n");
+            printf("Node: %p, Follow: %p, FollowFlag: %d\n", t, t->follow, t->followFlag);
             break;
         }
             
@@ -348,9 +374,13 @@ struct instr *concat(struct instr *l1, struct instr *l2)
 
 void print_addr(struct addr a) {
    switch (a.region) {
+       case R_NAME:   printf("%s", a.u.name); break;
        case R_GLOBAL: printf("global:%d", a.u.offset); break;
        case R_LOCAL:  printf("loc:%d", a.u.offset); break;
        case R_CONST:  printf("const:%d", a.u.offset); break;
+       case R_FLOAT:  printf("float:%f", a.u.dval); break;
+       case R_STRING:  printf("str:%d", a.u.offset); break;
+
        case R_LABEL:  printf("%d", a.u.offset); break;
        default:       printf("?(%d)", a.u.offset); break;
    }
@@ -446,10 +476,22 @@ void add_to_tcode(struct instr *new_instr) {
         tcode_tail = new_instr;
     }
 }
-void print_tcode(const char *filename, struct entry_list *global_entries) {
+void print_tcode(const char *filename, struct entry_list *global_entries, struct string_table *table) {
     printf(".file\t\"%s\"\n", filename); // Print the file name at the beginning
 
-    printf(".string\n");
+    if (table != NULL) {
+        //fprintf(stderr, "Error: String table is NULL.\n");
+        //return;
+        printf(".string %d\n", table->total_bytes);
+        for (int i = 0; i < table->count; i++) {
+            // Optionally escape % signs for printf-style
+            printf("\t");
+            for (char *p = table->strings[i]; *p; p++) {
+                putchar(*p);
+            }
+            printf("\\000\n");
+        }
+    }
     struct instr *current = tcode_head;
     while (current != NULL) {
         if (current->dest.region == R_CONST) {
@@ -461,10 +503,10 @@ void print_tcode(const char *filename, struct entry_list *global_entries) {
     // Ensure global_entries is defined and initialized before use
     if (global_entries != NULL) {
         // Print global entries in a single line
-        printf(".data");
+        printf(".data\n");
         struct entry_list *entry = global_entries;
         while (entry != NULL) {
-            printf(" %s", entry->name);
+            printf("\t%s", entry->name);
             entry = entry->next;
         }
         printf("\n");
@@ -472,9 +514,13 @@ void print_tcode(const char *filename, struct entry_list *global_entries) {
         printf(".data\n");
     }
 
+
     printf(".code\n");
     current = tcode_head;
     while (current != NULL) {
+        if (current->dest.region != R_NAME) {
+            printf("\t");
+           }
         printf("%s ", opcode_to_string(current->opcode));
         if (current->dest.region != R_NONE) {
             print_addr(current->dest);
@@ -491,12 +537,66 @@ void print_tcode(const char *filename, struct entry_list *global_entries) {
         current = current->next;
     }
 }
+void initStringTable(struct string_table *table) {
+    table->count = 0;
+    table->total_bytes = 0;
+  }
+  
+int addString(struct string_table *table, const char *s) {
+    for (int i = 0; i < table->count; i++) {
+        if (strcmp(table->strings[i], s) == 0) {
+            return table->offsets[i];
+        }
+    }
+
+    // Allocate and store the new string
+    table->strings[table->count] = strdup(s);
+    table->offsets[table->count] = table->total_bytes;
+
+    // Update total size (align to 8 bytes)
+    int len = strlen(s) + 1; // include null terminator
+    int aligned_len = ((len + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT;
+    table->total_bytes += aligned_len;
+
+    return table->offsets[table->count++];
+}
+
+void print_child_icode(struct tree *t) {
+    if (t == NULL) {
+        printf("Node is NULL.\n");
+        return;
+    }
+
+    printf("Printing child icode for node with id %d :\n", t->id);
+    for (int i = 0; i < t->nkids; i++) {
+        if (t->kids[i] != NULL) {
+            printf("Child %d:\n", i);
+            if (t->kids[i]->icode != NULL) {
+                printcode(t->kids[i]->icode); // Use printcode to display the instruction list
+            } else {
+                printf("Child %d has no icode.\n", i);
+            }
+            print_child_icode(t->kids[i]); // Recursively go down all the way
+        } else {
+            printf("Child %d is NULL.\n", i);
+        }
+    }
+}
 
 void codegen(struct tree *t)
 {
     int i, j;
     int opcode_operator;
     if (t == NULL) return;
+    if (t->prodrule == 1004){
+        for (i = 0; i < t->nkids; i++) {
+            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
+               char *function_name = t->kids[i]->leaf->text;
+               struct instr *function = gen(D_PROC, *t->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+               add_to_tcode(function);
+            }
+         }   
+    }
 
     /*
      * this is a post-order traversal, so visit children first
@@ -510,7 +610,31 @@ void codegen(struct tree *t)
      * another, is assign t->code
      */
     switch (t->prodrule) {
-          // Assignment : IDENT '=' AddExpr
+    case 1011: //functionBody
+        if (t->nkids == 1) { // block : { statements }
+            t->icode = concat(t->kids[0]->kids[1]->icode, gen(D_LABEL, *t->kids[0]->kids[1]->follow, (struct addr){R_NONE}, (struct addr){R_NONE}));
+            // add_to_tcode(t->icode);
+            t->icode = concat(t->icode, gen(O_RET, (struct addr){R_NONE}, (struct addr){R_NONE}, (struct addr){R_NONE}));
+            // add_to_tcode(t->icode);
+        }
+        break;
+
+    case 1015:
+        if (t->kids[0] == NULL){
+        // StatementList.icode = gen(LABEL, StatementList.first) || gen(NOOP)
+        t->icode = gen(D_LABEL, *t->first, 
+            (struct addr){R_NONE}, 
+            (struct addr){R_NONE});
+            // add_to_tcode(t->icode);
+        t->icode = concat(t->icode, 
+            gen(R_NONE, (struct addr){R_NONE}, 
+                (struct addr){R_NONE}, 
+                (struct addr){R_NONE}));        }
+    case 1014:
+        if (t->kids[1] != NULL) { // statement sequence
+            t->icode = concat(t->kids[0]->icode,t->kids[1]->kids[2]->icode);
+        }
+        break;
      case 1028: // property declaration
           if (t->kids[3] && t->kids[3]->prodrule == 1027) {
                 struct tree *id = t->kids[3];
@@ -539,6 +663,7 @@ void codegen(struct tree *t)
                 struct instr *assign = gen(O_ASN, *t->address, *t->kids[1]->address, (struct addr){R_NONE});
                 t->icode = concat(t->kids[1]->icode, assign);
                 add_to_tcode(assign);
+                
           } else if (strcmp(operator, "+=") == 0 || strcmp(operator, "-=") == 0 ||
                          strcmp(operator, "*=") == 0 || strcmp(operator, "/=") == 0) {
                 // Compound assignment (+=, -=, *=, /=)
@@ -568,30 +693,90 @@ void codegen(struct tree *t)
           }
           break;
      } 
-     case 1087:
-     case 1088: // disjunction || conjunction
-     case 1089:
-     case 1090: // comparison
-     case 1091: // genericCallLikeComparison
-     case 1092: // elvisExpression
-     case 1093: // rangeExpression
-     case 1094: // additiveExpression  
-     case 1095: // multiplicativeExpression 
-     {
-          if (t->nkids == 3) {
-                // Ensure t->address is initialized
-                if (t->address == NULL) {
-                     t->address = genvar(R_LOCAL); // Generate a temporary variable
-                }
-                t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
-                struct instr *g;
-                opcode_operator = operator_to_opcode(t->kids[1]->leaf->text);
-                g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
-                t->icode = concat(t->icode, g);
-                add_to_tcode(g);
-          }
-          break;
+     case 1086:
+    case 1087:
+    case 1088: // disjunction || conjunction
+    case 1089:
+    case 1090: // comparison
+    case 1091: // genericCallLikeComparison
+    case 1092: // elvisExpression
+    case 1093: // rangeExpression
+    case 1094: // additiveExpression  
+    case 1095: // multiplicativeExpression 
+    {
+        if (t->nkids == 3) {
+
+             // Ensure t->address is initialized
+             if (t->address == NULL) {
+                 t->address = genvar(R_LOCAL); // Generate a temporary variable
+             }
+             t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
+             struct instr *g;
+             opcode_operator = operator_to_opcode(t->kids[1]->leaf->text);
+             g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
+             t->icode = concat(t->icode, g);
+             add_to_tcode(g);
+        } else if (t->nkids == 1) {
+             // Synthesize the single child's code and address
+             if (t->kids[0]->icode != NULL) {
+                 t->icode = t->kids[0]->icode; 
+             }
+             }                
+
+        
+        break;
+    }
+     case 2020: {
+         // Generate the start label for the loop
+         struct instr *start_label = gen(D_LABEL, *t->first, 
+                                         (struct addr){R_NONE}, 
+                                         (struct addr){R_NONE});
+
+         // Generate the condition code (expression)
+         struct instr *cond_code = t->kids[2]->icode;
+
+         // Generate the true label for the loop body
+         struct instr *true_label = gen(D_LABEL, *t->kids[2]->onTrue, 
+                                        (struct addr){R_NONE}, 
+                                        (struct addr){R_NONE});
+
+         // Generate the body code
+         struct instr *body_code = t->kids[4]->icode;
+
+         // Generate the follow label for the loop exit
+         struct instr *follow_label = gen(D_LABEL, *t->follow, 
+                                          (struct addr){R_NONE}, 
+                                          (struct addr){R_NONE});
+
+         // Generate the jump back to the start of the loop
+         struct instr *loop_jump = gen(O_GOTO, *t->first, 
+                                       (struct addr){R_NONE}, 
+                                       (struct addr){R_NONE});
+
+         // Combine all parts
+         t->icode = start_label;
+         add_to_tcode(start_label);
+
+         t->icode = concat(t->icode, cond_code);
+
+         struct instr *on_false_jump = gen(O_BNIF, *t->kids[2]->onFalse, 
+                                           (struct addr){R_NONE}, 
+                                           (struct addr){R_NONE});
+         t->icode = concat(t->icode, on_false_jump);
+         add_to_tcode(on_false_jump);
+
+         t->icode = concat(t->icode, true_label);
+         add_to_tcode(true_label);
+
+         t->icode = concat(t->icode, body_code);
+
+         t->icode = concat(t->icode, loop_jump);
+         add_to_tcode(loop_jump);
+
+         t->icode = concat(t->icode, follow_label);
+         add_to_tcode(follow_label);
      }
+
      
     //  case 1087:
     //  case 1088:

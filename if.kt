@@ -1,8 +1,8 @@
-
 fun main() {
-    var i : Int = 5;
-    var j : Int = i + i;
-    var k : Int = j + j * i;
-    j = k / j;
-    i = k / (j + 1);
-  }
+   var i : Int = 5;
+   i = i * i + 1;
+   var b : String = "string"
+   b = "hi"
+   println("Variable i is $i.");
+   println("hello!");
+}
