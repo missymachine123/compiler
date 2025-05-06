@@ -90,10 +90,7 @@ struct addr *genvar(int region) {
        // case R_PARAM:
        //     a->u.offset = param_offset;
        //     param_offset += 8;
-       //     break;
-       // case R_LABEL:
-       //     a->u.offset = label_counter++;
-       //     break;
+       //     break; 
        case R_CONST:
            //a->u.offset = temp_offset++;
            break;
@@ -148,6 +145,16 @@ void assign_follow(struct tree *t) {
             if (t->kids[1]->follow != NULL){
                 t->kids[1]->follow = genlabel();
             }
+            else if(t->kids[1] == NULL) {
+                t->first = genlabel(); // Set follow for the first child
+            }
+            break;
+        case 1013:
+        
+            t->kids[2]->follow = t->follow;
+            // if (t->kids[2] != NULL) {
+            //     t->kids[0]->follow = t->kids[2]->first; // Set follow for the first child
+            // } 
             break;
         case 1014: // statement sequence
             t->follow = genlabel();
@@ -270,6 +277,14 @@ void assign_follow(struct tree *t) {
         case 2020: { // While Statement
             t->kids[2]->onTrue = t->kids[4]->kids[0]->first;  // condition true: enter body
             t->kids[2]->onTrueFlag = true;
+            struct tree *current = t->kids[2];
+            while (current != NULL && current->nkids != 3) {
+                current = current->kids[0]; // Traverse down the left child
+
+            if (current != NULL) {
+                current->onTrue = t->kids[4]->kids[0]->first;  // Set onTrue to the loop body
+                current->onTrueFlag = true;
+            }}
             t->kids[2]->onFalse = t->follow;        // condition false: exit loop
             t->kids[2]->onFalseFlag = true;
             break;
@@ -353,6 +368,36 @@ struct instr *copylist(struct instr *l)
    lcopy->next = copylist(l->next);
    return lcopy;
 }
+/**
+ * @brief Creates a copy of a single instruction.
+ *
+ * This function takes a single instruction and creates a new instruction
+ * that is a copy of the original. The fields of the new instruction are
+ * initialized to match the original instruction, and the `next` pointer
+ * is set to NULL.
+ *
+ * @param instr The instruction to be copied.
+ * @return A pointer to the newly created instruction.
+ */
+struct instr *copyinstr(struct instr *instr) {
+    if (instr == NULL) return NULL;
+
+    // Allocate memory for the new instruction
+    struct instr *copy = malloc(sizeof(struct instr));
+    if (copy == NULL) {
+        fprintf(stderr, "out of memory\n");
+        exit(4);
+    }
+
+    // Copy the fields from the original instruction
+    copy->opcode = instr->opcode;
+    copy->dest = instr->dest;
+    copy->src1 = instr->src1;
+    copy->src2 = instr->src2;
+    copy->next = NULL; // Ensure the next pointer is NULL
+
+    return copy;
+}
 
 // Appends two instruction lists together.
 // If the first list (l1) is NULL, it simply returns the second list (l2).
@@ -419,8 +464,7 @@ const char *opcode_to_string(int opcode) {
 }
 
 void printcode(struct instr *L) {
-    struct instr *p = L;
-    while (p != NULL) {
+    struct instr *p = L; 
          printf("%s ", opcode_to_string(p->opcode));
          if (p->dest.region != R_NONE) {
               print_addr(p->dest);
@@ -434,9 +478,8 @@ void printcode(struct instr *L) {
               print_addr(p->src2);
          }
          printf("\n");
-
-         p = p->next;
-    }
+ 
+    
 }
 
 int operator_to_opcode(char *op) {
@@ -466,14 +509,47 @@ struct instr *tcode_head = NULL;
 struct instr *tcode_tail = NULL;
 
 void add_to_tcode(struct instr *new_instr) {
+    if (new_instr == NULL) {
+        fprintf(stderr, "Error: Attempted to add a NULL instruction to tcode.\n");
+        return;
+    }
     if (tcode_head == NULL) {
         // If the list is empty, initialize head and tail
         tcode_head = new_instr;
         tcode_tail = new_instr;
     } else {
-        // Append the new instruction to the tail
+        // If new_instr contains multiple instructions, traverse to its tail
+        struct instr *current = new_instr;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        // Append the new instructions to the tail of tcode
         tcode_tail->next = new_instr;
-        tcode_tail = new_instr;
+        tcode_tail = current;
+    }
+}
+void print_icode(struct instr *icode) {
+    if (icode == NULL) {
+        printf("No intermediate code to print.\n");
+        return;
+    }
+ 
+    struct instr *current = icode;
+    while (current != NULL) {
+        printf("%s ", opcode_to_string(current->opcode));
+        if (current->dest.region != R_NONE) {
+            print_addr(current->dest);
+        }
+        if (current->src1.region != R_NONE) {
+            printf(", ");
+            print_addr(current->src1);
+        }
+        if (current->src2.region != R_NONE) {
+            printf(", ");
+            print_addr(current->src2);
+        }
+        printf("\n");
+        current = current->next;
     }
 }
 void print_tcode(const char *filename, struct entry_list *global_entries, struct string_table *table) {
@@ -518,9 +594,9 @@ void print_tcode(const char *filename, struct entry_list *global_entries, struct
     printf(".code\n");
     current = tcode_head;
     while (current != NULL) {
-        if (current->dest.region != R_NAME) {
+        if (current->dest.region != R_NAME && current->dest.region != R_LABEL) {
             printf("\t");
-           }
+        }
         printf("%s ", opcode_to_string(current->opcode));
         if (current->dest.region != R_NONE) {
             print_addr(current->dest);
@@ -588,16 +664,23 @@ void codegen(struct tree *t)
     int i, j;
     int opcode_operator;
     if (t == NULL) return;
-    if (t->prodrule == 1004){
-        for (i = 0; i < t->nkids; i++) {
-            if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
-               char *function_name = t->kids[i]->leaf->text;
-               struct instr *function = gen(D_PROC, *t->address, (struct addr){R_NONE}, (struct addr){R_NONE});
-               add_to_tcode(function);
+    switch (t->prodrule) {
+        case 1004: {
+            for (i = 0; i < t->nkids; i++) {
+                if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
+                    char *function_name = t->kids[i]->leaf->text;
+                    struct instr *function = gen(D_PROC, *t->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+                    add_to_tcode(function);
+                }
             }
-         }   
+            break;
+        }
+        case 2020:
+        t->kids[2]->onTrue = genlabel();
+        
+        break;
+    
     }
-
     /*
      * this is a post-order traversal, so visit children first
      */
@@ -618,6 +701,48 @@ void codegen(struct tree *t)
             // add_to_tcode(t->icode);
         }
         break;
+    
+        case 1043: { // Assignment with operators like =, +=, -=, *=, /=
+            t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
+    
+            // Determine the operator
+            char *operator = t->kids[0]->kids[1]->leaf->text;
+    
+            if (strcmp(operator, "=") == 0) {
+                  // Simple assignment
+                  struct instr *assign = gen(O_ASN, *t->address, *t->kids[1]->address, (struct addr){R_NONE});
+                  t->icode = concat(t->kids[1]->icode, assign);
+                  add_to_tcode(assign);
+                  
+            } else if (strcmp(operator, "+=") == 0 || strcmp(operator, "-=") == 0 ||
+                           strcmp(operator, "*=") == 0 || strcmp(operator, "/=") == 0) {
+                  // Compound assignment (+=, -=, *=, /=)
+                  int opcode_operator;
+                  if (strcmp(operator, "+=") == 0) opcode_operator = O_ADD;
+                  else if (strcmp(operator, "-=") == 0) opcode_operator = O_SUB;
+                  else if (strcmp(operator, "*=") == 0) opcode_operator = O_MUL;
+                  else if (strcmp(operator, "/=") == 0) opcode_operator = O_DIV;
+    
+                  // Generate a temporary variable to store the result
+                  struct addr *temp = genvar(R_LOCAL);
+    
+                  // Generate the computation instruction
+                  struct instr *compute = gen(opcode_operator, *temp, *t->address, *t->kids[1]->address);
+                  add_to_tcode(compute);
+    
+                  // Generate the assignment instruction
+                  struct instr *assign = gen(O_ASN, *t->address, *temp, (struct addr){R_NONE});
+                  add_to_tcode(assign);
+    
+                  // Concatenate the instructions
+                  t->icode = concat(t->kids[1]->icode, compute);
+                  t->icode = concat(t->icode, assign);
+            } else {
+                  fprintf(stderr, "Unsupported operator: %s\n", operator);
+                  exit(1);
+            }
+            break;
+       } 
 
     case 1015:
         if (t->kids[0] == NULL){
@@ -652,52 +777,11 @@ void codegen(struct tree *t)
             
           }
           break;
-     case 1043: { // Assignment with operators like =, +=, -=, *=, /=
-          t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
-
-          // Determine the operator
-          char *operator = t->kids[0]->kids[1]->leaf->text;
-
-          if (strcmp(operator, "=") == 0) {
-                // Simple assignment
-                struct instr *assign = gen(O_ASN, *t->address, *t->kids[1]->address, (struct addr){R_NONE});
-                t->icode = concat(t->kids[1]->icode, assign);
-                add_to_tcode(assign);
-                
-          } else if (strcmp(operator, "+=") == 0 || strcmp(operator, "-=") == 0 ||
-                         strcmp(operator, "*=") == 0 || strcmp(operator, "/=") == 0) {
-                // Compound assignment (+=, -=, *=, /=)
-                int opcode_operator;
-                if (strcmp(operator, "+=") == 0) opcode_operator = O_ADD;
-                else if (strcmp(operator, "-=") == 0) opcode_operator = O_SUB;
-                else if (strcmp(operator, "*=") == 0) opcode_operator = O_MUL;
-                else if (strcmp(operator, "/=") == 0) opcode_operator = O_DIV;
-
-                // Generate a temporary variable to store the result
-                struct addr *temp = genvar(R_LOCAL);
-
-                // Generate the computation instruction
-                struct instr *compute = gen(opcode_operator, *temp, *t->address, *t->kids[1]->address);
-                add_to_tcode(compute);
-
-                // Generate the assignment instruction
-                struct instr *assign = gen(O_ASN, *t->address, *temp, (struct addr){R_NONE});
-                add_to_tcode(assign);
-
-                // Concatenate the instructions
-                t->icode = concat(t->kids[1]->icode, compute);
-                t->icode = concat(t->icode, assign);
-          } else {
-                fprintf(stderr, "Unsupported operator: %s\n", operator);
-                exit(1);
-          }
-          break;
-     } 
+     
      case 1086:
     case 1087:
     case 1088: // disjunction || conjunction
     case 1089:
-    case 1090: // comparison
     case 1091: // genericCallLikeComparison
     case 1092: // elvisExpression
     case 1093: // rangeExpression
@@ -705,6 +789,7 @@ void codegen(struct tree *t)
     case 1095: // multiplicativeExpression 
     {
         if (t->nkids == 3) {
+            
 
              // Ensure t->address is initialized
              if (t->address == NULL) {
@@ -726,30 +811,46 @@ void codegen(struct tree *t)
         
         break;
     }
-     case 2020: {
+
+    
+    case 1090: // comparison
+    if (t->nkids == 3) {
+        opcode_operator = operator_to_opcode(t->kids[1]->leaf->text);
+        t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
+        t->icode = concat(t->icode, gen(opcode_operator, *t->kids[0]->address, *t->kids[2]->address, *t->onTrue));
+        t->icode = concat(t->icode, gen(O_GOTO, *t->onFalse, (struct addr){R_NONE}, (struct addr){R_NONE}));
+    }
+    break;
+
+     case 2020: { //  WHILE LPAREN expression RPAREN control_structure_body_or_comma {$$ = alctree(2020, "whileLoop", 5, $1, $2, $3, $4, $5);}
+
          // Generate the start label for the loop
-         struct instr *start_label = gen(D_LABEL, *t->first, 
+         struct instr *start_label = gen(D_LABEL, *t->kids[2]->first, 
                                          (struct addr){R_NONE}, 
                                          (struct addr){R_NONE});
+            printf("print from start_label\n");
+            print_icode(start_label); // Print the start label for debugging
 
          // Generate the condition code (expression)
-         struct instr *cond_code = t->kids[2]->icode;
+         struct instr *cond_code = copyinstr(t->kids[2]->icode); //Expr.icode
+         printf("print from cond_code\n");
+         print_icode(cond_code); // Print the condition code for debugging
 
          // Generate the true label for the loop body
          struct instr *true_label = gen(D_LABEL, *t->kids[2]->onTrue, 
                                         (struct addr){R_NONE}, 
                                         (struct addr){R_NONE});
+        printf("print from tru_label\n");
+        print_icode(true_label); // Print the true label for debugging
 
          // Generate the body code
-         struct instr *body_code = t->kids[4]->icode;
-
-         // Generate the follow label for the loop exit
-         struct instr *follow_label = gen(D_LABEL, *t->follow, 
-                                          (struct addr){R_NONE}, 
-                                          (struct addr){R_NONE});
+         struct instr *body_code = t->kids[4]->kids[0]->icode;
+         printf("print from body_code\n");
+         print_icode(body_code); // Print the body code for debugging
+ 
 
          // Generate the jump back to the start of the loop
-         struct instr *loop_jump = gen(O_GOTO, *t->first, 
+         struct instr *loop_jump = gen(O_GOTO, *t->kids[2]->first, 
                                        (struct addr){R_NONE}, 
                                        (struct addr){R_NONE});
 
@@ -758,23 +859,17 @@ void codegen(struct tree *t)
          add_to_tcode(start_label);
 
          t->icode = concat(t->icode, cond_code);
-
-         struct instr *on_false_jump = gen(O_BNIF, *t->kids[2]->onFalse, 
-                                           (struct addr){R_NONE}, 
-                                           (struct addr){R_NONE});
-         t->icode = concat(t->icode, on_false_jump);
-         add_to_tcode(on_false_jump);
+         add_to_tcode(cond_code);
 
          t->icode = concat(t->icode, true_label);
          add_to_tcode(true_label);
 
          t->icode = concat(t->icode, body_code);
+         add_to_tcode(body_code);
 
          t->icode = concat(t->icode, loop_jump);
          add_to_tcode(loop_jump);
-
-         t->icode = concat(t->icode, follow_label);
-         add_to_tcode(follow_label);
+ 
      }
 
      

@@ -117,4 +117,4 @@ struct addr *genlabel();
 struct addr *genvar(int region);
 void printcode(struct instr *L);
 void print_tcode(const char *filename, struct entry_list *global_entries, struct string_table *table);
- #endif
+   #endif

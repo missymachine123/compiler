@@ -2218,7 +2218,7 @@ void print_tree_with_icode(struct tree *t, int depth) {
     // Print the intermediate code (icode) if available
     if (t->icode) {
         printf(" [ICODE: ");
-        printcode(t->icode); // Use printcode to print the intermediate code
+        print_icode(t->icode); // Use printcode to print the intermediate code
         printf("]");
     }
     printf("\n");
@@ -2269,6 +2269,34 @@ void print_tree_with_addresses(struct tree *t, int depth) {
         print_tree_with_addresses(t->kids[i], depth + 1);
     }
 } 
+void print_tree_with_onTrue_onFalse(struct tree *t, int depth) {
+    if (t == NULL) return;
+
+    // Indent based on depth
+    printf("%*s", depth * 2, " ");
+
+    // Print the current node's information
+    if (t->symbolname) {
+        printf("%s", t->symbolname);
+    } else if (t->leaf) {
+        printf("%s (%d)", t->leaf->text ? t->leaf->text : "NULL", t->leaf->category);
+    } else {
+        printf("Internal Node");
+    }
+
+    printf(" [ID: %d]", t->id);
+
+    // Print the onTrue and onFalse pointers if available
+    if (t->onTrue || t->onFalse) {
+        printf(" [onTrue: %p, onFalse: %p]", (void *)t->onTrue, (void *)t->onFalse);
+    }
+    printf("\n");
+
+    // Recursively print child nodes
+    for (int i = 0; i < t->nkids; i++) {
+        print_tree_with_onTrue_onFalse(t->kids[i], depth + 1);
+    }
+}
 
 struct entry_list *global_entries = NULL;
 
@@ -2401,9 +2429,9 @@ void collect_globals_and_functions() {
             print_tcode(filename,global_entries, &string_tbl);
             
             // print_tree_flags(root);
-            print_tree_with_addresses(root,0); // Print the tree with addresses
+            // print_tree_with_addresses(root,0); // Print the tree with addresses
             // print_tree_with_icode(root, 0); // Print the tree with intermediate code
-
+            print_tree_with_onTrue_onFalse(root, 0); // Print the tree with onTrue and onFalse pointers
             
             printf("No errors.\n");
         } else {
