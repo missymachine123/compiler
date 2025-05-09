@@ -425,7 +425,7 @@ void print_addr(struct addr a) {
        case R_CONST:  printf("const:%d", a.u.offset); break;
        case R_FLOAT:  printf("float:%f", a.u.dval); break;
        case R_STRING:  printf("str:%d", a.u.offset); break;
-
+       case R_PARAM:  printf("%d", a.u.offset); break;
        case R_LABEL:  printf("%d", a.u.offset); break;
        default:       printf("?(%d)", a.u.offset); break;
    }
@@ -594,7 +594,7 @@ void print_tcode(const char *filename, struct entry_list *global_entries, struct
     printf(".code\n");
     current = tcode_head;
     while (current != NULL) {
-        if (current->dest.region != R_NAME && current->dest.region != R_LABEL) {
+        if (current->opcode != D_PROC || (current->dest.region != R_NAME && current->dest.region != R_LABEL)) {
             printf("\t");
         }
         printf("%s ", opcode_to_string(current->opcode));
@@ -871,7 +871,19 @@ void codegen(struct tree *t)
          add_to_tcode(loop_jump);
  
      }
-
+     case 1068: //functionCall
+           // t->address = t->kids[0]->address;
+            struct instr *g;
+            if(t->kids[2] != NULL) {
+                
+                g = gen(O_PARM, *t->kids[2]->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+                t->icode = concat(t->icode, g);
+                add_to_tcode(g);
+            }
+            g = gen(O_CALL, *t->kids[0]->address, *t->kids[1]->address, *t->address );
+            t->icode = concat(t->icode, g);
+            add_to_tcode(g);
+          break;
      
     //  case 1087:
     //  case 1088:

@@ -36,6 +36,7 @@ struct entry_list{
 #define R_NAME   2006 /* pseudo-region for source names */
 #define R_FLOAT 2007 /* pseudo-region for function load addresses */
 #define R_STRING   2008 /* pseudo-region for strings*/
+#define R_PARAM 2009 /* pseudo-region for parameters */
 
 #define R_NONE   2009 /* pseudo-region for unused addresses */
 
@@ -117,4 +118,5 @@ struct addr *genlabel();
 struct addr *genvar(int region);
 void printcode(struct instr *L);
 void print_tcode(const char *filename, struct entry_list *global_entries, struct string_table *table);
+void print_icode(struct instr *icode);
    #endif

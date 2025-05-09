@@ -1726,7 +1726,7 @@ void typecheck(struct tree *n) {
             SymbolTableEntry function_entry = NULL;
             SymbolTable temp = current; // Use a temporary variable in case it doesn't exist in current scope
 
-                while (function_entry == NULL && temp != NULL) {
+                while (function_entry == NULL && temp->parent != NULL) {
                     temp = temp->parent; // Move to the parent scope
                     if (temp != NULL) {
                         function_entry = lookup_st(temp, function_name); // Check in the parent scope
@@ -1923,8 +1923,8 @@ void assign_address(struct tree *t)
            a->region = R_NAME;
            a->u.name = function_name;
            t->address = a;
-           printf("We allocated: %s\n", t->address->u.name);
-           printnode(t);
+           //printf("We allocated: %s\n", t->address->u.name);
+           //printnode(t);
 
            //printf("table:%s\n",current->name);
            break;
@@ -2182,7 +2182,54 @@ void assign_address(struct tree *t)
                 break;
             }
     
+            break;
+
+            case 1068: // Function call
+            char *function_name = t->kids[0]->leaf->text;
+            //function name
+            struct addr *a = malloc(sizeof(struct addr));
+            if (!a) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            a->region = R_NAME;
+            a->u.name = function_name;
+            t->kids[0]->address = a;
+            t->address = genvar(R_LOCAL); 
             
+            struct tree *val = NULL;
+            int nparams = 0; 
+            if(t->kids[2] != NULL) { // chech parameters
+                nparams = 1; 
+                int array[7] = { 407,385, 392, 383, 384, 386, 391};  // Array of categories to check
+                for (int i = 0; i < 7; i++) {
+                    val = find_leaf(t->kids[2], array[i]);
+                    if (val != NULL) {
+                    if(val->leaf->category == 392) {
+                        t->kids[2]->address = genvar(R_STRING);
+
+                    } else if (val->leaf->category == 407) {
+                        SymbolTableEntry se = lookup_st(current, val->leaf->text);  // Lookup the symbol table entry
+                        t->kids[2]->address = se->address;  // Assign the address from the symbol table
+                    } else if (t->kids[2]->kids[0]->address != NULL) {
+                        t->kids[2]->address = t->kids[2]->kids[0]->address; // adress if expression
+                        //t->kids[2]->address->u.offset = atoi(value->leaf->text);
+                    }
+                }
+                        
+                }
+            }
+            if(t->kids[2] != NULL) {
+            struct addr *a = malloc(sizeof(struct addr));
+            if (!a) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            a->region = R_PARAM;
+            a->u.offset = nparams;
+            t->kids[1]->address = a;
+            }
+            break;
         // case 1043: /* Assignment */
         //     if (t->kids[0]->address) {
         //         /* Propagate LHS address to RHS */
