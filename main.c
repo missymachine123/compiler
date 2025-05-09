@@ -1882,8 +1882,8 @@ void assign_addresses_in_scope(SymbolTable st){
         for (ste = st->tbl[i]; ste != NULL; ste = ste->next) {   
             
             if (ste->address == NULL) {
-                ste->address = genvar(R_LOCAL);
-            }
+                ste->address = genvar(R_LOCAL)
+        
             
         }
     }
