@@ -1882,11 +1882,7 @@ void assign_addresses_in_scope(SymbolTable st){
         for (ste = st->tbl[i]; ste != NULL; ste = ste->next) {   
             
             if (ste->address == NULL) {
-                ste->address = (struct addr *) malloc(sizeof(struct addr));
-             
-            //printf("setting address for %s\n", ste->s);
-                ste->address->region = R_LOCAL;
-                ste->address->u.offset = local_offset + 8;
+                ste->address = genvar(R_LOCAL);
             }
             
         }
