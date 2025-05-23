@@ -5,8 +5,7 @@
 #define TAC_H
 
 #define MAX_STRINGS 100
-#define ALIGNMENT 8
-
+#define ALIGNMENT 8 
 struct addr {
   int region;
   union {

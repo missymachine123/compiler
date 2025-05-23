@@ -373,7 +373,7 @@ postfixUnarySuffix:
   |indexingSuffix   {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
   |callSuffix  {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
   |navigationSuffix {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
-  | typeArguments {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
+  // | typeArguments {$$ = alctree(1053, "postfixUnarySuffix", 1, $1);}
 
   ;
   

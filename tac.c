@@ -175,7 +175,7 @@ void assign_follow(struct tree *t) {
             if (t->kids[0]) { 
                 t->kids[0]->follow = t->follow;
             }
-            break;
+            break; 
             
             
         case 1067: { // If Expression
@@ -675,10 +675,7 @@ void codegen(struct tree *t)
             }
             break;
         }
-        case 2020:
-        t->kids[2]->onTrue = genlabel();
-        
-        break;
+         
     
     }
     /*
@@ -693,14 +690,14 @@ void codegen(struct tree *t)
      * another, is assign t->code
      */
     switch (t->prodrule) {
-    case 1011: //functionBody
-        if (t->nkids == 1) { // block : { statements }
-            t->icode = concat(t->kids[0]->kids[1]->icode, gen(D_LABEL, *t->kids[0]->kids[1]->follow, (struct addr){R_NONE}, (struct addr){R_NONE}));
-            // add_to_tcode(t->icode);
-            t->icode = concat(t->icode, gen(O_RET, (struct addr){R_NONE}, (struct addr){R_NONE}, (struct addr){R_NONE}));
-            // add_to_tcode(t->icode);
-        }
-        break;
+        case 1011: //functionBody
+            if (t->nkids == 1) { // block : { statements }
+                t->icode = concat(t->kids[0]->kids[1]->icode, gen(D_LABEL, *t->kids[0]->kids[1]->follow, (struct addr){R_NONE}, (struct addr){R_NONE}));
+                // add_to_tcode(t->icode);
+                t->icode = concat(t->icode, gen(O_RET, (struct addr){R_NONE}, (struct addr){R_NONE}, (struct addr){R_NONE}));
+                // add_to_tcode(t->icode);
+            }
+            break;
     
         case 1043: { // Assignment with operators like =, +=, -=, *=, /=
             t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
@@ -801,6 +798,7 @@ void codegen(struct tree *t)
              g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
              t->icode = concat(t->icode, g);
              add_to_tcode(g);
+             break;
         } else if (t->nkids == 1) {
              // Synthesize the single child's code and address
              if (t->kids[0]->icode != NULL) {
@@ -813,14 +811,36 @@ void codegen(struct tree *t)
     }
 
     
-    case 1090: // comparison
+    case 1090: { // comparison
     if (t->nkids == 3) {
-        opcode_operator = operator_to_opcode(t->kids[1]->leaf->text);
+        // Generate code for left and right operands
+        codegen(t->kids[0]);
+        codegen(t->kids[2]);
+        
+        // Allocate temporary for result
+        t->address = genvar(R_LOCAL);
+        
+        // Get operator
+        char *op = t->kids[1]->leaf->text;
+        int opcode;
+        if (strcmp(op, ">") == 0) opcode = O_BGT;
+        else if (strcmp(op, "<") == 0) opcode = O_BLT;
+        else if (strcmp(op, ">=") == 0) opcode = O_BGE;
+        else if (strcmp(op, "<=") == 0) opcode = O_BLE;
+        else if (strcmp(op, "==") == 0) opcode = O_BEQ;
+        else if (strcmp(op, "!=") == 0) opcode = O_BNE;
+        
+        // Generate comparison instruction
+        struct instr *cmp = gen(opcode, *t->address, 
+                              *t->kids[0]->address, 
+                              *t->kids[2]->address);
+        
+        // Combine code from both operands and the comparison
         t->icode = concat(t->kids[0]->icode, t->kids[2]->icode);
-        t->icode = concat(t->icode, gen(opcode_operator, *t->kids[0]->address, *t->kids[2]->address, *t->onTrue));
-        t->icode = concat(t->icode, gen(O_GOTO, *t->onFalse, (struct addr){R_NONE}, (struct addr){R_NONE}));
+        t->icode = concat(t->icode, cmp);
     }
     break;
+}
 
      case 2020: { //  WHILE LPAREN expression RPAREN control_structure_body_or_comma {$$ = alctree(2020, "whileLoop", 5, $1, $2, $3, $4, $5);}
 
@@ -844,7 +864,9 @@ void codegen(struct tree *t)
         print_icode(true_label); // Print the true label for debugging
 
          // Generate the body code
-         struct instr *body_code = t->kids[4]->kids[0]->icode;
+
+         codegen(t->kids[4]->kids[0]);
+         struct instr *body_code =  t->kids[4]->kids[0]->icode;
          printf("print from body_code\n");
          print_icode(body_code); // Print the body code for debugging
  
@@ -869,6 +891,7 @@ void codegen(struct tree *t)
 
          t->icode = concat(t->icode, loop_jump);
          add_to_tcode(loop_jump);
+         break;
  
      }
      case 1068: //functionCall
@@ -884,6 +907,7 @@ void codegen(struct tree *t)
             t->icode = concat(t->icode, g);
             add_to_tcode(g);
           break;
+    
      
     //  case 1087:
     //  case 1088:
