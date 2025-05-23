@@ -769,11 +769,7 @@ void codegen(struct tree *t)
           }
           break;
     
-    case 1067:
-          if (t->kids[5] != NULL && t->kids[5]->prodrule == 2026){// if else then
-            
-          }
-          break;
+
      
      case 1086:
     case 1087:
@@ -894,19 +890,87 @@ void codegen(struct tree *t)
          break;
  
      }
-     case 1068: //functionCall
-           // t->address = t->kids[0]->address;
-            struct instr *g;
-            if(t->kids[2] != NULL) {
-                
-                g = gen(O_PARM, *t->kids[2]->address, (struct addr){R_NONE}, (struct addr){R_NONE});
-                t->icode = concat(t->icode, g);
-                add_to_tcode(g);
-            }
-            g = gen(O_CALL, *t->kids[0]->address, *t->kids[1]->address, *t->address );
-            t->icode = concat(t->icode, g);
-            add_to_tcode(g);
-          break;
+    case 1075:
+       if (t->kids[1]) {
+          t->icode =  gen(O_RET,*t->kids[1]->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+          add_to_tcode(t->icode);
+       } else {
+          t->icode = gen(O_RET, (struct addr){R_NONE}, (struct addr){R_NONE}, (struct addr){R_NONE});
+          add_to_tcode(t->icode);
+       }
+       break;
+     case 1067: { // ifExpression
+    // Generate labels
+    struct addr *then_label = genlabel();
+    struct addr *else_label = t->kids[5] ? genlabel() : NULL;
+    struct addr *end_label = genlabel();
+    
+    // Generate condition code
+    codegen(t->kids[2]); // expression
+    add_to_tcode(t->kids[2]->icode);
+    
+    // Generate conditional jump
+    struct instr *cond_jump = gen(O_BLE, *t->kids[2]->address,
+                                (struct addr){R_CONST, .u.offset=0},
+                                t->kids[5] ? *else_label : *end_label);
+    add_to_tcode(cond_jump);
+    
+    // Generate then part
+    struct instr *then_label_instr = gen(D_LABEL, *then_label,
+                                       (struct addr){R_NONE},
+                                       (struct addr){R_NONE});
+    add_to_tcode(then_label_instr);
+    
+    codegen(t->kids[4]); // controlStructureBody
+    add_to_tcode(t->kids[4]->icode);
+    
+    // Jump to end after then part if else exists
+    if (t->kids[5]) {
+        struct instr *then_jump = gen(O_GOTO, *end_label,
+                                    (struct addr){R_NONE},
+                                    (struct addr){R_NONE});
+        add_to_tcode(then_jump);
+    }
+    
+    // Generate else part if exists
+    if (t->kids[5]) {
+        struct instr *else_label_instr = gen(D_LABEL, *else_label,
+                                          (struct addr){R_NONE},
+                                          (struct addr){R_NONE});
+        add_to_tcode(else_label_instr);
+        
+        codegen(t->kids[5]); // opt_else
+        add_to_tcode(t->kids[5]->icode);
+    }
+    
+    // Generate end label
+    struct instr *end_label_instr = gen(D_LABEL, *end_label,
+                                      (struct addr){R_NONE},
+                                      (struct addr){R_NONE});
+    add_to_tcode(end_label_instr);
+    
+    // Build the complete icode for this node
+    t->icode = concat(t->kids[2]->icode, cond_jump);
+    t->icode = concat(t->icode, then_label_instr);
+    t->icode = concat(t->icode, t->kids[4]->icode);
+    
+    if (t->kids[5]) {
+        struct instr *then_jump = gen(O_GOTO, *end_label,
+                                    (struct addr){R_NONE},
+                                    (struct addr){R_NONE});
+        t->icode = concat(t->icode, then_jump);
+        
+        struct instr *else_label_instr = gen(D_LABEL, *else_label,
+                                          (struct addr){R_NONE},
+                                          (struct addr){R_NONE});
+        t->icode = concat(t->icode, else_label_instr);
+        t->icode = concat(t->icode, t->kids[5]->icode);
+    }
+    
+    t->icode = concat(t->icode, end_label_instr);
+    break;
+}
+
     
      
     //  case 1087:

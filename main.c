@@ -2256,7 +2256,35 @@ void assign_address(struct tree *t)
             } 
 
             break;
-        
+        // Handle all literal cases for assignment of address and offset
+        case INTEGER_LITERAL:
+        case BOOLEAN_LITERAL:
+        case UNSIGNED_LITERAL:
+        case LONG_LITERAL:
+        case HEX_LITERAL:
+        case BIN_LITERAL:
+            if (t->leaf != NULL) {
+            t->address = genvar(R_CONST);
+            t->address->u.offset = t->leaf->ival; // Assign the integer value to the offset
+            } else {
+                fprintf(stderr, "Error: Leaf node is NULL for INTEGER_LITERAL\n");
+                exit(3);
+            }
+            break;
+        case FLOAT_LITERAL:
+        case DOUBLE_LITERAL:
+        case REAL_LITERAL:
+            if (t->leaf != NULL) {
+            t->address = genvar(R_FLOAT);
+            t->address->u.dval = t->leaf->dval;
+            }
+            break;
+        // case STRING_LITERAL:
+        //     if (t->leaf != NULL) {
+        //     t->address = genvar(R_STRING);
+        //     // Optionally, add to string table here if needed
+        //     }
+        //     break;
             
         case 1004: /* End function scope */
             if (current) popscope();
@@ -2499,7 +2527,7 @@ void collect_globals_and_functions() {
             
             assign_addresses_in_scope(globals);
             assign_address(root);
-            // print_tree_with_addresses(root,0); // Print the tree with addresses
+            print_tree_with_addresses(root,0); // Print the tree with addresses
 
             codegen(root);
             collect_globals_and_functions();
@@ -2507,7 +2535,7 @@ void collect_globals_and_functions() {
             
             // print_tree_flags(root);
             // print_tree_with_addresses(root,0); // Print the tree with addresses
-            print_tree_with_icode(root, 0); // Print the tree with intermediate code
+            // print_tree_with_icode(root, 0); // Print the tree with intermediate code
             // print_tree_with_onTrue_onFalse(root, 0); // Print the tree with onTrue and onFalse pointers
             
             printf("No errors.\n");
