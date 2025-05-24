@@ -2038,7 +2038,8 @@ void assign_address(struct tree *t)
                 t->kids[0]->address = parenthesis->kids[1]->address; // Assign the address from the child
                 assign_address(t->kids[0]);
             }
-
+            if(t->kids[0]->address != NULL)
+                break; // If the left child already has an address, skip further processing
             int array[7] = { 407,385, 392, 383, 384, 386, 391};  // Array of categories to check
             // First, handle the left child (value)
             for (int i = 0; i < 7; i++) {
@@ -2064,6 +2065,8 @@ void assign_address(struct tree *t)
                 t->kids[2]->address = parenthesis->kids[1]->address; // Assign the address from the child
                 assign_address(t->kids[2]);
             }
+            if (t->kids[2]->address != NULL)
+                break;            
             // Then, handle the right child (value2)
             for (int i = 0; i < 7; i++) {
                 value2 = find_leaf(t->kids[2], array[i]);  // Find a matching leaf in the right child
@@ -2470,7 +2473,7 @@ void collect_globals_and_functions() {
         printf("Parsing file: %s\n", filename);
         yyrestart(yyin);  // Restart the lexer with the new file
         yylineno = 1;
-        yydebug = 1;
+        // yydebug = 1;
         int result = yyparse();
         printf("yyparse returns %d\n", result);
         

@@ -4,7 +4,7 @@ fun fib(n : Int) : Int {
     return 1;
     }
 	 m = fib(n-1);
-	 m = m + 1;
+	 m = m + fib(n-2);
 	 return m;
 }
 
