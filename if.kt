@@ -1,14 +1,9 @@
-fun fib(n : Int) : Int {
- var m : Int = 0;
- if (n < 2) {
-    return 1;
-    }
-	 m = fib(n-1);
-	 m = m + fib(n-2);
-	 return m;
-}
+val X : Int = 2;
+val Z : Double = 3.14;
 
 fun main() {
-  var i : Int = 5;
-  i = fib(i);
-}
+  var  i : Int = 5;
+  var  y : String = "x" + "";
+  var  k : Double = 3.14;
+  println("$i");
+  }

@@ -783,7 +783,34 @@ void codegen(struct tree *t)
     {
         if (t->nkids == 3) {
             
-
+            printnode(t->kids[0]);
+            //if((t->kids[0]->leaf->category == 392) && (t->kids[2]->leaf->category == 392)){
+            //    printf("HEYYYYYYYYYYY\n\n");
+            struct tree *value = NULL;
+            struct tree *value2 = NULL;
+            value = find_leaf(t->kids[0], 392);
+            value2 = find_leaf(t->kids[2], 392);
+            if(value && value2){
+                if (t->address == NULL) {
+                    t->address = genvar(R_LOCAL); // Generate a temporary variable
+                }
+                struct instr *a;
+                struct instr *b;
+                a = gen(O_PARM, *t->kids[2]->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+                t->icode = concat(t->icode, a);
+                add_to_tcode(a);
+                b = gen(O_PARM, *t->kids[0]->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+                t->icode = concat(t->icode, b);
+                add_to_tcode(b);
+                //t->icode = concat(t->kids[1]->icode, t->kids[2]->icode);
+                struct instr *g;
+                g = gen(O_CALL, *t->kids[1]->address, (struct addr){ R_NAME, .u.name = "2" }, *t->address);
+                t->icode = concat(t->icode, g);
+                add_to_tcode(g);
+                break;
+                
+            }else{
+            //}
              // Ensure t->address is initialized
              if (t->address == NULL) {
                  t->address = genvar(R_LOCAL); // Generate a temporary variable
@@ -794,6 +821,7 @@ void codegen(struct tree *t)
              g = gen(opcode_operator, *t->address, *t->kids[0]->address, *t->kids[2]->address);
              t->icode = concat(t->icode, g);
              add_to_tcode(g);
+            }
              break;
         } else if (t->nkids == 1) {
              // Synthesize the single child's code and address
@@ -805,6 +833,19 @@ void codegen(struct tree *t)
         
         break;
     }
+    case 1068: //functionCall
+           // t->address = t->kids[0]->address;
+            struct instr *g;
+            if(t->kids[2] != NULL) {
+                
+                g = gen(O_PARM, *t->kids[2]->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+                t->icode = concat(t->icode, g);
+                add_to_tcode(g);
+            }
+            g = gen(O_CALL, *t->kids[0]->address, (struct addr){ R_NAME, .u.name = "1" }, *t->address );
+            t->icode = concat(t->icode, g);
+            add_to_tcode(g);
+          break;
 
     
     case 1090: { // comparison

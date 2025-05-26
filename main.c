@@ -1998,7 +1998,27 @@ void assign_address(struct tree *t)
                     break; // Stop after the first match
                 }
             }
+            value = find_leaf(t->kids[0], 392);
+            value2 = find_leaf(t->kids[2], 392);
+            if(value && value2){
+               // printf("STRING CONCATENATION DETECTED\n");
+               t->kids[1]->address = genvar(R_STRING);
+               t->kids[2]->address = genvar(R_STRING);
+               t->kids[0]->address = genvar(R_STRING);
+               char *function_name = "strcat";
+               //function name
+               struct addr *a = malloc(sizeof(struct addr));
+               if (!a) {
+                   fprintf(stderr, "Memory allocation failed\n");
+                   exit(1);
+               }
+               a->region = R_NAME;
+               a->u.name = function_name;
+               t->kids[1]->address = a;
+               //t->address = genvar(R_LOCAL); 
+            }
         }
+
         break;
         case 392: /* String literal */
             printf("String literal: %s\n", t->leaf->text);
