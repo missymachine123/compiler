@@ -352,9 +352,9 @@ typeProjection:
   ;
 directlyAssignableExpression:
     postfixUnaryExpression assignableSuffix {$$ = alctree(1049, "directlyAssignableExpression", 2, $1, $2);}
+    | simpleIdentifier assignableSuffix {$$ = alctree(10499, "directlyAssignableExpression", 2, $1, $2);}
     | simpleIdentifier  {$$ = alctree(1049, "directlyAssignableExpression", 1, $1);}
-    | parenthesizedDirectlyAssignableExpression {$$ = alctree(1049, "directlyAssignableExpression", 1, $1);}
-    ;
+    | parenthesizedDirectlyAssignableExpression {$$ = alctree(1049, "directlyAssignableExpression", 1, $1);}    ;
 
 parenthesizedDirectlyAssignableExpression:
     LPAREN assignableExpression RPAREN  {$$ = alctree(1050, "parenthesizedDirectlyAssignableExpression", 3, $1, $2, $3);}

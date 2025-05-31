@@ -661,14 +661,14 @@ void print_child_icode(struct tree *t) {
 
 void codegen(struct tree *t)
 {
-    int i, j;
+    int i;
     int opcode_operator;
     if (t == NULL) return;
     switch (t->prodrule) {
         case 1004: {
             for (i = 0; i < t->nkids; i++) {
                 if (t->kids[i] != NULL && t->kids[i]->leaf != NULL && t->kids[i]->leaf->category == 407) {
-                    char *function_name = t->kids[i]->leaf->text;
+                    //char *function_name = t->kids[i]->leaf->text;
                     struct instr *function = gen(D_PROC, *t->address, (struct addr){R_NONE}, (struct addr){R_NONE});
                     add_to_tcode(function);
                 }
@@ -700,6 +700,47 @@ void codegen(struct tree *t)
             break;
     
         case 1043: { // Assignment with operators like =, +=, -=, *=, /=
+            if (find_node_by_prodrule(t->kids[0], 1059) != NULL) {
+                fprintf(stderr, "array assignmmet\n");
+                char *operator = t->kids[0]->kids[1]->leaf->text;
+            if (strcmp(operator, "=") == 0) {
+                  // Simple assignment
+                  t->address = genvar(R_LOCAL);
+                  struct instr *assign = gen(O_ASN, *t->address, *t->kids[0]->address, (struct addr){R_NONE});
+                  t->icode = concat(t->kids[1]->icode, assign);
+                  add_to_tcode(assign);
+                  t->kids[1]->kids[0]->address = genvar(R_LOCAL);
+                  struct instr *mul = gen(O_MUL, *t->kids[1]->kids[0]->address, *t->kids[1]->address, *t->kids[0]->kids[0]->address);
+                  t->icode = concat(t->kids[1]->icode, mul);
+                  add_to_tcode(mul);
+                  t->kids[0]->kids[1]->address = genvar(R_LOCAL);
+                  struct instr *add = gen(O_ADD, *t->kids[0]->kids[1]->address, *t->address, *t->kids[1]->kids[0]->address);
+                  t->icode = concat(t->kids[1]->icode, add);
+                  add_to_tcode(add);
+                  struct instr *array = gen(O_SCONT, *t->kids[0]->kids[1]->address, *t->kids[1]->address, (struct addr){R_NONE});
+                  t->icode = concat(t->icode, array);
+                  add_to_tcode(array);
+                  //ASN  loc:24, loc:8             // t2 = a (base pointer)
+                  //MUL  loc:32, const:5, const:8  // t3 = 5 * 8 = 40
+                 //ADD  loc:40, loc:24, loc:32    // t4 = t2 + t3 = &(a[5])
+                //SCON loc:40, const:5           // *t4 = 5
+                t->address = genvar(R_LOCAL);
+                  struct instr *assignl = gen(O_ASN, *t->address, *t->kids[0]->address, (struct addr){R_NONE});
+                  t->icode = concat(t->kids[1]->icode, assign);
+                  add_to_tcode(assignl);
+                  t->kids[1]->kids[0]->address = genvar(R_LOCAL);
+                  struct instr *mull = gen(O_MUL, *t->kids[1]->kids[0]->address, *t->kids[1]->address, *t->kids[0]->kids[0]->address);
+                  t->icode = concat(t->kids[1]->icode, mul);
+                  add_to_tcode(mull);
+                  t->kids[0]->kids[1]->address = genvar(R_LOCAL);
+                  struct instr *addl = gen(O_ADD, *t->kids[0]->kids[1]->address, *t->address, *t->kids[1]->kids[0]->address);
+                  t->icode = concat(t->kids[1]->icode, add);
+                  add_to_tcode(addl);
+                  struct instr *arrayl = gen(O_LCONT, *t->kids[0]->kids[0]->kids[0]->address, *t->kids[0]->kids[1]->address, (struct addr){R_NONE});
+                  t->icode = concat(t->icode, arrayl);
+                  add_to_tcode(arrayl);
+            }
+            }else{
             t->address = t->kids[0]->kids[0]->kids[0]->address; // Assignment.addr = IDENT.addr
     
             // Determine the operator
@@ -738,6 +779,7 @@ void codegen(struct tree *t)
                   fprintf(stderr, "Unsupported operator: %s\n", operator);
                   exit(1);
             }
+        }
             break;
        } 
 
@@ -758,15 +800,41 @@ void codegen(struct tree *t)
         }
         break;
      case 1028: // property declaration
+          if (t->kids[3] && find_node_by_prodrule(t->kids[3],2001)){ //check if array
+            t->address = genvar(R_LOCAL);
+            if (t->kids[4] && t->kids[4]->kids[1]) { // expression
+                struct instr *assign = gen(O_ASN, *t->address, *t->kids[4]->kids[1]->address, (struct addr){R_NONE});
+                t->icode = concat(t->kids[4]->icode, assign);
+                add_to_tcode(assign);
+           }
+           struct tree *c= find_node_by_prodrule(t->kids[4]->kids[1],2000);
+           int array_size = c->kids[2]->leaf->ival;
+
+           for(int i = 0; i < array_size; i++) {
+                struct instr *array_assign = gen(O_SCONT, *t->address, *c->kids[5]->address, (struct addr){R_NONE});
+                t->icode = concat(t->icode, array_assign);
+                add_to_tcode(array_assign);
+                if(i < array_size - 1) {
+                    struct instr *elem = gen(O_ADD, *t->address, *c->kids[2]->address, (struct addr){R_NONE});
+                    t->icode = concat(t->icode, elem);
+                    add_to_tcode(elem);
+                }
+            }
+          }else{
           if (t->kids[3] && t->kids[3]->prodrule == 1027) {
                 struct tree *id = t->kids[3];
                 t->address = id->address; // PropertyDeclaration.addr = IDENT.addr
+                if(find_node_by_prodrule(t->kids[4]->kids[1], 1051) != NULL) {
+                    //dont generate anything here
+                } else{
                 if (t->kids[4] && t->kids[4]->kids[1]) { // expression
                      struct instr *assign = gen(O_ASN, *id->address, *t->kids[4]->kids[1]->address, (struct addr){R_NONE});
                      t->icode = concat(t->kids[4]->icode, assign);
                      add_to_tcode(assign);
                 }
+            }
           }
+        }
           break;
     
 
@@ -847,7 +915,19 @@ void codegen(struct tree *t)
             add_to_tcode(g);
           break;
 
-    
+    case 2000:
+    if(t->kids[1] != NULL) {
+                
+        g = gen(O_PARM, *t->kids[1]->address, (struct addr){R_NONE}, (struct addr){R_NONE});
+        t->icode = concat(t->icode, g);
+        add_to_tcode(g);
+    }
+    g = gen(O_CALL, *t->kids[0]->address, (struct addr){ R_NAME, .u.name = "1" }, *t->address);
+    t->icode = concat(t->icode, g);
+    add_to_tcode(g);
+    break;
+
+
     case 1090: { // comparison
     if (t->nkids == 3) {
         // Generate code for left and right operands

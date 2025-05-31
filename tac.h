@@ -118,4 +118,5 @@ struct addr *genvar(int region);
 void printcode(struct instr *L);
 void print_tcode(const char *filename, struct entry_list *global_entries, struct string_table *table);
 void print_icode(struct instr *icode);
+struct tree *find_node_by_prodrule(struct tree *t, int prodrule) ;
    #endif

@@ -1,0 +1,36 @@
+.file	"if.kt"
+.string 8
+	$i\000
+const:64
+.data
+	main
+.code
+proc main
+	parm const:64
+	call malloc, 1, loc:16
+	asn loc:32, loc:16
+	scont loc:32, const:0
+	add loc:32, const:8
+	scont loc:32, const:0
+	add loc:32, const:8
+	scont loc:32, const:0
+	add loc:32, const:8
+	scont loc:32, const:0
+	add loc:32, const:8
+	scont loc:32, const:0
+	add loc:32, const:8
+	scont loc:32, const:0
+	add loc:32, const:8
+	scont loc:32, const:0
+	add loc:32, const:8
+	scont loc:32, const:0
+	asn loc:40, loc:16
+	mul loc:48, const:5, loc:16
+	add loc:56, loc:40, loc:48
+	scont loc:56, const:5
+	asn loc:64, loc:16
+	mul loc:72, const:5, loc:16
+	add loc:80, loc:64, loc:72
+	lcont loc:16, loc:80
+	parm str:0
+	call println, 1, loc:24

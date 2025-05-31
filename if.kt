@@ -1,9 +1,8 @@
-val X : Int = 2;
-val Z : Double = 3.14;
-
 fun main() {
-  var  i : Int = 5;
-  var  y : String = "x" + "";
-  var  k : Double = 3.14;
-  println("$i");
-  }
+   var a : Array<Int> = Array<Int>( 8 ) { 0 }
+   a[5] = 5;
+   var i : Int = a[5]
+   println("$i")
+}
+
+
