@@ -527,7 +527,7 @@ void populate_symboltables(struct tree *n)
             if (child != NULL && child->leaf != NULL && child->leaf->category == 407) {
                 // printf("Found leaf with category 407: %s\n", child->leaf->text);
             }
-            // insert_sym(current,child->leaf->text,alctype(ARRAY_TYPE),false);
+            //insert_sym(current,child->leaf->text,alctype(ARRAY_TYPE),false, false);
             break;
         }
         
@@ -561,7 +561,6 @@ void populate_symboltables(struct tree *n)
             }
 
         break;
-             
         case 407: /* whatever leaf denotes a variable name */
         /*for any variable it encounters, check if it is in global and current table if 
          * not mark it as undeclared 
@@ -585,6 +584,7 @@ void populate_symboltables(struct tree *n)
         }
         break;
     }
+    
     /* Visit children (Recursive traversal of child nodes) */
     for (i = 0; i < n->nkids; i++) {
         populate_symboltables(n->kids[i]);
@@ -1592,7 +1592,6 @@ void typecheck(struct tree *n) {
                     exit(3);
                 }
                 
-                
                 rhs = n->kids[1]; // Assuming the right-hand side is the second child
                 struct tree *value = NULL;
 
@@ -1637,13 +1636,22 @@ void typecheck(struct tree *n) {
                                 se2 = lookup_st(current, value->leaf->text);
                                 rhs_type = se2->type;
                             }else {
+                                printf("value->leaf->category: %d\n", value->leaf->category);
                                 rhs_type = get_type(value->leaf->category);
                             }
                             break; 
                         }
                 } 
+                if (lhs_type == NULL && rhs_type != NULL) {
+                    if(find_node_by_prodrule(n->kids[0], 1059) != NULL){
+                        lhs = find_leaf(n->kids[0], 407); 
+                        printnode(lhs);
+                        insert_type(current, lhs->leaf->text, assignType("Int"));
+                        //printf("array is here\n");
+                    }
+                }else{
                     check_types(operator->category, lhs_type, rhs_type,operator->lineno); // Check types for assignment
-    
+                }
                 }}
             break;
 
@@ -2145,14 +2153,56 @@ void assign_address(struct tree *t)
                         }
                     }
                 }
+                if (find_node_by_prodrule(t->kids[0], 1059) != NULL) {
+                    t->kids[0]->kids[0]->kids[0]->address->region = R_LOCAL; 
+                    t->kids[0]->kids[0]->kids[0]->address->u.offset = 8;
+
+                    t->kids[0]->kids[0]->address->region = R_CONST; 
+                    t->kids[0]->kids[0]->address->u.offset = 8;
+
+                    t->kids[0]->address->region = R_LOCAL; 
+                    t->kids[0]->address->u.offset = 16;
+
+
+                }
+
+            }
+            break; 
+            case 2000: //array declaration
+            if (t->address == NULL) {
+                t->address = genvar(R_LOCAL);  // Generate a local address for the current node
+                printf("Assigning address for node with addr %d\n", t->address->u.offset);
+                t->kids[1]->address = genvar(R_CONST); 
+                t->kids[1]->address->u.offset = t->kids[2]->leaf->ival * 8; // Assign the integer value to the offset
+                struct addr *a = malloc(sizeof(struct addr));
+                if (!a) {
+                    fprintf(stderr, "Memory allocation failed\n");
+                    exit(1);
+                }
+                a->region = R_NAME;
+                a->u.name = "malloc";
+                t->kids[0]->address = a;
+                t->kids[5]->address = genvar(R_CONST); 
+                t->kids[5]->address->u.offset = t->kids[5]->leaf->ival;
+
 
             }
             break; 
 
             case 1028: { /* Property declaration (variables) */
                 printf("here\n");
-                printnode(t->kids[3]);
+                //printnode(t->kids[3]);
+                //check if its an array first 
                 struct tree *var_decl = t->kids[3]; // multivariable_variableDeclaration
+                if (var_decl->kids[0]->kids[2] != NULL){
+                    //printnode(var_decl->kids[0]->kids[2]);
+                    if (find_node_by_prodrule(t->kids[3],2001)){
+                        struct tree *arraytype= find_node_by_prodrule(t->kids[3],2001);
+                        printnode(arraytype);
+                        //t->kids[3]->address = parenthesis->kids[1]->address; // Assign the address from the child
+                        //assign_address(t->kids[2]);
+                    }
+                }
                 if (var_decl->prodrule == 1035) { // multiVariableDeclaration
                     // Handle multiple variables
                     struct tree *var_list = var_decl;
@@ -2425,6 +2475,13 @@ void print_tree_with_onTrue_onFalse(struct tree *t, int depth) {
 
 struct entry_list *global_entries = NULL;
 
+void reset_stdout() {
+    #ifdef _WIN32
+        freopen("CON", "w", stdout);       // Windows
+    #else
+        freopen("/dev/tty", "w", stdout);  // Unix/Linux/macOS
+    #endif
+}
 void add_global_or_function_to_list(const char *name) {
     struct entry_list *new_entry = malloc(sizeof(struct entry_list));
     if (!new_entry) {
@@ -2554,7 +2611,25 @@ void collect_globals_and_functions() {
 
             codegen(root);
             collect_globals_and_functions();
+            char filename_ic[512];
+            strcpy(filename_ic, filename);
+            char *dot = strrchr(filename_ic, '.'); // Find the last dot in the filename
+            if (dot != NULL) {
+                *dot = '\0'; // Truncate the string at the dot
+            }
+            const char *extension = ".ic";
+            strcat(filename_ic, extension);
+            FILE *ic_file = fopen(filename_ic, "w");
+            if (!ic_file) {
+                fprintf(stderr, "Error: Could not open %s for writing.\n", filename_ic);
+                exit(EXIT_FAILURE);
+            }
+            fflush(stdout);
+            dup2(fileno(ic_file), fileno(stdout));
             print_tcode(filename,global_entries, &string_tbl);
+            fclose(stdout);
+            reset_stdout();
+            printf("Intermediate code generated and written to %s\n", filename_ic);
             
             // print_tree_flags(root);
             // print_tree_with_addresses(root,0); // Print the tree with addresses

@@ -353,6 +353,7 @@ typeProjection:
 directlyAssignableExpression:
     postfixUnaryExpression assignableSuffix {$$ = alctree(1049, "directlyAssignableExpression", 2, $1, $2);}
     | simpleIdentifier  {$$ = alctree(1049, "directlyAssignableExpression", 1, $1);}
+    | simpleIdentifier assignableSuffix {$$ = alctree(1049, "directlyAssignableExpression", 2, $1, $2);}
     | parenthesizedDirectlyAssignableExpression {$$ = alctree(1049, "directlyAssignableExpression", 1, $1);}
     ;
 

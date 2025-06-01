@@ -8,3 +8,4 @@ k0gram.tab.o
 lex.yy.o
 main.o
 number.kt
+k0gram.output

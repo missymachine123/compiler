@@ -113,6 +113,7 @@ State 144 conflicts: 2 shift/reduce
 State 145 conflicts: 3 shift/reduce
 State 155 conflicts: 16 shift/reduce
 State 162 conflicts: 1 shift/reduce
+State 163 conflicts: 2 shift/reduce
 State 164 conflicts: 1 shift/reduce
 State 168 conflicts: 2 shift/reduce
 State 169 conflicts: 1 shift/reduce
@@ -120,16 +121,16 @@ State 173 conflicts: 1 shift/reduce
 State 180 conflicts: 2 shift/reduce
 State 211 conflicts: 7 shift/reduce
 State 217 conflicts: 16 shift/reduce
-State 267 conflicts: 4 shift/reduce
 State 268 conflicts: 4 shift/reduce
-State 270 conflicts: 1 shift/reduce
+State 269 conflicts: 4 shift/reduce
 State 271 conflicts: 1 shift/reduce
 State 272 conflicts: 1 shift/reduce
-State 280 conflicts: 1 shift/reduce
-State 323 conflicts: 1 shift/reduce
-State 325 conflicts: 1 shift/reduce
-State 349 conflicts: 2 shift/reduce
-State 388 conflicts: 1 shift/reduce
+State 273 conflicts: 1 shift/reduce
+State 281 conflicts: 1 shift/reduce
+State 324 conflicts: 1 shift/reduce
+State 326 conflicts: 1 shift/reduce
+State 350 conflicts: 2 shift/reduce
+State 389 conflicts: 1 shift/reduce
 
 
 Grammar
@@ -316,223 +317,224 @@ Grammar
 
   111 directlyAssignableExpression: postfixUnaryExpression assignableSuffix
   112                             | simpleIdentifier
-  113                             | parenthesizedDirectlyAssignableExpression
+  113                             | simpleIdentifier assignableSuffix
+  114                             | parenthesizedDirectlyAssignableExpression
 
-  114 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression RPAREN
+  115 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression RPAREN
 
-  115 multi_postfixUnarySuffix: multi_postfixUnarySuffix postfixUnarySuffix
+  116 multi_postfixUnarySuffix: multi_postfixUnarySuffix postfixUnarySuffix
 
-  116 $@7: ε
+  117 $@7: ε
 
-  117 multi_postfixUnarySuffix: $@7
+  118 multi_postfixUnarySuffix: $@7
 
-  118 postfixUnaryExpression: primaryExpression multi_postfixUnarySuffix
+  119 postfixUnaryExpression: primaryExpression multi_postfixUnarySuffix
 
-  119 postfixUnarySuffix: postfixUnaryOperator
-  120                   | indexingSuffix
-  121                   | callSuffix
-  122                   | navigationSuffix
+  120 postfixUnarySuffix: postfixUnaryOperator
+  121                   | indexingSuffix
+  122                   | callSuffix
+  123                   | navigationSuffix
 
-  123 identifier_expression_class: simpleIdentifier
-  124                            | parenthesizedExpression
-  125                            | CLASS
+  124 identifier_expression_class: simpleIdentifier
+  125                            | parenthesizedExpression
+  126                            | CLASS
 
-  126 navigationSuffix: memberAccessOperator identifier_expression_class
+  127 navigationSuffix: memberAccessOperator identifier_expression_class
 
-  127 memberAccessOperator: DOT
-  128                     | QUEST_NO_WS DOT
+  128 memberAccessOperator: DOT
+  129                     | QUEST_NO_WS DOT
 
-  129 postfixUnaryOperator: INCR
-  130                     | DECR
-  131                     | EXCL_NO_WS EXCL_NO_WS
+  130 postfixUnaryOperator: INCR
+  131                     | DECR
+  132                     | EXCL_NO_WS EXCL_NO_WS
 
-  132 multi_comma_expression: multi_comma_expression COMMA expression
+  133 multi_comma_expression: multi_comma_expression COMMA expression
 
-  133 $@8: ε
+  134 $@8: ε
 
-  134 multi_comma_expression: $@8
+  135 multi_comma_expression: $@8
 
-  135 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma RSQUARE
+  136 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma RSQUARE
 
-  136 callSuffix: valueArguments
+  137 callSuffix: valueArguments
 
-  137 multi_comma_valueArgument: multi_comma_valueArgument COMMA valueArgument
+  138 multi_comma_valueArgument: multi_comma_valueArgument COMMA valueArgument
 
-  138 $@9: ε
+  139 $@9: ε
 
-  139 multi_comma_valueArgument: $@9
+  140 multi_comma_valueArgument: $@9
 
-  140 opt_valueArgument: valueArgument multi_comma_valueArgument opt_comma
+  141 opt_valueArgument: valueArgument multi_comma_valueArgument opt_comma
 
-  141 $@10: ε
+  142 $@10: ε
 
-  142 opt_valueArgument: $@10
+  143 opt_valueArgument: $@10
 
-  143 valueArguments: LPAREN opt_valueArgument RPAREN
+  144 valueArguments: LPAREN opt_valueArgument RPAREN
 
-  144 opt_simpleIdentifier_EQ: simpleIdentifier ASSIGNMENT
+  145 opt_simpleIdentifier_EQ: simpleIdentifier ASSIGNMENT
 
-  145 $@11: ε
+  146 $@11: ε
 
-  146 opt_simpleIdentifier_EQ: $@11
+  147 opt_simpleIdentifier_EQ: $@11
 
-  147 opt_Multi: MULT
+  148 opt_Multi: MULT
 
-  148 $@12: ε
+  149 $@12: ε
 
-  149 opt_Multi: $@12
+  150 opt_Multi: $@12
 
-  150 valueArgument: opt_simpleIdentifier_EQ opt_Multi expression
+  151 valueArgument: opt_simpleIdentifier_EQ opt_Multi expression
 
-  151 parenthesizedExpression: LPAREN expression RPAREN
+  152 parenthesizedExpression: LPAREN expression RPAREN
 
-  152 ifExpression: IF LPAREN expression RPAREN opt_else
+  153 ifExpression: IF LPAREN expression RPAREN opt_else
 
-  153 opt_else: controlStructureBody
-  154         | SEMICOLON
-  155         | controlStructureBody SEMICOLON ELSE ifElseTail
-  156         | controlStructureBody ELSE ifElseTail
+  154 opt_else: controlStructureBody
+  155         | SEMICOLON
+  156         | controlStructureBody SEMICOLON ELSE ifElseTail
+  157         | controlStructureBody ELSE ifElseTail
 
-  157 ifElseTail: controlStructureBody
-  158           | SEMICOLON
+  158 ifElseTail: controlStructureBody
+  159           | SEMICOLON
 
-  159 functionCall: IDENTIFIER LPAREN functionArguments RPAREN semis
-  160             | dotExpression LPAREN functionArguments RPAREN semis
+  160 functionCall: IDENTIFIER LPAREN functionArguments RPAREN semis
+  161             | dotExpression LPAREN functionArguments RPAREN semis
 
-  161 dotExpression: IDENTIFIER DOT IDENTIFIER
-  162              | dotExpression DOT IDENTIFIER
+  162 dotExpression: IDENTIFIER DOT IDENTIFIER
+  163              | dotExpression DOT IDENTIFIER
 
-  163 functionArguments: expression
-  164                  | functionArguments COMMA expression
-  165                  | ε
+  164 functionArguments: expression
+  165                  | functionArguments COMMA expression
+  166                  | ε
 
-  166 variable_multivariable: variableDeclaration
-  167                       | multiVariableDeclaration
+  167 variable_multivariable: variableDeclaration
+  168                       | multiVariableDeclaration
 
-  168 control_structure_body_or_comma: controlStructureBody
-  169                                | COMMA
+  169 control_structure_body_or_comma: controlStructureBody
+  170                                | COMMA
 
-  170 loopStatement: whileStatement
-  171              | forStatement
-  172              | doWhileStatement
+  171 loopStatement: whileStatement
+  172              | forStatement
+  173              | doWhileStatement
 
-  173 whileStatement: WHILE LPAREN expression RPAREN control_structure_body_or_comma
+  174 whileStatement: WHILE LPAREN expression RPAREN control_structure_body_or_comma
 
-  174 forStatement: FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody
+  175 forStatement: FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody
 
-  175 doWhileStatement: DO controlStructureBody WHILE LPAREN expression RPAREN
+  176 doWhileStatement: DO controlStructureBody WHILE LPAREN expression RPAREN
 
-  176 controlStructureBody: block
-  177                     | statement
+  177 controlStructureBody: block
+  178                     | statement
 
-  178 jumpExpression: RETURN expression
-  179               | RETURN
-  180               | CONTINUE
-  181               | BREAK
+  179 jumpExpression: RETURN expression
+  180               | RETURN
+  181               | CONTINUE
+  182               | BREAK
 
-  182 multi_whenEntry: multi_whenEntry whenEntry
-  183                | ε
+  183 multi_whenEntry: multi_whenEntry whenEntry
+  184                | ε
 
-  184 whenExpression: WHEN whenSubject LCURL multi_whenEntry RCURL
-  185               | WHEN LCURL multi_whenEntry RCURL
+  185 whenExpression: WHEN whenSubject LCURL multi_whenEntry RCURL
+  186               | WHEN LCURL multi_whenEntry RCURL
 
-  186 whenSubject: LPAREN expression RPAREN
-  187            | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN
+  187 whenSubject: LPAREN expression RPAREN
+  188            | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN
 
-  188 multi_comma_whenCondition: multi_comma_whenCondition COMMA whenCondition
+  189 multi_comma_whenCondition: multi_comma_whenCondition COMMA whenCondition
 
-  189 $@13: ε
+  190 $@13: ε
 
-  190 multi_comma_whenCondition: $@13
+  191 multi_comma_whenCondition: $@13
 
-  191 whenEntry: whenCondition multi_comma_whenCondition ARROW controlStructureBody
-  192          | whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody
-  193          | ELSE ARROW controlStructureBody SEMICOLON
-  194          | ELSE ARROW controlStructureBody
+  192 whenEntry: whenCondition multi_comma_whenCondition ARROW controlStructureBody
+  193          | whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody
+  194          | ELSE ARROW controlStructureBody SEMICOLON
+  195          | ELSE ARROW controlStructureBody
 
-  195 whenCondition: expression
-  196              | rangeTest
+  196 whenCondition: expression
+  197              | rangeTest
 
-  197 rangeTest: IN expression
+  198 rangeTest: IN expression
 
-  198 classMembers: ε
-  199             | classMembers classMember
+  199 classMembers: ε
+  200             | classMembers classMember
 
-  200 classMember: functionDeclaration
-  201            | variableDeclaration
+  201 classMember: functionDeclaration
+  202            | variableDeclaration
 
-  202 expression: disjunction
+  203 expression: disjunction
 
-  203 disjunction: conjunction
-  204            | disjunction DISJ conjunction
+  204 disjunction: conjunction
+  205            | disjunction DISJ conjunction
 
-  205 conjunction: equality
-  206            | conjunction CONJ equality
+  206 conjunction: equality
+  207            | conjunction CONJ equality
 
-  207 equality: comparison
-  208         | equality equality_operator comparison
+  208 equality: comparison
+  209         | equality equality_operator comparison
 
-  209 comparison: genericCallLikeComparison
-  210           | comparison LANGLE genericCallLikeComparison
-  211           | comparison comparison_operator genericCallLikeComparison
+  210 comparison: genericCallLikeComparison
+  211           | comparison LANGLE genericCallLikeComparison
+  212           | comparison comparison_operator genericCallLikeComparison
 
-  212 genericCallLikeComparison: elvisExpression
-  213                          | genericCallLikeComparison IN elvisExpression
+  213 genericCallLikeComparison: elvisExpression
+  214                          | genericCallLikeComparison IN elvisExpression
 
-  214 elvisExpression: rangeExpression
-  215                | elvisExpression QUEST_COLON rangeExpression
+  215 elvisExpression: rangeExpression
+  216                | elvisExpression QUEST_COLON rangeExpression
 
-  216 rangeExpression: additiveExpression
-  217                | rangeExpression RANGE additiveExpression
+  217 rangeExpression: additiveExpression
+  218                | rangeExpression RANGE additiveExpression
 
-  218 additiveExpression: multiplicativeExpression
-  219                   | additiveExpression ADD multiplicativeExpression
-  220                   | additiveExpression SUB multiplicativeExpression
+  219 additiveExpression: multiplicativeExpression
+  220                   | additiveExpression ADD multiplicativeExpression
+  221                   | additiveExpression SUB multiplicativeExpression
 
-  221 multiplicativeExpression: postfixUnaryExpression
-  222                         | multiplicativeExpression MULT postfixUnaryExpression
-  223                         | multiplicativeExpression DIV postfixUnaryExpression
-  224                         | multiplicativeExpression MOD postfixUnaryExpression
+  222 multiplicativeExpression: postfixUnaryExpression
+  223                         | multiplicativeExpression MULT postfixUnaryExpression
+  224                         | multiplicativeExpression DIV postfixUnaryExpression
+  225                         | multiplicativeExpression MOD postfixUnaryExpression
 
-  225 primaryExpression: parenthesizedExpression
-  226                  | simpleIdentifier
-  227                  | functionCall
-  228                  | INTEGER_LITERAL
-  229                  | STRING_LITERAL
-  230                  | BOOLEAN_LITERAL
-  231                  | FLOAT_LITERAL
-  232                  | DOUBLE_LITERAL
-  233                  | NULL_LITERAL
-  234                  | arrayExpression
-  235                  | CHARACTER_LITERAL
-  236                  | jumpExpression
-  237                  | collectionLiteral
-  238                  | ifExpression
-  239                  | whenExpression
+  226 primaryExpression: parenthesizedExpression
+  227                  | simpleIdentifier
+  228                  | functionCall
+  229                  | INTEGER_LITERAL
+  230                  | STRING_LITERAL
+  231                  | BOOLEAN_LITERAL
+  232                  | FLOAT_LITERAL
+  233                  | DOUBLE_LITERAL
+  234                  | NULL_LITERAL
+  235                  | arrayExpression
+  236                  | CHARACTER_LITERAL
+  237                  | jumpExpression
+  238                  | collectionLiteral
+  239                  | ifExpression
+  240                  | whenExpression
 
-  240 typeLiteral: INTEGER_LITERAL
-  241            | STRING_LITERAL
-  242            | BOOLEAN_LITERAL
-  243            | FLOAT_LITERAL
-  244            | DOUBLE_LITERAL
-  245            | CHARACTER_LITERAL
+  241 typeLiteral: INTEGER_LITERAL
+  242            | STRING_LITERAL
+  243            | BOOLEAN_LITERAL
+  244            | FLOAT_LITERAL
+  245            | DOUBLE_LITERAL
+  246            | CHARACTER_LITERAL
 
-  246 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL
+  247 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL
 
-  247 collectionLiteral: LSQUARE RSQUARE
-  248                  | LSQUARE expression COMMA RSQUARE
-  249                  | LSQUARE expression RSQUARE
-  250                  | LSQUARE expression multi_comma_expression RSQUARE
-  251                  | LSQUARE expression multi_comma_expression COMMA RSQUARE
+  248 collectionLiteral: LSQUARE RSQUARE
+  249                  | LSQUARE expression COMMA RSQUARE
+  250                  | LSQUARE expression RSQUARE
+  251                  | LSQUARE expression multi_comma_expression RSQUARE
+  252                  | LSQUARE expression multi_comma_expression COMMA RSQUARE
 
-  252 comparison_operator: RANGLE
-  253                    | LE
-  254                    | GE
+  253 comparison_operator: RANGLE
+  254                    | LE
+  255                    | GE
 
-  255 equality_operator: EQEQ
-  256                  | EQEQEQ
-  257                  | EXCL_EQ
-  258                  | EXCL_EQEQ
+  256 equality_operator: EQEQ
+  257                  | EQEQEQ
+  258                  | EXCL_EQ
+  259                  | EXCL_EQEQ
 
 
 Terminals, with rules where they appear
@@ -540,31 +542,31 @@ Terminals, with rules where they appear
     $end (0) 0
     error (256)
     RESERVED <treeptr> (258)
-    DOT <treeptr> (259) 9 43 63 127 128 161 162
-    COMMA <treeptr> (260) 14 16 68 72 80 106 132 137 164 169 188 192 248 251
-    LPAREN <treeptr> (261) 11 42 79 99 114 143 151 152 159 160 173 174 175 186 187 246
-    RPAREN <treeptr> (262) 11 42 79 99 114 143 151 152 159 160 173 174 175 186 187 246
-    LSQUARE <treeptr> (263) 135 247 248 249 250 251
-    RSQUARE <treeptr> (264) 135 247 248 249 250 251
-    LCURL <treeptr> (265) 22 82 184 185 246
-    RCURL <treeptr> (266) 22 82 184 185 246
-    INCR <treeptr> (267) 95 129
-    DECR <treeptr> (268) 96 130
-    CONJ <treeptr> (269) 206
-    DISJ <treeptr> (270) 204
+    DOT <treeptr> (259) 9 43 63 128 129 162 163
+    COMMA <treeptr> (260) 14 16 68 72 80 106 133 138 165 170 189 193 249 252
+    LPAREN <treeptr> (261) 11 42 79 99 115 144 152 153 160 161 174 175 176 187 188 247
+    RPAREN <treeptr> (262) 11 42 79 99 115 144 152 153 160 161 174 175 176 187 188 247
+    LSQUARE <treeptr> (263) 136 248 249 250 251 252
+    RSQUARE <treeptr> (264) 136 248 249 250 251 252
+    LCURL <treeptr> (265) 22 82 185 186 247
+    RCURL <treeptr> (266) 22 82 185 186 247
+    INCR <treeptr> (267) 95 130
+    DECR <treeptr> (268) 96 131
+    CONJ <treeptr> (269) 207
+    DISJ <treeptr> (270) 205
     EXCL_WS <treeptr> (271)
-    EXCL_NO_WS <treeptr> (272) 97 131
+    EXCL_NO_WS <treeptr> (272) 97 132
     COLON <treeptr> (273) 7 13 77
-    SEMICOLON <treeptr> (274) 21 23 63 64 154 155 158 193
-    ASSIGNMENT <treeptr> (275) 21 58 101 144 187
+    SEMICOLON <treeptr> (274) 21 23 63 64 155 156 159 194
+    ASSIGNMENT <treeptr> (275) 21 58 101 145 188
     ADD_ASSIGNMENT <treeptr> (276) 83
     SUB_ASSIGNMENT <treeptr> (277) 84
     MULT_ASSIGNMENT <treeptr> (278) 85
     DIV_ASSIGNMENT <treeptr> (279) 86
     MOD_ASSIGNMENT <treeptr> (280) 87
-    ARROW <treeptr> (281) 191 192 193 194
+    ARROW <treeptr> (281) 192 193 194 195
     DOUBLE_ARROW <treeptr> (282)
-    RANGE <treeptr> (283) 217
+    RANGE <treeptr> (283) 218
     COLONCOLON <treeptr> (284)
     DOUBLE_SEMICOLON <treeptr> (285)
     HASH <treeptr> (286)
@@ -573,17 +575,17 @@ Terminals, with rules where they appear
     AT_PRE_WS <treeptr> (289)
     AT_BOTH_WS <treeptr> (290)
     QUEST_WS <treeptr> (291)
-    QUEST_NO_WS <treeptr> (292) 49 128
-    LANGLE <treeptr> (293) 70 105 210
-    RANGLE <treeptr> (294) 70 105 252
-    LE <treeptr> (295) 253
-    GE <treeptr> (296) 254
+    QUEST_NO_WS <treeptr> (292) 49 129
+    LANGLE <treeptr> (293) 70 105 211
+    RANGLE <treeptr> (294) 70 105 253
+    LE <treeptr> (295) 254
+    GE <treeptr> (296) 255
     QUEST_DOT <treeptr> (297)
-    EXCL_EQ <treeptr> (298) 257
-    EXCL_EQEQ <treeptr> (299) 258
+    EXCL_EQ <treeptr> (298) 258
+    EXCL_EQEQ <treeptr> (299) 259
     AS_SAFE <treeptr> (300)
-    EQEQ <treeptr> (301) 255
-    EQEQEQ <treeptr> (302) 256
+    EQEQ <treeptr> (301) 256
+    EQEQEQ <treeptr> (302) 257
     SINGLE_QUOTE <treeptr> (303)
     RETURN_AT <treeptr> (304)
     CONTINUE_AT <treeptr> (305)
@@ -594,7 +596,7 @@ Terminals, with rules where they appear
     FIELD <treeptr> (310)
     PROPERTY <treeptr> (311)
     GET <treeptr> (312)
-    QUEST_COLON <treeptr> (313) 215
+    QUEST_COLON <treeptr> (313) 216
     SET <treeptr> (314)
     RECEIVER <treeptr> (315)
     PARAM <treeptr> (316)
@@ -602,11 +604,11 @@ Terminals, with rules where they appear
     DELEGATE <treeptr> (318)
     PACKAGE <treeptr> (319)
     IMPORT <treeptr> (320)
-    CLASS <treeptr> (321) 75 76 125
+    CLASS <treeptr> (321) 75 76 126
     INTERFACE <treeptr> (322)
     FUN <treeptr> (323) 9 10
     OBJECT <treeptr> (324)
-    VAL <treeptr> (325) 38 187
+    VAL <treeptr> (325) 38 188
     VAR <treeptr> (326) 37
     TYPEALIAS <treeptr> (327)
     CONSTRUCTOR <treeptr> (328)
@@ -617,22 +619,22 @@ Terminals, with rules where they appear
     SUPER <treeptr> (333)
     TYPEOF <treeptr> (334)
     WHERE <treeptr> (335)
-    IF <treeptr> (336) 152
-    ELSE <treeptr> (337) 155 156 193 194
-    WHEN <treeptr> (338) 184 185
+    IF <treeptr> (336) 153
+    ELSE <treeptr> (337) 156 157 194 195
+    WHEN <treeptr> (338) 185 186
     TRY <treeptr> (339)
     CATCH <treeptr> (340)
     FINALLY <treeptr> (341)
-    FOR <treeptr> (342) 174
-    DO <treeptr> (343) 175
-    WHILE <treeptr> (344) 173 175
+    FOR <treeptr> (342) 175
+    DO <treeptr> (343) 176
+    WHILE <treeptr> (344) 174 176
     THROW <treeptr> (345)
-    RETURN <treeptr> (346) 178 179
-    CONTINUE <treeptr> (347) 180
-    BREAK <treeptr> (348) 181
+    RETURN <treeptr> (346) 179 180
+    CONTINUE <treeptr> (347) 181
+    BREAK <treeptr> (348) 182
     AS <treeptr> (349)
     IS <treeptr> (350)
-    IN <treeptr> (351) 174 197 213
+    IN <treeptr> (351) 175 198 214
     OUT <treeptr> (352)
     DYNAMIC <treeptr> (353)
     PUBLIC <treeptr> (354)
@@ -652,7 +654,7 @@ Terminals, with rules where they appear
     SUSPEND <treeptr> (368)
     OVERRIDE <treeptr> (369)
     ABSTRACT <treeptr> (370)
-    NULL_LITERAL <treeptr> (371) 233
+    NULL_LITERAL <treeptr> (371) 234
     FINAL <treeptr> (372)
     OPEN <treeptr> (373)
     CONST <treeptr> (374) 39 75
@@ -664,16 +666,16 @@ Terminals, with rules where they appear
     EXPECT <treeptr> (380)
     ACTUAL <treeptr> (381)
     REAL_LITERAL <treeptr> (382)
-    FLOAT_LITERAL <treeptr> (383) 231 243
-    DOUBLE_LITERAL <treeptr> (384) 232 244
-    INTEGER_LITERAL <treeptr> (385) 228 240 246
-    CHARACTER_LITERAL <treeptr> (386) 235 245
+    FLOAT_LITERAL <treeptr> (383) 232 244
+    DOUBLE_LITERAL <treeptr> (384) 233 245
+    INTEGER_LITERAL <treeptr> (385) 229 241 247
+    CHARACTER_LITERAL <treeptr> (386) 236 246
     HEX_LITERAL <treeptr> (387)
     BIN_LITERAL <treeptr> (388)
     UNSIGNED_LITERAL <treeptr> (389)
     LONG_LITERAL <treeptr> (390)
-    BOOLEAN_LITERAL <treeptr> (391) 230 242
-    STRING_LITERAL <treeptr> (392) 229 241
+    BOOLEAN_LITERAL <treeptr> (391) 231 243
+    STRING_LITERAL <treeptr> (392) 230 242
     INT <treeptr> (393)
     FLOAT <treeptr> (394)
     BOOLEAN <treeptr> (395)
@@ -682,13 +684,13 @@ Terminals, with rules where they appear
     BYTE <treeptr> (398)
     T_EOF <treeptr> (399)
     TYPELITERAL <treeptr> (400) 53
-    MULT <treeptr> (401) 110 147 222
-    MOD <treeptr> (402) 224
-    DIV <treeptr> (403) 223
-    ADD <treeptr> (404) 93 219
-    SUB <treeptr> (405) 94 220
+    MULT <treeptr> (401) 110 148 223
+    MOD <treeptr> (402) 225
+    DIV <treeptr> (403) 224
+    ADD <treeptr> (404) 93 220
+    SUB <treeptr> (405) 94 221
     ARRAYTYPELITERAL <treeptr> (406) 55
-    IDENTIFIER <treeptr> (407) 74 159 161 162
+    IDENTIFIER <treeptr> (407) 74 160 162 163
     EQUALITY_OP (408)
     COMPARISON_OP (409)
     TYPE_ARGUMENT (410)
@@ -717,7 +719,7 @@ Nonterminals, with rules where they appear
         on right: 9 10
     functionDeclaration <treeptr> (164)
         on left: 9 10
-        on right: 35 200
+        on right: 35 201
     functionValueParameters <treeptr> (165)
         on left: 11
         on right: 9 10
@@ -741,10 +743,10 @@ Nonterminals, with rules where they appear
         on right: 5
     block <treeptr> (172)
         on left: 22
-        on right: 20 176
+        on right: 20 177
     semis <treeptr> (173)
         on left: 23 24
-        on right: 4 25 30 31 32 33 159 160
+        on right: 4 25 30 31 32 33 160 161
     semis_statement <treeptr> (174)
         on left: 25 26
         on right: 25 27
@@ -756,7 +758,7 @@ Nonterminals, with rules where they appear
         on right: 22
     statement <treeptr> (177)
         on left: 30 31 32 33
-        on right: 25 27 177
+        on right: 25 27 178
     declaration <treeptr> (178)
         on left: 34 35 36
         on right: 4 30
@@ -795,7 +797,7 @@ Nonterminals, with rules where they appear
         on right: 9 19 63
     arrayType <treeptr> (190)
         on left: 55
-        on right: 54 246
+        on right: 54 247
     typeRef_parenthesizedType <treeptr> (191)
         on left: 56 57
         on right: 52
@@ -816,7 +818,7 @@ Nonterminals, with rules where they appear
         on right: 9 10 63 64 65 75 76
     opt_comma <treeptr> (197)
         on left: 68 69
-        on right: 70 79 105 135 140
+        on right: 70 79 105 136 141
     typeParameters <treeptr> (198)
         on left: 70
         on right: 66
@@ -828,16 +830,16 @@ Nonterminals, with rules where they appear
         on right: 70 72
     simpleIdentifier <treeptr> (201)
         on left: 74
-        on right: 9 10 13 47 48 71 75 76 112 123 144 226
+        on right: 9 10 13 47 48 71 75 76 112 113 124 145 227
     classDeclaration <treeptr> (202)
         on left: 75 76
         on right: 34
     variableDeclaration <treeptr> (203)
         on left: 77 78
-        on right: 61 79 80 166 187 201
+        on right: 61 79 80 167 188 202
     multiVariableDeclaration <treeptr> (204)
         on left: 79
-        on right: 62 167
+        on right: 62 168
     multi_comma_variableDeclaration <treeptr> (205)
         on left: 80 81
         on right: 79 80
@@ -849,7 +851,7 @@ Nonterminals, with rules where they appear
         on right: 102
     assignableExpression <treeptr> (208)
         on left: 88 89
-        on right: 99 114
+        on right: 99 115
     multi_unaryPrefix <treeptr> (209)
         on left: 90 92
         on right: 90 98
@@ -873,7 +875,7 @@ Nonterminals, with rules where they appear
         on right: 100
     assignableSuffix <treeptr> (216)
         on left: 103 104
-        on right: 111
+        on right: 111 113
     typeArguments <treeptr> (217)
         on left: 105
         on right: 47 55 104
@@ -887,200 +889,200 @@ Nonterminals, with rules where they appear
         on left: 109 110
         on right: 105 106
     directlyAssignableExpression <treeptr> (221)
-        on left: 111 112 113
+        on left: 111 112 113 114
         on right: 101 102
     parenthesizedDirectlyAssignableExpression <treeptr> (222)
-        on left: 114
-        on right: 113
+        on left: 115
+        on right: 114
     multi_postfixUnarySuffix <treeptr> (223)
-        on left: 115 117
-        on right: 115 118
+        on left: 116 118
+        on right: 116 119
     $@7 (224)
-        on left: 116
-        on right: 117
+        on left: 117
+        on right: 118
     postfixUnaryExpression <treeptr> (225)
-        on left: 118
-        on right: 98 111 221 222 223 224
+        on left: 119
+        on right: 98 111 222 223 224 225
     postfixUnarySuffix <treeptr> (226)
-        on left: 119 120 121 122
-        on right: 115
+        on left: 120 121 122 123
+        on right: 116
     identifier_expression_class <treeptr> (227)
-        on left: 123 124 125
-        on right: 126
+        on left: 124 125 126
+        on right: 127
     navigationSuffix <treeptr> (228)
-        on left: 126
-        on right: 122
+        on left: 127
+        on right: 123
     memberAccessOperator <treeptr> (229)
-        on left: 127 128
-        on right: 126
+        on left: 128 129
+        on right: 127
     postfixUnaryOperator <treeptr> (230)
-        on left: 129 130 131
-        on right: 119
+        on left: 130 131 132
+        on right: 120
     multi_comma_expression <treeptr> (231)
-        on left: 132 134
-        on right: 132 135 250 251
+        on left: 133 135
+        on right: 133 136 251 252
     $@8 (232)
-        on left: 133
-        on right: 134
+        on left: 134
+        on right: 135
     indexingSuffix <treeptr> (233)
-        on left: 135
-        on right: 103 120
-    callSuffix <treeptr> (234)
         on left: 136
-        on right: 121
+        on right: 103 121
+    callSuffix <treeptr> (234)
+        on left: 137
+        on right: 122
     multi_comma_valueArgument <treeptr> (235)
-        on left: 137 139
-        on right: 137 140
+        on left: 138 140
+        on right: 138 141
     $@9 (236)
-        on left: 138
-        on right: 139
+        on left: 139
+        on right: 140
     opt_valueArgument <treeptr> (237)
-        on left: 140 142
-        on right: 143
+        on left: 141 143
+        on right: 144
     $@10 (238)
-        on left: 141
-        on right: 142
+        on left: 142
+        on right: 143
     valueArguments <treeptr> (239)
-        on left: 143
-        on right: 136
+        on left: 144
+        on right: 137
     opt_simpleIdentifier_EQ <treeptr> (240)
-        on left: 144 146
-        on right: 150
+        on left: 145 147
+        on right: 151
     $@11 (241)
-        on left: 145
-        on right: 146
+        on left: 146
+        on right: 147
     opt_Multi <treeptr> (242)
-        on left: 147 149
-        on right: 150
+        on left: 148 150
+        on right: 151
     $@12 (243)
-        on left: 148
-        on right: 149
+        on left: 149
+        on right: 150
     valueArgument <treeptr> (244)
-        on left: 150
-        on right: 137 140
-    parenthesizedExpression <treeptr> (245)
         on left: 151
-        on right: 124 225
-    ifExpression <treeptr> (246)
+        on right: 138 141
+    parenthesizedExpression <treeptr> (245)
         on left: 152
-        on right: 238
+        on right: 125 226
+    ifExpression <treeptr> (246)
+        on left: 153
+        on right: 239
     opt_else <treeptr> (247)
-        on left: 153 154 155 156
-        on right: 152
+        on left: 154 155 156 157
+        on right: 153
     ifElseTail <treeptr> (248)
-        on left: 157 158
-        on right: 155 156
+        on left: 158 159
+        on right: 156 157
     functionCall <treeptr> (249)
-        on left: 159 160
-        on right: 227
+        on left: 160 161
+        on right: 228
     dotExpression <treeptr> (250)
-        on left: 161 162
-        on right: 160 162
+        on left: 162 163
+        on right: 161 163
     functionArguments <treeptr> (251)
-        on left: 163 164 165
-        on right: 159 160 164
+        on left: 164 165 166
+        on right: 160 161 165
     variable_multivariable <treeptr> (252)
-        on left: 166 167
-        on right: 174
+        on left: 167 168
+        on right: 175
     control_structure_body_or_comma <treeptr> (253)
-        on left: 168 169
-        on right: 173
+        on left: 169 170
+        on right: 174
     loopStatement <treeptr> (254)
-        on left: 170 171 172
+        on left: 171 172 173
         on right: 33
     whileStatement <treeptr> (255)
-        on left: 173
-        on right: 170
-    forStatement <treeptr> (256)
         on left: 174
         on right: 171
-    doWhileStatement <treeptr> (257)
+    forStatement <treeptr> (256)
         on left: 175
         on right: 172
+    doWhileStatement <treeptr> (257)
+        on left: 176
+        on right: 173
     controlStructureBody <treeptr> (258)
-        on left: 176 177
-        on right: 153 155 156 157 168 174 175 191 192 193 194
+        on left: 177 178
+        on right: 154 156 157 158 169 175 176 192 193 194 195
     jumpExpression <treeptr> (259)
-        on left: 178 179 180 181
-        on right: 236
-    multi_whenEntry <treeptr> (260)
-        on left: 182 183
-        on right: 182 184 185
-    whenExpression <treeptr> (261)
-        on left: 184 185
-        on right: 239
-    whenSubject <treeptr> (262)
-        on left: 186 187
-        on right: 184
-    multi_comma_whenCondition <treeptr> (263)
-        on left: 188 190
-        on right: 188 191 192
-    $@13 (264)
-        on left: 189
-        on right: 190
-    whenEntry <treeptr> (265)
-        on left: 191 192 193 194
-        on right: 182
-    whenCondition <treeptr> (266)
-        on left: 195 196
-        on right: 188 191 192
-    rangeTest <treeptr> (267)
-        on left: 197
-        on right: 196
-    classMembers <treeptr> (268)
-        on left: 198 199
-        on right: 82 199
-    classMember <treeptr> (269)
-        on left: 200 201
-        on right: 199
-    expression <treeptr> (270)
-        on left: 202
-        on right: 21 32 58 100 132 135 150 151 152 163 164 173 174 175 178 186 187 195 197 248 249 250 251
-    disjunction <treeptr> (271)
-        on left: 203 204
-        on right: 202 204
-    conjunction <treeptr> (272)
-        on left: 205 206
-        on right: 203 204 206
-    equality <treeptr> (273)
-        on left: 207 208
-        on right: 205 206 208
-    comparison <treeptr> (274)
-        on left: 209 210 211
-        on right: 207 208 210 211
-    genericCallLikeComparison <treeptr> (275)
-        on left: 212 213
-        on right: 209 210 211 213
-    elvisExpression <treeptr> (276)
-        on left: 214 215
-        on right: 212 213 215
-    rangeExpression <treeptr> (277)
-        on left: 216 217
-        on right: 214 215 217
-    additiveExpression <treeptr> (278)
-        on left: 218 219 220
-        on right: 216 217 219 220
-    multiplicativeExpression <treeptr> (279)
-        on left: 221 222 223 224
-        on right: 218 219 220 222 223 224
-    primaryExpression <treeptr> (280)
-        on left: 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239
-        on right: 118
-    typeLiteral <treeptr> (281)
-        on left: 240 241 242 243 244 245
-        on right: 246
-    arrayExpression <treeptr> (282)
-        on left: 246
-        on right: 234
-    collectionLiteral <treeptr> (283)
-        on left: 247 248 249 250 251
+        on left: 179 180 181 182
         on right: 237
+    multi_whenEntry <treeptr> (260)
+        on left: 183 184
+        on right: 183 185 186
+    whenExpression <treeptr> (261)
+        on left: 185 186
+        on right: 240
+    whenSubject <treeptr> (262)
+        on left: 187 188
+        on right: 185
+    multi_comma_whenCondition <treeptr> (263)
+        on left: 189 191
+        on right: 189 192 193
+    $@13 (264)
+        on left: 190
+        on right: 191
+    whenEntry <treeptr> (265)
+        on left: 192 193 194 195
+        on right: 183
+    whenCondition <treeptr> (266)
+        on left: 196 197
+        on right: 189 192 193
+    rangeTest <treeptr> (267)
+        on left: 198
+        on right: 197
+    classMembers <treeptr> (268)
+        on left: 199 200
+        on right: 82 200
+    classMember <treeptr> (269)
+        on left: 201 202
+        on right: 200
+    expression <treeptr> (270)
+        on left: 203
+        on right: 21 32 58 100 133 136 151 152 153 164 165 174 175 176 179 187 188 196 198 249 250 251 252
+    disjunction <treeptr> (271)
+        on left: 204 205
+        on right: 203 205
+    conjunction <treeptr> (272)
+        on left: 206 207
+        on right: 204 205 207
+    equality <treeptr> (273)
+        on left: 208 209
+        on right: 206 207 209
+    comparison <treeptr> (274)
+        on left: 210 211 212
+        on right: 208 209 211 212
+    genericCallLikeComparison <treeptr> (275)
+        on left: 213 214
+        on right: 210 211 212 214
+    elvisExpression <treeptr> (276)
+        on left: 215 216
+        on right: 213 214 216
+    rangeExpression <treeptr> (277)
+        on left: 217 218
+        on right: 215 216 218
+    additiveExpression <treeptr> (278)
+        on left: 219 220 221
+        on right: 217 218 220 221
+    multiplicativeExpression <treeptr> (279)
+        on left: 222 223 224 225
+        on right: 219 220 221 223 224 225
+    primaryExpression <treeptr> (280)
+        on left: 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240
+        on right: 119
+    typeLiteral <treeptr> (281)
+        on left: 241 242 243 244 245 246
+        on right: 247
+    arrayExpression <treeptr> (282)
+        on left: 247
+        on right: 235
+    collectionLiteral <treeptr> (283)
+        on left: 248 249 250 251 252
+        on right: 238
     comparison_operator <treeptr> (284)
-        on left: 252 253 254
-        on right: 211
+        on left: 253 254 255
+        on right: 212
     equality_operator <treeptr> (285)
-        on left: 255 256 257 258
-        on right: 208
+        on left: 256 257 258 259
+        on right: 209
 
 
 State 0
@@ -1508,7 +1510,7 @@ State 41
 
    82 classBody: LCURL • classMembers RCURL
 
-    $default  reduce using rule 198 (classMembers)
+    $default  reduce using rule 199 (classMembers)
 
     classMembers  go to state 65
 
@@ -1756,7 +1758,7 @@ State 64
 State 65
 
    82 classBody: LCURL classMembers • RCURL
-  199 classMembers: classMembers • classMember
+  200 classMembers: classMembers • classMember
 
     LPAREN            shift, and go to state 29
     RCURL             shift, and go to state 89
@@ -2066,23 +2068,23 @@ State 89
 
 State 90
 
-  200 classMember: functionDeclaration •
-
-    $default  reduce using rule 200 (classMember)
-
-
-State 91
-
-  201 classMember: variableDeclaration •
+  201 classMember: functionDeclaration •
 
     $default  reduce using rule 201 (classMember)
 
 
+State 91
+
+  202 classMember: variableDeclaration •
+
+    $default  reduce using rule 202 (classMember)
+
+
 State 92
 
-  199 classMembers: classMembers classMember •
+  200 classMembers: classMembers classMember •
 
-    $default  reduce using rule 199 (classMembers)
+    $default  reduce using rule 200 (classMembers)
 
 
 State 93
@@ -2357,7 +2359,7 @@ State 111
 
 State 112
 
-  151 parenthesizedExpression: LPAREN • expression RPAREN
+  152 parenthesizedExpression: LPAREN • expression RPAREN
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -2402,11 +2404,11 @@ State 112
 
 State 113
 
-  247 collectionLiteral: LSQUARE • RSQUARE
-  248                  | LSQUARE • expression COMMA RSQUARE
-  249                  | LSQUARE • expression RSQUARE
-  250                  | LSQUARE • expression multi_comma_expression RSQUARE
-  251                  | LSQUARE • expression multi_comma_expression COMMA RSQUARE
+  248 collectionLiteral: LSQUARE • RSQUARE
+  249                  | LSQUARE • expression COMMA RSQUARE
+  250                  | LSQUARE • expression RSQUARE
+  251                  | LSQUARE • expression multi_comma_expression RSQUARE
+  252                  | LSQUARE • expression multi_comma_expression COMMA RSQUARE
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -2452,15 +2454,15 @@ State 113
 
 State 114
 
-  152 ifExpression: IF • LPAREN expression RPAREN opt_else
+  153 ifExpression: IF • LPAREN expression RPAREN opt_else
 
     LPAREN  shift, and go to state 181
 
 
 State 115
 
-  184 whenExpression: WHEN • whenSubject LCURL multi_whenEntry RCURL
-  185               | WHEN • LCURL multi_whenEntry RCURL
+  185 whenExpression: WHEN • whenSubject LCURL multi_whenEntry RCURL
+  186               | WHEN • LCURL multi_whenEntry RCURL
 
     LPAREN  shift, and go to state 182
     LCURL   shift, and go to state 183
@@ -2470,8 +2472,8 @@ State 115
 
 State 116
 
-  178 jumpExpression: RETURN • expression
-  179               | RETURN •
+  179 jumpExpression: RETURN • expression
+  180               | RETURN •
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -2490,23 +2492,23 @@ State 116
     ARRAYTYPELITERAL   shift, and go to state 31
     IDENTIFIER         shift, and go to state 126
 
-    LPAREN             [reduce using rule 179 (jumpExpression)]
-    LSQUARE            [reduce using rule 179 (jumpExpression)]
-    IF                 [reduce using rule 179 (jumpExpression)]
-    WHEN               [reduce using rule 179 (jumpExpression)]
-    RETURN             [reduce using rule 179 (jumpExpression)]
-    CONTINUE           [reduce using rule 179 (jumpExpression)]
-    BREAK              [reduce using rule 179 (jumpExpression)]
-    NULL_LITERAL       [reduce using rule 179 (jumpExpression)]
-    FLOAT_LITERAL      [reduce using rule 179 (jumpExpression)]
-    DOUBLE_LITERAL     [reduce using rule 179 (jumpExpression)]
-    INTEGER_LITERAL    [reduce using rule 179 (jumpExpression)]
-    CHARACTER_LITERAL  [reduce using rule 179 (jumpExpression)]
-    BOOLEAN_LITERAL    [reduce using rule 179 (jumpExpression)]
-    STRING_LITERAL     [reduce using rule 179 (jumpExpression)]
-    ARRAYTYPELITERAL   [reduce using rule 179 (jumpExpression)]
-    IDENTIFIER         [reduce using rule 179 (jumpExpression)]
-    $default           reduce using rule 179 (jumpExpression)
+    LPAREN             [reduce using rule 180 (jumpExpression)]
+    LSQUARE            [reduce using rule 180 (jumpExpression)]
+    IF                 [reduce using rule 180 (jumpExpression)]
+    WHEN               [reduce using rule 180 (jumpExpression)]
+    RETURN             [reduce using rule 180 (jumpExpression)]
+    CONTINUE           [reduce using rule 180 (jumpExpression)]
+    BREAK              [reduce using rule 180 (jumpExpression)]
+    NULL_LITERAL       [reduce using rule 180 (jumpExpression)]
+    FLOAT_LITERAL      [reduce using rule 180 (jumpExpression)]
+    DOUBLE_LITERAL     [reduce using rule 180 (jumpExpression)]
+    INTEGER_LITERAL    [reduce using rule 180 (jumpExpression)]
+    CHARACTER_LITERAL  [reduce using rule 180 (jumpExpression)]
+    BOOLEAN_LITERAL    [reduce using rule 180 (jumpExpression)]
+    STRING_LITERAL     [reduce using rule 180 (jumpExpression)]
+    ARRAYTYPELITERAL   [reduce using rule 180 (jumpExpression)]
+    IDENTIFIER         [reduce using rule 180 (jumpExpression)]
+    $default           reduce using rule 180 (jumpExpression)
 
     arrayType                  go to state 127
     simpleIdentifier           go to state 128
@@ -2534,72 +2536,72 @@ State 116
 
 State 117
 
-  180 jumpExpression: CONTINUE •
-
-    $default  reduce using rule 180 (jumpExpression)
-
-
-State 118
-
-  181 jumpExpression: BREAK •
+  181 jumpExpression: CONTINUE •
 
     $default  reduce using rule 181 (jumpExpression)
 
 
+State 118
+
+  182 jumpExpression: BREAK •
+
+    $default  reduce using rule 182 (jumpExpression)
+
+
 State 119
 
-  233 primaryExpression: NULL_LITERAL •
+  234 primaryExpression: NULL_LITERAL •
 
-    $default  reduce using rule 233 (primaryExpression)
+    $default  reduce using rule 234 (primaryExpression)
 
 
 State 120
 
-  231 primaryExpression: FLOAT_LITERAL •
-
-    $default  reduce using rule 231 (primaryExpression)
-
-
-State 121
-
-  232 primaryExpression: DOUBLE_LITERAL •
+  232 primaryExpression: FLOAT_LITERAL •
 
     $default  reduce using rule 232 (primaryExpression)
 
 
+State 121
+
+  233 primaryExpression: DOUBLE_LITERAL •
+
+    $default  reduce using rule 233 (primaryExpression)
+
+
 State 122
 
-  228 primaryExpression: INTEGER_LITERAL •
+  229 primaryExpression: INTEGER_LITERAL •
 
-    $default  reduce using rule 228 (primaryExpression)
+    $default  reduce using rule 229 (primaryExpression)
 
 
 State 123
 
-  235 primaryExpression: CHARACTER_LITERAL •
+  236 primaryExpression: CHARACTER_LITERAL •
 
-    $default  reduce using rule 235 (primaryExpression)
+    $default  reduce using rule 236 (primaryExpression)
 
 
 State 124
 
-  230 primaryExpression: BOOLEAN_LITERAL •
+  231 primaryExpression: BOOLEAN_LITERAL •
 
-    $default  reduce using rule 230 (primaryExpression)
+    $default  reduce using rule 231 (primaryExpression)
 
 
 State 125
 
-  229 primaryExpression: STRING_LITERAL •
+  230 primaryExpression: STRING_LITERAL •
 
-    $default  reduce using rule 229 (primaryExpression)
+    $default  reduce using rule 230 (primaryExpression)
 
 
 State 126
 
    74 simpleIdentifier: IDENTIFIER •
-  159 functionCall: IDENTIFIER • LPAREN functionArguments RPAREN semis
-  161 dotExpression: IDENTIFIER • DOT IDENTIFIER
+  160 functionCall: IDENTIFIER • LPAREN functionArguments RPAREN semis
+  162 dotExpression: IDENTIFIER • DOT IDENTIFIER
 
     DOT     shift, and go to state 186
     LPAREN  shift, and go to state 187
@@ -2611,50 +2613,50 @@ State 126
 
 State 127
 
-  246 arrayExpression: arrayType • LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL
+  247 arrayExpression: arrayType • LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL
 
     LPAREN  shift, and go to state 188
 
 
 State 128
 
-  226 primaryExpression: simpleIdentifier •
-
-    $default  reduce using rule 226 (primaryExpression)
-
-
-State 129
-
-  221 multiplicativeExpression: postfixUnaryExpression •
-
-    $default  reduce using rule 221 (multiplicativeExpression)
-
-
-State 130
-
-  225 primaryExpression: parenthesizedExpression •
-
-    $default  reduce using rule 225 (primaryExpression)
-
-
-State 131
-
-  238 primaryExpression: ifExpression •
-
-    $default  reduce using rule 238 (primaryExpression)
-
-
-State 132
-
-  227 primaryExpression: functionCall •
+  227 primaryExpression: simpleIdentifier •
 
     $default  reduce using rule 227 (primaryExpression)
 
 
+State 129
+
+  222 multiplicativeExpression: postfixUnaryExpression •
+
+    $default  reduce using rule 222 (multiplicativeExpression)
+
+
+State 130
+
+  226 primaryExpression: parenthesizedExpression •
+
+    $default  reduce using rule 226 (primaryExpression)
+
+
+State 131
+
+  239 primaryExpression: ifExpression •
+
+    $default  reduce using rule 239 (primaryExpression)
+
+
+State 132
+
+  228 primaryExpression: functionCall •
+
+    $default  reduce using rule 228 (primaryExpression)
+
+
 State 133
 
-  160 functionCall: dotExpression • LPAREN functionArguments RPAREN semis
-  162 dotExpression: dotExpression • DOT IDENTIFIER
+  161 functionCall: dotExpression • LPAREN functionArguments RPAREN semis
+  163 dotExpression: dotExpression • DOT IDENTIFIER
 
     DOT     shift, and go to state 189
     LPAREN  shift, and go to state 190
@@ -2662,16 +2664,16 @@ State 133
 
 State 134
 
-  236 primaryExpression: jumpExpression •
+  237 primaryExpression: jumpExpression •
 
-    $default  reduce using rule 236 (primaryExpression)
+    $default  reduce using rule 237 (primaryExpression)
 
 
 State 135
 
-  239 primaryExpression: whenExpression •
+  240 primaryExpression: whenExpression •
 
-    $default  reduce using rule 239 (primaryExpression)
+    $default  reduce using rule 240 (primaryExpression)
 
 
 State 136
@@ -2683,134 +2685,134 @@ State 136
 
 State 137
 
-  202 expression: disjunction •
-  204 disjunction: disjunction • DISJ conjunction
+  203 expression: disjunction •
+  205 disjunction: disjunction • DISJ conjunction
 
     DISJ  shift, and go to state 191
 
-    DISJ      [reduce using rule 202 (expression)]
-    $default  reduce using rule 202 (expression)
+    DISJ      [reduce using rule 203 (expression)]
+    $default  reduce using rule 203 (expression)
 
 
 State 138
 
-  203 disjunction: conjunction •
-  206 conjunction: conjunction • CONJ equality
+  204 disjunction: conjunction •
+  207 conjunction: conjunction • CONJ equality
 
     CONJ  shift, and go to state 192
 
-    CONJ      [reduce using rule 203 (disjunction)]
-    $default  reduce using rule 203 (disjunction)
+    CONJ      [reduce using rule 204 (disjunction)]
+    $default  reduce using rule 204 (disjunction)
 
 
 State 139
 
-  205 conjunction: equality •
-  208 equality: equality • equality_operator comparison
+  206 conjunction: equality •
+  209 equality: equality • equality_operator comparison
 
     EXCL_EQ    shift, and go to state 193
     EXCL_EQEQ  shift, and go to state 194
     EQEQ       shift, and go to state 195
     EQEQEQ     shift, and go to state 196
 
-    EXCL_EQ    [reduce using rule 205 (conjunction)]
-    EXCL_EQEQ  [reduce using rule 205 (conjunction)]
-    EQEQ       [reduce using rule 205 (conjunction)]
-    EQEQEQ     [reduce using rule 205 (conjunction)]
-    $default   reduce using rule 205 (conjunction)
+    EXCL_EQ    [reduce using rule 206 (conjunction)]
+    EXCL_EQEQ  [reduce using rule 206 (conjunction)]
+    EQEQ       [reduce using rule 206 (conjunction)]
+    EQEQEQ     [reduce using rule 206 (conjunction)]
+    $default   reduce using rule 206 (conjunction)
 
     equality_operator  go to state 197
 
 
 State 140
 
-  207 equality: comparison •
-  210 comparison: comparison • LANGLE genericCallLikeComparison
-  211           | comparison • comparison_operator genericCallLikeComparison
+  208 equality: comparison •
+  211 comparison: comparison • LANGLE genericCallLikeComparison
+  212           | comparison • comparison_operator genericCallLikeComparison
 
     LANGLE  shift, and go to state 198
     RANGLE  shift, and go to state 199
     LE      shift, and go to state 200
     GE      shift, and go to state 201
 
-    LANGLE    [reduce using rule 207 (equality)]
-    RANGLE    [reduce using rule 207 (equality)]
-    LE        [reduce using rule 207 (equality)]
-    GE        [reduce using rule 207 (equality)]
-    $default  reduce using rule 207 (equality)
+    LANGLE    [reduce using rule 208 (equality)]
+    RANGLE    [reduce using rule 208 (equality)]
+    LE        [reduce using rule 208 (equality)]
+    GE        [reduce using rule 208 (equality)]
+    $default  reduce using rule 208 (equality)
 
     comparison_operator  go to state 202
 
 
 State 141
 
-  209 comparison: genericCallLikeComparison •
-  213 genericCallLikeComparison: genericCallLikeComparison • IN elvisExpression
+  210 comparison: genericCallLikeComparison •
+  214 genericCallLikeComparison: genericCallLikeComparison • IN elvisExpression
 
     IN  shift, and go to state 203
 
-    IN        [reduce using rule 209 (comparison)]
-    $default  reduce using rule 209 (comparison)
+    IN        [reduce using rule 210 (comparison)]
+    $default  reduce using rule 210 (comparison)
 
 
 State 142
 
-  212 genericCallLikeComparison: elvisExpression •
-  215 elvisExpression: elvisExpression • QUEST_COLON rangeExpression
+  213 genericCallLikeComparison: elvisExpression •
+  216 elvisExpression: elvisExpression • QUEST_COLON rangeExpression
 
     QUEST_COLON  shift, and go to state 204
 
-    QUEST_COLON  [reduce using rule 212 (genericCallLikeComparison)]
-    $default     reduce using rule 212 (genericCallLikeComparison)
+    QUEST_COLON  [reduce using rule 213 (genericCallLikeComparison)]
+    $default     reduce using rule 213 (genericCallLikeComparison)
 
 
 State 143
 
-  214 elvisExpression: rangeExpression •
-  217 rangeExpression: rangeExpression • RANGE additiveExpression
+  215 elvisExpression: rangeExpression •
+  218 rangeExpression: rangeExpression • RANGE additiveExpression
 
     RANGE  shift, and go to state 205
 
-    RANGE     [reduce using rule 214 (elvisExpression)]
-    $default  reduce using rule 214 (elvisExpression)
+    RANGE     [reduce using rule 215 (elvisExpression)]
+    $default  reduce using rule 215 (elvisExpression)
 
 
 State 144
 
-  216 rangeExpression: additiveExpression •
-  219 additiveExpression: additiveExpression • ADD multiplicativeExpression
-  220                   | additiveExpression • SUB multiplicativeExpression
+  217 rangeExpression: additiveExpression •
+  220 additiveExpression: additiveExpression • ADD multiplicativeExpression
+  221                   | additiveExpression • SUB multiplicativeExpression
 
     ADD  shift, and go to state 206
     SUB  shift, and go to state 207
 
-    ADD       [reduce using rule 216 (rangeExpression)]
-    SUB       [reduce using rule 216 (rangeExpression)]
-    $default  reduce using rule 216 (rangeExpression)
+    ADD       [reduce using rule 217 (rangeExpression)]
+    SUB       [reduce using rule 217 (rangeExpression)]
+    $default  reduce using rule 217 (rangeExpression)
 
 
 State 145
 
-  218 additiveExpression: multiplicativeExpression •
-  222 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
-  223                         | multiplicativeExpression • DIV postfixUnaryExpression
-  224                         | multiplicativeExpression • MOD postfixUnaryExpression
+  219 additiveExpression: multiplicativeExpression •
+  223 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
+  224                         | multiplicativeExpression • DIV postfixUnaryExpression
+  225                         | multiplicativeExpression • MOD postfixUnaryExpression
 
     MULT  shift, and go to state 208
     MOD   shift, and go to state 209
     DIV   shift, and go to state 210
 
-    MULT      [reduce using rule 218 (additiveExpression)]
-    MOD       [reduce using rule 218 (additiveExpression)]
-    DIV       [reduce using rule 218 (additiveExpression)]
-    $default  reduce using rule 218 (additiveExpression)
+    MULT      [reduce using rule 219 (additiveExpression)]
+    MOD       [reduce using rule 219 (additiveExpression)]
+    DIV       [reduce using rule 219 (additiveExpression)]
+    $default  reduce using rule 219 (additiveExpression)
 
 
 State 146
 
-  118 postfixUnaryExpression: primaryExpression • multi_postfixUnarySuffix
+  119 postfixUnaryExpression: primaryExpression • multi_postfixUnarySuffix
 
-    $default  reduce using rule 116 ($@7)
+    $default  reduce using rule 117 ($@7)
 
     multi_postfixUnarySuffix  go to state 211
     $@7                       go to state 212
@@ -2818,16 +2820,16 @@ State 146
 
 State 147
 
-  234 primaryExpression: arrayExpression •
+  235 primaryExpression: arrayExpression •
 
-    $default  reduce using rule 234 (primaryExpression)
+    $default  reduce using rule 235 (primaryExpression)
 
 
 State 148
 
-  237 primaryExpression: collectionLiteral •
+  238 primaryExpression: collectionLiteral •
 
-    $default  reduce using rule 237 (primaryExpression)
+    $default  reduce using rule 238 (primaryExpression)
 
 
 State 149
@@ -2905,8 +2907,8 @@ State 154
 
 State 155
 
-  114 parenthesizedDirectlyAssignableExpression: LPAREN • assignableExpression RPAREN
-  151 parenthesizedExpression: LPAREN • expression RPAREN
+  115 parenthesizedDirectlyAssignableExpression: LPAREN • assignableExpression RPAREN
+  152 parenthesizedExpression: LPAREN • expression RPAREN
 
     LPAREN             shift, and go to state 217
     LSQUARE            shift, and go to state 113
@@ -2974,14 +2976,14 @@ State 155
 
 State 156
 
-  174 forStatement: FOR • LPAREN variable_multivariable IN expression RPAREN controlStructureBody
+  175 forStatement: FOR • LPAREN variable_multivariable IN expression RPAREN controlStructureBody
 
     LPAREN  shift, and go to state 223
 
 
 State 157
 
-  175 doWhileStatement: DO • controlStructureBody WHILE LPAREN expression RPAREN
+  176 doWhileStatement: DO • controlStructureBody WHILE LPAREN expression RPAREN
 
     LPAREN             shift, and go to state 155
     LSQUARE            shift, and go to state 113
@@ -3052,7 +3054,7 @@ State 157
 
 State 158
 
-  173 whileStatement: WHILE • LPAREN expression RPAREN control_structure_body_or_comma
+  174 whileStatement: WHILE • LPAREN expression RPAREN control_structure_body_or_comma
 
     LPAREN  shift, and go to state 227
 
@@ -3095,15 +3097,25 @@ State 162
 State 163
 
   112 directlyAssignableExpression: simpleIdentifier •
-  226 primaryExpression: simpleIdentifier •
+  113                             | simpleIdentifier • assignableSuffix
+  227 primaryExpression: simpleIdentifier •
 
+    LSQUARE  shift, and go to state 231
+    LANGLE   shift, and go to state 49
+
+    LSQUARE          [reduce using rule 227 (primaryExpression)]
     ASSIGNMENT       reduce using rule 112 (directlyAssignableExpression)
     ADD_ASSIGNMENT   reduce using rule 112 (directlyAssignableExpression)
     SUB_ASSIGNMENT   reduce using rule 112 (directlyAssignableExpression)
     MULT_ASSIGNMENT  reduce using rule 112 (directlyAssignableExpression)
     DIV_ASSIGNMENT   reduce using rule 112 (directlyAssignableExpression)
     MOD_ASSIGNMENT   reduce using rule 112 (directlyAssignableExpression)
-    $default         reduce using rule 226 (primaryExpression)
+    LANGLE           [reduce using rule 227 (primaryExpression)]
+    $default         reduce using rule 227 (primaryExpression)
+
+    assignableSuffix  go to state 232
+    typeArguments     go to state 233
+    indexingSuffix    go to state 234
 
 
 State 164
@@ -3115,7 +3127,7 @@ State 164
     SEMICOLON  [reduce using rule 24 (semis)]
     $default   reduce using rule 24 (semis)
 
-    semis  go to state 231
+    semis  go to state 235
 
 
 State 165
@@ -3148,7 +3160,7 @@ State 165
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 232
+    expression                 go to state 236
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -3168,38 +3180,38 @@ State 166
   101 directly_assign: directlyAssignableExpression • ASSIGNMENT
   102                | directlyAssignableExpression • assignmentAndOperator
 
-    ASSIGNMENT       shift, and go to state 233
-    ADD_ASSIGNMENT   shift, and go to state 234
-    SUB_ASSIGNMENT   shift, and go to state 235
-    MULT_ASSIGNMENT  shift, and go to state 236
-    DIV_ASSIGNMENT   shift, and go to state 237
-    MOD_ASSIGNMENT   shift, and go to state 238
+    ASSIGNMENT       shift, and go to state 237
+    ADD_ASSIGNMENT   shift, and go to state 238
+    SUB_ASSIGNMENT   shift, and go to state 239
+    MULT_ASSIGNMENT  shift, and go to state 240
+    DIV_ASSIGNMENT   shift, and go to state 241
+    MOD_ASSIGNMENT   shift, and go to state 242
 
-    assignmentAndOperator  go to state 239
+    assignmentAndOperator  go to state 243
 
 
 State 167
 
-  113 directlyAssignableExpression: parenthesizedDirectlyAssignableExpression •
+  114 directlyAssignableExpression: parenthesizedDirectlyAssignableExpression •
 
-    $default  reduce using rule 113 (directlyAssignableExpression)
+    $default  reduce using rule 114 (directlyAssignableExpression)
 
 
 State 168
 
   111 directlyAssignableExpression: postfixUnaryExpression • assignableSuffix
-  221 multiplicativeExpression: postfixUnaryExpression •
+  222 multiplicativeExpression: postfixUnaryExpression •
 
-    LSQUARE  shift, and go to state 240
+    LSQUARE  shift, and go to state 231
     LANGLE   shift, and go to state 49
 
-    LSQUARE   [reduce using rule 221 (multiplicativeExpression)]
-    LANGLE    [reduce using rule 221 (multiplicativeExpression)]
-    $default  reduce using rule 221 (multiplicativeExpression)
+    LSQUARE   [reduce using rule 222 (multiplicativeExpression)]
+    LANGLE    [reduce using rule 222 (multiplicativeExpression)]
+    $default  reduce using rule 222 (multiplicativeExpression)
 
-    assignableSuffix  go to state 241
-    typeArguments     go to state 242
-    indexingSuffix    go to state 243
+    assignableSuffix  go to state 244
+    typeArguments     go to state 233
+    indexingSuffix    go to state 234
 
 
 State 169
@@ -3211,28 +3223,28 @@ State 169
     SEMICOLON  [reduce using rule 24 (semis)]
     $default   reduce using rule 24 (semis)
 
-    semis  go to state 244
+    semis  go to state 245
 
 
 State 170
 
-  170 loopStatement: whileStatement •
-
-    $default  reduce using rule 170 (loopStatement)
-
-
-State 171
-
-  171 loopStatement: forStatement •
+  171 loopStatement: whileStatement •
 
     $default  reduce using rule 171 (loopStatement)
 
 
-State 172
+State 171
 
-  172 loopStatement: doWhileStatement •
+  172 loopStatement: forStatement •
 
     $default  reduce using rule 172 (loopStatement)
+
+
+State 172
+
+  173 loopStatement: doWhileStatement •
+
+    $default  reduce using rule 173 (loopStatement)
 
 
 State 173
@@ -3244,14 +3256,14 @@ State 173
     SEMICOLON  [reduce using rule 24 (semis)]
     $default   reduce using rule 24 (semis)
 
-    semis  go to state 245
+    semis  go to state 246
 
 
 State 174
 
    21 functionBody: ASSIGNMENT expression • SEMICOLON
 
-    SEMICOLON  shift, and go to state 246
+    SEMICOLON  shift, and go to state 247
 
 
 State 175
@@ -3274,57 +3286,57 @@ State 175
     arrayType                  go to state 36
     typeRef_parenthesizedType  go to state 37
     simpleIdentifier           go to state 46
-    variableDeclaration        go to state 247
+    variableDeclaration        go to state 248
 
 
 State 176
 
    79 multiVariableDeclaration: LPAREN variableDeclaration multi_comma_variableDeclaration opt_comma • RPAREN
 
-    RPAREN  shift, and go to state 248
+    RPAREN  shift, and go to state 249
 
 
 State 177
 
    63 propertyDeclaration: opt_modifier val_var opt_typeParameters nullableType DOT multivariable_variableDeclaration opt_eq_exp • SEMICOLON
 
-    SEMICOLON  shift, and go to state 249
+    SEMICOLON  shift, and go to state 250
 
 
 State 178
 
-  151 parenthesizedExpression: LPAREN expression • RPAREN
+  152 parenthesizedExpression: LPAREN expression • RPAREN
 
-    RPAREN  shift, and go to state 250
+    RPAREN  shift, and go to state 251
 
 
 State 179
 
-  247 collectionLiteral: LSQUARE RSQUARE •
+  248 collectionLiteral: LSQUARE RSQUARE •
 
-    $default  reduce using rule 247 (collectionLiteral)
+    $default  reduce using rule 248 (collectionLiteral)
 
 
 State 180
 
-  248 collectionLiteral: LSQUARE expression • COMMA RSQUARE
-  249                  | LSQUARE expression • RSQUARE
-  250                  | LSQUARE expression • multi_comma_expression RSQUARE
-  251                  | LSQUARE expression • multi_comma_expression COMMA RSQUARE
+  249 collectionLiteral: LSQUARE expression • COMMA RSQUARE
+  250                  | LSQUARE expression • RSQUARE
+  251                  | LSQUARE expression • multi_comma_expression RSQUARE
+  252                  | LSQUARE expression • multi_comma_expression COMMA RSQUARE
 
-    COMMA    shift, and go to state 251
-    RSQUARE  shift, and go to state 252
+    COMMA    shift, and go to state 252
+    RSQUARE  shift, and go to state 253
 
-    COMMA    [reduce using rule 133 ($@8)]
-    RSQUARE  [reduce using rule 133 ($@8)]
+    COMMA    [reduce using rule 134 ($@8)]
+    RSQUARE  [reduce using rule 134 ($@8)]
 
-    multi_comma_expression  go to state 253
-    $@8                     go to state 254
+    multi_comma_expression  go to state 254
+    $@8                     go to state 255
 
 
 State 181
 
-  152 ifExpression: IF LPAREN • expression RPAREN opt_else
+  153 ifExpression: IF LPAREN • expression RPAREN opt_else
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3352,7 +3364,7 @@ State 181
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 255
+    expression                 go to state 256
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -3369,12 +3381,12 @@ State 181
 
 State 182
 
-  186 whenSubject: LPAREN • expression RPAREN
-  187            | LPAREN • VAL variableDeclaration ASSIGNMENT expression RPAREN
+  187 whenSubject: LPAREN • expression RPAREN
+  188            | LPAREN • VAL variableDeclaration ASSIGNMENT expression RPAREN
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
-    VAL                shift, and go to state 256
+    VAL                shift, and go to state 257
     IF                 shift, and go to state 114
     WHEN               shift, and go to state 115
     RETURN             shift, and go to state 116
@@ -3399,7 +3411,7 @@ State 182
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 257
+    expression                 go to state 258
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -3416,37 +3428,37 @@ State 182
 
 State 183
 
-  185 whenExpression: WHEN LCURL • multi_whenEntry RCURL
+  186 whenExpression: WHEN LCURL • multi_whenEntry RCURL
 
-    $default  reduce using rule 183 (multi_whenEntry)
+    $default  reduce using rule 184 (multi_whenEntry)
 
-    multi_whenEntry  go to state 258
+    multi_whenEntry  go to state 259
 
 
 State 184
 
-  184 whenExpression: WHEN whenSubject • LCURL multi_whenEntry RCURL
+  185 whenExpression: WHEN whenSubject • LCURL multi_whenEntry RCURL
 
-    LCURL  shift, and go to state 259
+    LCURL  shift, and go to state 260
 
 
 State 185
 
-  178 jumpExpression: RETURN expression •
+  179 jumpExpression: RETURN expression •
 
-    $default  reduce using rule 178 (jumpExpression)
+    $default  reduce using rule 179 (jumpExpression)
 
 
 State 186
 
-  161 dotExpression: IDENTIFIER DOT • IDENTIFIER
+  162 dotExpression: IDENTIFIER DOT • IDENTIFIER
 
-    IDENTIFIER  shift, and go to state 260
+    IDENTIFIER  shift, and go to state 261
 
 
 State 187
 
-  159 functionCall: IDENTIFIER LPAREN • functionArguments RPAREN semis
+  160 functionCall: IDENTIFIER LPAREN • functionArguments RPAREN semis
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3465,7 +3477,7 @@ State 187
     ARRAYTYPELITERAL   shift, and go to state 31
     IDENTIFIER         shift, and go to state 126
 
-    $default  reduce using rule 165 (functionArguments)
+    $default  reduce using rule 166 (functionArguments)
 
     arrayType                  go to state 127
     simpleIdentifier           go to state 128
@@ -3474,10 +3486,10 @@ State 187
     ifExpression               go to state 131
     functionCall               go to state 132
     dotExpression              go to state 133
-    functionArguments          go to state 261
+    functionArguments          go to state 262
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 262
+    expression                 go to state 263
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -3494,21 +3506,21 @@ State 187
 
 State 188
 
-  246 arrayExpression: arrayType LPAREN • INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL
+  247 arrayExpression: arrayType LPAREN • INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL
 
-    INTEGER_LITERAL  shift, and go to state 263
+    INTEGER_LITERAL  shift, and go to state 264
 
 
 State 189
 
-  162 dotExpression: dotExpression DOT • IDENTIFIER
+  163 dotExpression: dotExpression DOT • IDENTIFIER
 
-    IDENTIFIER  shift, and go to state 264
+    IDENTIFIER  shift, and go to state 265
 
 
 State 190
 
-  160 functionCall: dotExpression LPAREN • functionArguments RPAREN semis
+  161 functionCall: dotExpression LPAREN • functionArguments RPAREN semis
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3527,7 +3539,7 @@ State 190
     ARRAYTYPELITERAL   shift, and go to state 31
     IDENTIFIER         shift, and go to state 126
 
-    $default  reduce using rule 165 (functionArguments)
+    $default  reduce using rule 166 (functionArguments)
 
     arrayType                  go to state 127
     simpleIdentifier           go to state 128
@@ -3536,10 +3548,10 @@ State 190
     ifExpression               go to state 131
     functionCall               go to state 132
     dotExpression              go to state 133
-    functionArguments          go to state 265
+    functionArguments          go to state 266
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 262
+    expression                 go to state 263
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -3556,7 +3568,7 @@ State 190
 
 State 191
 
-  204 disjunction: disjunction DISJ • conjunction
+  205 disjunction: disjunction DISJ • conjunction
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3584,7 +3596,7 @@ State 191
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    conjunction                go to state 266
+    conjunction                go to state 267
     equality                   go to state 139
     comparison                 go to state 140
     genericCallLikeComparison  go to state 141
@@ -3599,7 +3611,7 @@ State 191
 
 State 192
 
-  206 conjunction: conjunction CONJ • equality
+  207 conjunction: conjunction CONJ • equality
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3627,7 +3639,7 @@ State 192
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    equality                   go to state 267
+    equality                   go to state 268
     comparison                 go to state 140
     genericCallLikeComparison  go to state 141
     elvisExpression            go to state 142
@@ -3641,35 +3653,35 @@ State 192
 
 State 193
 
-  257 equality_operator: EXCL_EQ •
-
-    $default  reduce using rule 257 (equality_operator)
-
-
-State 194
-
-  258 equality_operator: EXCL_EQEQ •
+  258 equality_operator: EXCL_EQ •
 
     $default  reduce using rule 258 (equality_operator)
 
 
+State 194
+
+  259 equality_operator: EXCL_EQEQ •
+
+    $default  reduce using rule 259 (equality_operator)
+
+
 State 195
 
-  255 equality_operator: EQEQ •
-
-    $default  reduce using rule 255 (equality_operator)
-
-
-State 196
-
-  256 equality_operator: EQEQEQ •
+  256 equality_operator: EQEQ •
 
     $default  reduce using rule 256 (equality_operator)
 
 
+State 196
+
+  257 equality_operator: EQEQEQ •
+
+    $default  reduce using rule 257 (equality_operator)
+
+
 State 197
 
-  208 equality: equality equality_operator • comparison
+  209 equality: equality equality_operator • comparison
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3697,7 +3709,7 @@ State 197
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    comparison                 go to state 268
+    comparison                 go to state 269
     genericCallLikeComparison  go to state 141
     elvisExpression            go to state 142
     rangeExpression            go to state 143
@@ -3710,68 +3722,7 @@ State 197
 
 State 198
 
-  210 comparison: comparison LANGLE • genericCallLikeComparison
-
-    LPAREN             shift, and go to state 112
-    LSQUARE            shift, and go to state 113
-    IF                 shift, and go to state 114
-    WHEN               shift, and go to state 115
-    RETURN             shift, and go to state 116
-    CONTINUE           shift, and go to state 117
-    BREAK              shift, and go to state 118
-    NULL_LITERAL       shift, and go to state 119
-    FLOAT_LITERAL      shift, and go to state 120
-    DOUBLE_LITERAL     shift, and go to state 121
-    INTEGER_LITERAL    shift, and go to state 122
-    CHARACTER_LITERAL  shift, and go to state 123
-    BOOLEAN_LITERAL    shift, and go to state 124
-    STRING_LITERAL     shift, and go to state 125
-    ARRAYTYPELITERAL   shift, and go to state 31
-    IDENTIFIER         shift, and go to state 126
-
-    arrayType                  go to state 127
-    simpleIdentifier           go to state 128
-    postfixUnaryExpression     go to state 129
-    parenthesizedExpression    go to state 130
-    ifExpression               go to state 131
-    functionCall               go to state 132
-    dotExpression              go to state 133
-    jumpExpression             go to state 134
-    whenExpression             go to state 135
-    genericCallLikeComparison  go to state 269
-    elvisExpression            go to state 142
-    rangeExpression            go to state 143
-    additiveExpression         go to state 144
-    multiplicativeExpression   go to state 145
-    primaryExpression          go to state 146
-    arrayExpression            go to state 147
-    collectionLiteral          go to state 148
-
-
-State 199
-
-  252 comparison_operator: RANGLE •
-
-    $default  reduce using rule 252 (comparison_operator)
-
-
-State 200
-
-  253 comparison_operator: LE •
-
-    $default  reduce using rule 253 (comparison_operator)
-
-
-State 201
-
-  254 comparison_operator: GE •
-
-    $default  reduce using rule 254 (comparison_operator)
-
-
-State 202
-
-  211 comparison: comparison comparison_operator • genericCallLikeComparison
+  211 comparison: comparison LANGLE • genericCallLikeComparison
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3809,9 +3760,70 @@ State 202
     collectionLiteral          go to state 148
 
 
+State 199
+
+  253 comparison_operator: RANGLE •
+
+    $default  reduce using rule 253 (comparison_operator)
+
+
+State 200
+
+  254 comparison_operator: LE •
+
+    $default  reduce using rule 254 (comparison_operator)
+
+
+State 201
+
+  255 comparison_operator: GE •
+
+    $default  reduce using rule 255 (comparison_operator)
+
+
+State 202
+
+  212 comparison: comparison comparison_operator • genericCallLikeComparison
+
+    LPAREN             shift, and go to state 112
+    LSQUARE            shift, and go to state 113
+    IF                 shift, and go to state 114
+    WHEN               shift, and go to state 115
+    RETURN             shift, and go to state 116
+    CONTINUE           shift, and go to state 117
+    BREAK              shift, and go to state 118
+    NULL_LITERAL       shift, and go to state 119
+    FLOAT_LITERAL      shift, and go to state 120
+    DOUBLE_LITERAL     shift, and go to state 121
+    INTEGER_LITERAL    shift, and go to state 122
+    CHARACTER_LITERAL  shift, and go to state 123
+    BOOLEAN_LITERAL    shift, and go to state 124
+    STRING_LITERAL     shift, and go to state 125
+    ARRAYTYPELITERAL   shift, and go to state 31
+    IDENTIFIER         shift, and go to state 126
+
+    arrayType                  go to state 127
+    simpleIdentifier           go to state 128
+    postfixUnaryExpression     go to state 129
+    parenthesizedExpression    go to state 130
+    ifExpression               go to state 131
+    functionCall               go to state 132
+    dotExpression              go to state 133
+    jumpExpression             go to state 134
+    whenExpression             go to state 135
+    genericCallLikeComparison  go to state 271
+    elvisExpression            go to state 142
+    rangeExpression            go to state 143
+    additiveExpression         go to state 144
+    multiplicativeExpression   go to state 145
+    primaryExpression          go to state 146
+    arrayExpression            go to state 147
+    collectionLiteral          go to state 148
+
+
 State 203
 
-  213 genericCallLikeComparison: genericCallLikeComparison IN • elvisExpression
+  214 genericCallLikeComparison: genericCallLikeComparison IN • elvisExpression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3839,7 +3851,7 @@ State 203
     dotExpression             go to state 133
     jumpExpression            go to state 134
     whenExpression            go to state 135
-    elvisExpression           go to state 271
+    elvisExpression           go to state 272
     rangeExpression           go to state 143
     additiveExpression        go to state 144
     multiplicativeExpression  go to state 145
@@ -3850,7 +3862,7 @@ State 203
 
 State 204
 
-  215 elvisExpression: elvisExpression QUEST_COLON • rangeExpression
+  216 elvisExpression: elvisExpression QUEST_COLON • rangeExpression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3878,7 +3890,7 @@ State 204
     dotExpression             go to state 133
     jumpExpression            go to state 134
     whenExpression            go to state 135
-    rangeExpression           go to state 272
+    rangeExpression           go to state 273
     additiveExpression        go to state 144
     multiplicativeExpression  go to state 145
     primaryExpression         go to state 146
@@ -3888,7 +3900,7 @@ State 204
 
 State 205
 
-  217 rangeExpression: rangeExpression RANGE • additiveExpression
+  218 rangeExpression: rangeExpression RANGE • additiveExpression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3916,7 +3928,7 @@ State 205
     dotExpression             go to state 133
     jumpExpression            go to state 134
     whenExpression            go to state 135
-    additiveExpression        go to state 273
+    additiveExpression        go to state 274
     multiplicativeExpression  go to state 145
     primaryExpression         go to state 146
     arrayExpression           go to state 147
@@ -3925,43 +3937,7 @@ State 205
 
 State 206
 
-  219 additiveExpression: additiveExpression ADD • multiplicativeExpression
-
-    LPAREN             shift, and go to state 112
-    LSQUARE            shift, and go to state 113
-    IF                 shift, and go to state 114
-    WHEN               shift, and go to state 115
-    RETURN             shift, and go to state 116
-    CONTINUE           shift, and go to state 117
-    BREAK              shift, and go to state 118
-    NULL_LITERAL       shift, and go to state 119
-    FLOAT_LITERAL      shift, and go to state 120
-    DOUBLE_LITERAL     shift, and go to state 121
-    INTEGER_LITERAL    shift, and go to state 122
-    CHARACTER_LITERAL  shift, and go to state 123
-    BOOLEAN_LITERAL    shift, and go to state 124
-    STRING_LITERAL     shift, and go to state 125
-    ARRAYTYPELITERAL   shift, and go to state 31
-    IDENTIFIER         shift, and go to state 126
-
-    arrayType                 go to state 127
-    simpleIdentifier          go to state 128
-    postfixUnaryExpression    go to state 129
-    parenthesizedExpression   go to state 130
-    ifExpression              go to state 131
-    functionCall              go to state 132
-    dotExpression             go to state 133
-    jumpExpression            go to state 134
-    whenExpression            go to state 135
-    multiplicativeExpression  go to state 274
-    primaryExpression         go to state 146
-    arrayExpression           go to state 147
-    collectionLiteral         go to state 148
-
-
-State 207
-
-  220 additiveExpression: additiveExpression SUB • multiplicativeExpression
+  220 additiveExpression: additiveExpression ADD • multiplicativeExpression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -3995,9 +3971,9 @@ State 207
     collectionLiteral         go to state 148
 
 
-State 208
+State 207
 
-  222 multiplicativeExpression: multiplicativeExpression MULT • postfixUnaryExpression
+  221 additiveExpression: additiveExpression SUB • multiplicativeExpression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -4016,23 +3992,24 @@ State 208
     ARRAYTYPELITERAL   shift, and go to state 31
     IDENTIFIER         shift, and go to state 126
 
-    arrayType                go to state 127
-    simpleIdentifier         go to state 128
-    postfixUnaryExpression   go to state 276
-    parenthesizedExpression  go to state 130
-    ifExpression             go to state 131
-    functionCall             go to state 132
-    dotExpression            go to state 133
-    jumpExpression           go to state 134
-    whenExpression           go to state 135
-    primaryExpression        go to state 146
-    arrayExpression          go to state 147
-    collectionLiteral        go to state 148
+    arrayType                 go to state 127
+    simpleIdentifier          go to state 128
+    postfixUnaryExpression    go to state 129
+    parenthesizedExpression   go to state 130
+    ifExpression              go to state 131
+    functionCall              go to state 132
+    dotExpression             go to state 133
+    jumpExpression            go to state 134
+    whenExpression            go to state 135
+    multiplicativeExpression  go to state 276
+    primaryExpression         go to state 146
+    arrayExpression           go to state 147
+    collectionLiteral         go to state 148
 
 
-State 209
+State 208
 
-  224 multiplicativeExpression: multiplicativeExpression MOD • postfixUnaryExpression
+  223 multiplicativeExpression: multiplicativeExpression MULT • postfixUnaryExpression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -4065,9 +4042,9 @@ State 209
     collectionLiteral        go to state 148
 
 
-State 210
+State 209
 
-  223 multiplicativeExpression: multiplicativeExpression DIV • postfixUnaryExpression
+  225 multiplicativeExpression: multiplicativeExpression MOD • postfixUnaryExpression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -4100,42 +4077,77 @@ State 210
     collectionLiteral        go to state 148
 
 
+State 210
+
+  224 multiplicativeExpression: multiplicativeExpression DIV • postfixUnaryExpression
+
+    LPAREN             shift, and go to state 112
+    LSQUARE            shift, and go to state 113
+    IF                 shift, and go to state 114
+    WHEN               shift, and go to state 115
+    RETURN             shift, and go to state 116
+    CONTINUE           shift, and go to state 117
+    BREAK              shift, and go to state 118
+    NULL_LITERAL       shift, and go to state 119
+    FLOAT_LITERAL      shift, and go to state 120
+    DOUBLE_LITERAL     shift, and go to state 121
+    INTEGER_LITERAL    shift, and go to state 122
+    CHARACTER_LITERAL  shift, and go to state 123
+    BOOLEAN_LITERAL    shift, and go to state 124
+    STRING_LITERAL     shift, and go to state 125
+    ARRAYTYPELITERAL   shift, and go to state 31
+    IDENTIFIER         shift, and go to state 126
+
+    arrayType                go to state 127
+    simpleIdentifier         go to state 128
+    postfixUnaryExpression   go to state 279
+    parenthesizedExpression  go to state 130
+    ifExpression             go to state 131
+    functionCall             go to state 132
+    dotExpression            go to state 133
+    jumpExpression           go to state 134
+    whenExpression           go to state 135
+    primaryExpression        go to state 146
+    arrayExpression          go to state 147
+    collectionLiteral        go to state 148
+
+
 State 211
 
-  115 multi_postfixUnarySuffix: multi_postfixUnarySuffix • postfixUnarySuffix
-  118 postfixUnaryExpression: primaryExpression multi_postfixUnarySuffix •
+  116 multi_postfixUnarySuffix: multi_postfixUnarySuffix • postfixUnarySuffix
+  119 postfixUnaryExpression: primaryExpression multi_postfixUnarySuffix •
 
-    DOT          shift, and go to state 279
-    LPAREN       shift, and go to state 280
-    LSQUARE      shift, and go to state 240
-    INCR         shift, and go to state 281
-    DECR         shift, and go to state 282
-    EXCL_NO_WS   shift, and go to state 283
-    QUEST_NO_WS  shift, and go to state 284
+    DOT          shift, and go to state 280
+    LPAREN       shift, and go to state 281
+    LSQUARE      shift, and go to state 231
+    INCR         shift, and go to state 282
+    DECR         shift, and go to state 283
+    EXCL_NO_WS   shift, and go to state 284
+    QUEST_NO_WS  shift, and go to state 285
 
-    DOT          [reduce using rule 118 (postfixUnaryExpression)]
-    LPAREN       [reduce using rule 118 (postfixUnaryExpression)]
-    LSQUARE      [reduce using rule 118 (postfixUnaryExpression)]
-    INCR         [reduce using rule 118 (postfixUnaryExpression)]
-    DECR         [reduce using rule 118 (postfixUnaryExpression)]
-    EXCL_NO_WS   [reduce using rule 118 (postfixUnaryExpression)]
-    QUEST_NO_WS  [reduce using rule 118 (postfixUnaryExpression)]
-    $default     reduce using rule 118 (postfixUnaryExpression)
+    DOT          [reduce using rule 119 (postfixUnaryExpression)]
+    LPAREN       [reduce using rule 119 (postfixUnaryExpression)]
+    LSQUARE      [reduce using rule 119 (postfixUnaryExpression)]
+    INCR         [reduce using rule 119 (postfixUnaryExpression)]
+    DECR         [reduce using rule 119 (postfixUnaryExpression)]
+    EXCL_NO_WS   [reduce using rule 119 (postfixUnaryExpression)]
+    QUEST_NO_WS  [reduce using rule 119 (postfixUnaryExpression)]
+    $default     reduce using rule 119 (postfixUnaryExpression)
 
-    postfixUnarySuffix    go to state 285
-    navigationSuffix      go to state 286
-    memberAccessOperator  go to state 287
-    postfixUnaryOperator  go to state 288
-    indexingSuffix        go to state 289
-    callSuffix            go to state 290
-    valueArguments        go to state 291
+    postfixUnarySuffix    go to state 286
+    navigationSuffix      go to state 287
+    memberAccessOperator  go to state 288
+    postfixUnaryOperator  go to state 289
+    indexingSuffix        go to state 290
+    callSuffix            go to state 291
+    valueArguments        go to state 292
 
 
 State 212
 
-  117 multi_postfixUnarySuffix: $@7 •
+  118 multi_postfixUnarySuffix: $@7 •
 
-    $default  reduce using rule 117 (multi_postfixUnarySuffix)
+    $default  reduce using rule 118 (multi_postfixUnarySuffix)
 
 
 State 213
@@ -4169,7 +4181,7 @@ State 216
 State 217
 
    99 parenthesizedAssignableExpression: LPAREN • assignableExpression RPAREN
-  151 parenthesizedExpression: LPAREN • expression RPAREN
+  152 parenthesizedExpression: LPAREN • expression RPAREN
 
     LPAREN             shift, and go to state 217
     LSQUARE            shift, and go to state 113
@@ -4208,7 +4220,7 @@ State 217
 
     arrayType                          go to state 127
     simpleIdentifier                   go to state 128
-    assignableExpression               go to state 292
+    assignableExpression               go to state 293
     multi_unaryPrefix                  go to state 219
     $@5                                go to state 220
     prefixUnaryExpression              go to state 221
@@ -4237,9 +4249,9 @@ State 217
 
 State 218
 
-  114 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression • RPAREN
+  115 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression • RPAREN
 
-    RPAREN  shift, and go to state 293
+    RPAREN  shift, and go to state 294
 
 
 State 219
@@ -4249,9 +4261,9 @@ State 219
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
-    INCR               shift, and go to state 294
-    DECR               shift, and go to state 295
-    EXCL_NO_WS         shift, and go to state 296
+    INCR               shift, and go to state 295
+    DECR               shift, and go to state 296
+    EXCL_NO_WS         shift, and go to state 297
     IF                 shift, and go to state 114
     WHEN               shift, and go to state 115
     RETURN             shift, and go to state 116
@@ -4264,15 +4276,15 @@ State 219
     CHARACTER_LITERAL  shift, and go to state 123
     BOOLEAN_LITERAL    shift, and go to state 124
     STRING_LITERAL     shift, and go to state 125
-    ADD                shift, and go to state 297
-    SUB                shift, and go to state 298
+    ADD                shift, and go to state 298
+    SUB                shift, and go to state 299
     ARRAYTYPELITERAL   shift, and go to state 31
     IDENTIFIER         shift, and go to state 126
 
     arrayType                go to state 127
     simpleIdentifier         go to state 128
-    prefixUnaryOperator      go to state 299
-    postfixUnaryExpression   go to state 300
+    prefixUnaryOperator      go to state 300
+    postfixUnaryExpression   go to state 301
     parenthesizedExpression  go to state 130
     ifExpression             go to state 131
     functionCall             go to state 132
@@ -4307,7 +4319,7 @@ State 222
 
 State 223
 
-  174 forStatement: FOR LPAREN • variable_multivariable IN expression RPAREN controlStructureBody
+  175 forStatement: FOR LPAREN • variable_multivariable IN expression RPAREN controlStructureBody
 
     LPAREN            shift, and go to state 59
     TYPELITERAL       shift, and go to state 30
@@ -4322,35 +4334,35 @@ State 223
     arrayType                  go to state 36
     typeRef_parenthesizedType  go to state 37
     simpleIdentifier           go to state 46
-    variableDeclaration        go to state 301
-    multiVariableDeclaration   go to state 302
-    variable_multivariable     go to state 303
+    variableDeclaration        go to state 302
+    multiVariableDeclaration   go to state 303
+    variable_multivariable     go to state 304
 
 
 State 224
 
-  176 controlStructureBody: block •
-
-    $default  reduce using rule 176 (controlStructureBody)
-
-
-State 225
-
-  177 controlStructureBody: statement •
+  177 controlStructureBody: block •
 
     $default  reduce using rule 177 (controlStructureBody)
 
 
+State 225
+
+  178 controlStructureBody: statement •
+
+    $default  reduce using rule 178 (controlStructureBody)
+
+
 State 226
 
-  175 doWhileStatement: DO controlStructureBody • WHILE LPAREN expression RPAREN
+  176 doWhileStatement: DO controlStructureBody • WHILE LPAREN expression RPAREN
 
-    WHILE  shift, and go to state 304
+    WHILE  shift, and go to state 305
 
 
 State 227
 
-  173 whileStatement: WHILE LPAREN • expression RPAREN control_structure_body_or_comma
+  174 whileStatement: WHILE LPAREN • expression RPAREN control_structure_body_or_comma
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -4378,7 +4390,7 @@ State 227
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 305
+    expression                 go to state 306
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -4410,7 +4422,7 @@ State 229
     RCURL     reduce using rule 27 (optional_statement_sequence)
     $default  reduce using rule 24 (semis)
 
-    semis  go to state 306
+    semis  go to state 307
 
 
 State 230
@@ -4422,70 +4434,7 @@ State 230
 
 State 231
 
-   31 statement: assignment semis •
-
-    $default  reduce using rule 31 (statement)
-
-
-State 232
-
-  100 assignment: directly_assign expression •
-
-    $default  reduce using rule 100 (assignment)
-
-
-State 233
-
-  101 directly_assign: directlyAssignableExpression ASSIGNMENT •
-
-    $default  reduce using rule 101 (directly_assign)
-
-
-State 234
-
-   83 assignmentAndOperator: ADD_ASSIGNMENT •
-
-    $default  reduce using rule 83 (assignmentAndOperator)
-
-
-State 235
-
-   84 assignmentAndOperator: SUB_ASSIGNMENT •
-
-    $default  reduce using rule 84 (assignmentAndOperator)
-
-
-State 236
-
-   85 assignmentAndOperator: MULT_ASSIGNMENT •
-
-    $default  reduce using rule 85 (assignmentAndOperator)
-
-
-State 237
-
-   86 assignmentAndOperator: DIV_ASSIGNMENT •
-
-    $default  reduce using rule 86 (assignmentAndOperator)
-
-
-State 238
-
-   87 assignmentAndOperator: MOD_ASSIGNMENT •
-
-    $default  reduce using rule 87 (assignmentAndOperator)
-
-
-State 239
-
-  102 directly_assign: directlyAssignableExpression assignmentAndOperator •
-
-    $default  reduce using rule 102 (directly_assign)
-
-
-State 240
-
-  135 indexingSuffix: LSQUARE • expression multi_comma_expression opt_comma RSQUARE
+  136 indexingSuffix: LSQUARE • expression multi_comma_expression opt_comma RSQUARE
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -4513,7 +4462,7 @@ State 240
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 307
+    expression                 go to state 308
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -4528,117 +4477,187 @@ State 240
     collectionLiteral          go to state 148
 
 
-State 241
+State 232
 
-  111 directlyAssignableExpression: postfixUnaryExpression assignableSuffix •
+  113 directlyAssignableExpression: simpleIdentifier assignableSuffix •
 
-    $default  reduce using rule 111 (directlyAssignableExpression)
+    $default  reduce using rule 113 (directlyAssignableExpression)
 
 
-State 242
+State 233
 
   104 assignableSuffix: typeArguments •
 
     $default  reduce using rule 104 (assignableSuffix)
 
 
-State 243
+State 234
 
   103 assignableSuffix: indexingSuffix •
 
     $default  reduce using rule 103 (assignableSuffix)
 
 
+State 235
+
+   31 statement: assignment semis •
+
+    $default  reduce using rule 31 (statement)
+
+
+State 236
+
+  100 assignment: directly_assign expression •
+
+    $default  reduce using rule 100 (assignment)
+
+
+State 237
+
+  101 directly_assign: directlyAssignableExpression ASSIGNMENT •
+
+    $default  reduce using rule 101 (directly_assign)
+
+
+State 238
+
+   83 assignmentAndOperator: ADD_ASSIGNMENT •
+
+    $default  reduce using rule 83 (assignmentAndOperator)
+
+
+State 239
+
+   84 assignmentAndOperator: SUB_ASSIGNMENT •
+
+    $default  reduce using rule 84 (assignmentAndOperator)
+
+
+State 240
+
+   85 assignmentAndOperator: MULT_ASSIGNMENT •
+
+    $default  reduce using rule 85 (assignmentAndOperator)
+
+
+State 241
+
+   86 assignmentAndOperator: DIV_ASSIGNMENT •
+
+    $default  reduce using rule 86 (assignmentAndOperator)
+
+
+State 242
+
+   87 assignmentAndOperator: MOD_ASSIGNMENT •
+
+    $default  reduce using rule 87 (assignmentAndOperator)
+
+
+State 243
+
+  102 directly_assign: directlyAssignableExpression assignmentAndOperator •
+
+    $default  reduce using rule 102 (directly_assign)
+
+
 State 244
+
+  111 directlyAssignableExpression: postfixUnaryExpression assignableSuffix •
+
+    $default  reduce using rule 111 (directlyAssignableExpression)
+
+
+State 245
 
    33 statement: loopStatement semis •
 
     $default  reduce using rule 33 (statement)
 
 
-State 245
+State 246
 
    32 statement: expression semis •
 
     $default  reduce using rule 32 (statement)
 
 
-State 246
+State 247
 
    21 functionBody: ASSIGNMENT expression SEMICOLON •
 
     $default  reduce using rule 21 (functionBody)
 
 
-State 247
+State 248
 
    80 multi_comma_variableDeclaration: multi_comma_variableDeclaration COMMA variableDeclaration •
 
     $default  reduce using rule 80 (multi_comma_variableDeclaration)
 
 
-State 248
+State 249
 
    79 multiVariableDeclaration: LPAREN variableDeclaration multi_comma_variableDeclaration opt_comma RPAREN •
 
     $default  reduce using rule 79 (multiVariableDeclaration)
 
 
-State 249
+State 250
 
    63 propertyDeclaration: opt_modifier val_var opt_typeParameters nullableType DOT multivariable_variableDeclaration opt_eq_exp SEMICOLON •
 
     $default  reduce using rule 63 (propertyDeclaration)
 
 
-State 250
-
-  151 parenthesizedExpression: LPAREN expression RPAREN •
-
-    $default  reduce using rule 151 (parenthesizedExpression)
-
-
 State 251
 
-  248 collectionLiteral: LSQUARE expression COMMA • RSQUARE
+  152 parenthesizedExpression: LPAREN expression RPAREN •
 
-    RSQUARE  shift, and go to state 308
+    $default  reduce using rule 152 (parenthesizedExpression)
 
 
 State 252
 
-  249 collectionLiteral: LSQUARE expression RSQUARE •
+  249 collectionLiteral: LSQUARE expression COMMA • RSQUARE
 
-    $default  reduce using rule 249 (collectionLiteral)
+    RSQUARE  shift, and go to state 309
 
 
 State 253
 
-  132 multi_comma_expression: multi_comma_expression • COMMA expression
-  250 collectionLiteral: LSQUARE expression multi_comma_expression • RSQUARE
-  251                  | LSQUARE expression multi_comma_expression • COMMA RSQUARE
+  250 collectionLiteral: LSQUARE expression RSQUARE •
 
-    COMMA    shift, and go to state 309
-    RSQUARE  shift, and go to state 310
+    $default  reduce using rule 250 (collectionLiteral)
 
 
 State 254
 
-  134 multi_comma_expression: $@8 •
+  133 multi_comma_expression: multi_comma_expression • COMMA expression
+  251 collectionLiteral: LSQUARE expression multi_comma_expression • RSQUARE
+  252                  | LSQUARE expression multi_comma_expression • COMMA RSQUARE
 
-    $default  reduce using rule 134 (multi_comma_expression)
+    COMMA    shift, and go to state 310
+    RSQUARE  shift, and go to state 311
 
 
 State 255
 
-  152 ifExpression: IF LPAREN expression • RPAREN opt_else
+  135 multi_comma_expression: $@8 •
 
-    RPAREN  shift, and go to state 311
+    $default  reduce using rule 135 (multi_comma_expression)
 
 
 State 256
 
-  187 whenSubject: LPAREN VAL • variableDeclaration ASSIGNMENT expression RPAREN
+  153 ifExpression: IF LPAREN expression • RPAREN opt_else
+
+    RPAREN  shift, and go to state 312
+
+
+State 257
+
+  188 whenSubject: LPAREN VAL • variableDeclaration ASSIGNMENT expression RPAREN
 
     LPAREN            shift, and go to state 29
     TYPELITERAL       shift, and go to state 30
@@ -4653,31 +4672,31 @@ State 256
     arrayType                  go to state 36
     typeRef_parenthesizedType  go to state 37
     simpleIdentifier           go to state 46
-    variableDeclaration        go to state 312
-
-
-State 257
-
-  186 whenSubject: LPAREN expression • RPAREN
-
-    RPAREN  shift, and go to state 313
+    variableDeclaration        go to state 313
 
 
 State 258
 
-  182 multi_whenEntry: multi_whenEntry • whenEntry
-  185 whenExpression: WHEN LCURL multi_whenEntry • RCURL
+  187 whenSubject: LPAREN expression • RPAREN
+
+    RPAREN  shift, and go to state 314
+
+
+State 259
+
+  183 multi_whenEntry: multi_whenEntry • whenEntry
+  186 whenExpression: WHEN LCURL multi_whenEntry • RCURL
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
-    RCURL              shift, and go to state 314
+    RCURL              shift, and go to state 315
     IF                 shift, and go to state 114
-    ELSE               shift, and go to state 315
+    ELSE               shift, and go to state 316
     WHEN               shift, and go to state 115
     RETURN             shift, and go to state 116
     CONTINUE           shift, and go to state 117
     BREAK              shift, and go to state 118
-    IN                 shift, and go to state 316
+    IN                 shift, and go to state 317
     NULL_LITERAL       shift, and go to state 119
     FLOAT_LITERAL      shift, and go to state 120
     DOUBLE_LITERAL     shift, and go to state 121
@@ -4697,10 +4716,10 @@ State 258
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    whenEntry                  go to state 317
-    whenCondition              go to state 318
-    rangeTest                  go to state 319
-    expression                 go to state 320
+    whenEntry                  go to state 318
+    whenCondition              go to state 319
+    rangeTest                  go to state 320
+    expression                 go to state 321
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -4715,185 +4734,171 @@ State 258
     collectionLiteral          go to state 148
 
 
-State 259
-
-  184 whenExpression: WHEN whenSubject LCURL • multi_whenEntry RCURL
-
-    $default  reduce using rule 183 (multi_whenEntry)
-
-    multi_whenEntry  go to state 321
-
-
 State 260
 
-  161 dotExpression: IDENTIFIER DOT IDENTIFIER •
+  185 whenExpression: WHEN whenSubject LCURL • multi_whenEntry RCURL
 
-    $default  reduce using rule 161 (dotExpression)
+    $default  reduce using rule 184 (multi_whenEntry)
+
+    multi_whenEntry  go to state 322
 
 
 State 261
 
-  159 functionCall: IDENTIFIER LPAREN functionArguments • RPAREN semis
-  164 functionArguments: functionArguments • COMMA expression
-
-    COMMA   shift, and go to state 322
-    RPAREN  shift, and go to state 323
-
-
-State 262
-
-  163 functionArguments: expression •
-
-    $default  reduce using rule 163 (functionArguments)
-
-
-State 263
-
-  246 arrayExpression: arrayType LPAREN INTEGER_LITERAL • RPAREN LCURL typeLiteral RCURL
-
-    RPAREN  shift, and go to state 324
-
-
-State 264
-
-  162 dotExpression: dotExpression DOT IDENTIFIER •
+  162 dotExpression: IDENTIFIER DOT IDENTIFIER •
 
     $default  reduce using rule 162 (dotExpression)
 
 
+State 262
+
+  160 functionCall: IDENTIFIER LPAREN functionArguments • RPAREN semis
+  165 functionArguments: functionArguments • COMMA expression
+
+    COMMA   shift, and go to state 323
+    RPAREN  shift, and go to state 324
+
+
+State 263
+
+  164 functionArguments: expression •
+
+    $default  reduce using rule 164 (functionArguments)
+
+
+State 264
+
+  247 arrayExpression: arrayType LPAREN INTEGER_LITERAL • RPAREN LCURL typeLiteral RCURL
+
+    RPAREN  shift, and go to state 325
+
+
 State 265
 
-  160 functionCall: dotExpression LPAREN functionArguments • RPAREN semis
-  164 functionArguments: functionArguments • COMMA expression
+  163 dotExpression: dotExpression DOT IDENTIFIER •
 
-    COMMA   shift, and go to state 322
-    RPAREN  shift, and go to state 325
+    $default  reduce using rule 163 (dotExpression)
 
 
 State 266
 
-  204 disjunction: disjunction DISJ conjunction •
-  206 conjunction: conjunction • CONJ equality
+  161 functionCall: dotExpression LPAREN functionArguments • RPAREN semis
+  165 functionArguments: functionArguments • COMMA expression
 
-    CONJ  shift, and go to state 192
-
-    $default  reduce using rule 204 (disjunction)
+    COMMA   shift, and go to state 323
+    RPAREN  shift, and go to state 326
 
 
 State 267
 
-  206 conjunction: conjunction CONJ equality •
-  208 equality: equality • equality_operator comparison
+  205 disjunction: disjunction DISJ conjunction •
+  207 conjunction: conjunction • CONJ equality
+
+    CONJ  shift, and go to state 192
+
+    $default  reduce using rule 205 (disjunction)
+
+
+State 268
+
+  207 conjunction: conjunction CONJ equality •
+  209 equality: equality • equality_operator comparison
 
     EXCL_EQ    shift, and go to state 193
     EXCL_EQEQ  shift, and go to state 194
     EQEQ       shift, and go to state 195
     EQEQEQ     shift, and go to state 196
 
-    EXCL_EQ    [reduce using rule 206 (conjunction)]
-    EXCL_EQEQ  [reduce using rule 206 (conjunction)]
-    EQEQ       [reduce using rule 206 (conjunction)]
-    EQEQEQ     [reduce using rule 206 (conjunction)]
-    $default   reduce using rule 206 (conjunction)
+    EXCL_EQ    [reduce using rule 207 (conjunction)]
+    EXCL_EQEQ  [reduce using rule 207 (conjunction)]
+    EQEQ       [reduce using rule 207 (conjunction)]
+    EQEQEQ     [reduce using rule 207 (conjunction)]
+    $default   reduce using rule 207 (conjunction)
 
     equality_operator  go to state 197
 
 
-State 268
+State 269
 
-  208 equality: equality equality_operator comparison •
-  210 comparison: comparison • LANGLE genericCallLikeComparison
-  211           | comparison • comparison_operator genericCallLikeComparison
+  209 equality: equality equality_operator comparison •
+  211 comparison: comparison • LANGLE genericCallLikeComparison
+  212           | comparison • comparison_operator genericCallLikeComparison
 
     LANGLE  shift, and go to state 198
     RANGLE  shift, and go to state 199
     LE      shift, and go to state 200
     GE      shift, and go to state 201
 
-    LANGLE    [reduce using rule 208 (equality)]
-    RANGLE    [reduce using rule 208 (equality)]
-    LE        [reduce using rule 208 (equality)]
-    GE        [reduce using rule 208 (equality)]
-    $default  reduce using rule 208 (equality)
+    LANGLE    [reduce using rule 209 (equality)]
+    RANGLE    [reduce using rule 209 (equality)]
+    LE        [reduce using rule 209 (equality)]
+    GE        [reduce using rule 209 (equality)]
+    $default  reduce using rule 209 (equality)
 
     comparison_operator  go to state 202
 
 
-State 269
-
-  210 comparison: comparison LANGLE genericCallLikeComparison •
-  213 genericCallLikeComparison: genericCallLikeComparison • IN elvisExpression
-
-    IN  shift, and go to state 203
-
-    $default  reduce using rule 210 (comparison)
-
-
 State 270
 
-  211 comparison: comparison comparison_operator genericCallLikeComparison •
-  213 genericCallLikeComparison: genericCallLikeComparison • IN elvisExpression
+  211 comparison: comparison LANGLE genericCallLikeComparison •
+  214 genericCallLikeComparison: genericCallLikeComparison • IN elvisExpression
 
     IN  shift, and go to state 203
 
-    IN        [reduce using rule 211 (comparison)]
     $default  reduce using rule 211 (comparison)
 
 
 State 271
 
-  213 genericCallLikeComparison: genericCallLikeComparison IN elvisExpression •
-  215 elvisExpression: elvisExpression • QUEST_COLON rangeExpression
+  212 comparison: comparison comparison_operator genericCallLikeComparison •
+  214 genericCallLikeComparison: genericCallLikeComparison • IN elvisExpression
 
-    QUEST_COLON  shift, and go to state 204
+    IN  shift, and go to state 203
 
-    QUEST_COLON  [reduce using rule 213 (genericCallLikeComparison)]
-    $default     reduce using rule 213 (genericCallLikeComparison)
+    IN        [reduce using rule 212 (comparison)]
+    $default  reduce using rule 212 (comparison)
 
 
 State 272
 
-  215 elvisExpression: elvisExpression QUEST_COLON rangeExpression •
-  217 rangeExpression: rangeExpression • RANGE additiveExpression
+  214 genericCallLikeComparison: genericCallLikeComparison IN elvisExpression •
+  216 elvisExpression: elvisExpression • QUEST_COLON rangeExpression
 
-    RANGE  shift, and go to state 205
+    QUEST_COLON  shift, and go to state 204
 
-    RANGE     [reduce using rule 215 (elvisExpression)]
-    $default  reduce using rule 215 (elvisExpression)
+    QUEST_COLON  [reduce using rule 214 (genericCallLikeComparison)]
+    $default     reduce using rule 214 (genericCallLikeComparison)
 
 
 State 273
 
-  217 rangeExpression: rangeExpression RANGE additiveExpression •
-  219 additiveExpression: additiveExpression • ADD multiplicativeExpression
-  220                   | additiveExpression • SUB multiplicativeExpression
+  216 elvisExpression: elvisExpression QUEST_COLON rangeExpression •
+  218 rangeExpression: rangeExpression • RANGE additiveExpression
 
-    ADD  shift, and go to state 206
-    SUB  shift, and go to state 207
+    RANGE  shift, and go to state 205
 
-    $default  reduce using rule 217 (rangeExpression)
+    RANGE     [reduce using rule 216 (elvisExpression)]
+    $default  reduce using rule 216 (elvisExpression)
 
 
 State 274
 
-  219 additiveExpression: additiveExpression ADD multiplicativeExpression •
-  222 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
-  223                         | multiplicativeExpression • DIV postfixUnaryExpression
-  224                         | multiplicativeExpression • MOD postfixUnaryExpression
+  218 rangeExpression: rangeExpression RANGE additiveExpression •
+  220 additiveExpression: additiveExpression • ADD multiplicativeExpression
+  221                   | additiveExpression • SUB multiplicativeExpression
 
-    MULT  shift, and go to state 208
-    MOD   shift, and go to state 209
-    DIV   shift, and go to state 210
+    ADD  shift, and go to state 206
+    SUB  shift, and go to state 207
 
-    $default  reduce using rule 219 (additiveExpression)
+    $default  reduce using rule 218 (rangeExpression)
 
 
 State 275
 
-  220 additiveExpression: additiveExpression SUB multiplicativeExpression •
-  222 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
-  223                         | multiplicativeExpression • DIV postfixUnaryExpression
-  224                         | multiplicativeExpression • MOD postfixUnaryExpression
+  220 additiveExpression: additiveExpression ADD multiplicativeExpression •
+  223 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
+  224                         | multiplicativeExpression • DIV postfixUnaryExpression
+  225                         | multiplicativeExpression • MOD postfixUnaryExpression
 
     MULT  shift, and go to state 208
     MOD   shift, and go to state 209
@@ -4904,232 +4909,246 @@ State 275
 
 State 276
 
-  222 multiplicativeExpression: multiplicativeExpression MULT postfixUnaryExpression •
+  221 additiveExpression: additiveExpression SUB multiplicativeExpression •
+  223 multiplicativeExpression: multiplicativeExpression • MULT postfixUnaryExpression
+  224                         | multiplicativeExpression • DIV postfixUnaryExpression
+  225                         | multiplicativeExpression • MOD postfixUnaryExpression
 
-    $default  reduce using rule 222 (multiplicativeExpression)
+    MULT  shift, and go to state 208
+    MOD   shift, and go to state 209
+    DIV   shift, and go to state 210
+
+    $default  reduce using rule 221 (additiveExpression)
 
 
 State 277
 
-  224 multiplicativeExpression: multiplicativeExpression MOD postfixUnaryExpression •
-
-    $default  reduce using rule 224 (multiplicativeExpression)
-
-
-State 278
-
-  223 multiplicativeExpression: multiplicativeExpression DIV postfixUnaryExpression •
+  223 multiplicativeExpression: multiplicativeExpression MULT postfixUnaryExpression •
 
     $default  reduce using rule 223 (multiplicativeExpression)
 
 
+State 278
+
+  225 multiplicativeExpression: multiplicativeExpression MOD postfixUnaryExpression •
+
+    $default  reduce using rule 225 (multiplicativeExpression)
+
+
 State 279
 
-  127 memberAccessOperator: DOT •
+  224 multiplicativeExpression: multiplicativeExpression DIV postfixUnaryExpression •
 
-    $default  reduce using rule 127 (memberAccessOperator)
+    $default  reduce using rule 224 (multiplicativeExpression)
 
 
 State 280
 
-  143 valueArguments: LPAREN • opt_valueArgument RPAREN
+  128 memberAccessOperator: DOT •
 
-    IDENTIFIER  shift, and go to state 13
-
-    RPAREN      reduce using rule 141 ($@10)
-    IDENTIFIER  [reduce using rule 145 ($@11)]
-    $default    reduce using rule 145 ($@11)
-
-    simpleIdentifier         go to state 326
-    opt_valueArgument        go to state 327
-    $@10                     go to state 328
-    opt_simpleIdentifier_EQ  go to state 329
-    $@11                     go to state 330
-    valueArgument            go to state 331
+    $default  reduce using rule 128 (memberAccessOperator)
 
 
 State 281
 
-  129 postfixUnaryOperator: INCR •
+  144 valueArguments: LPAREN • opt_valueArgument RPAREN
 
-    $default  reduce using rule 129 (postfixUnaryOperator)
+    IDENTIFIER  shift, and go to state 13
+
+    RPAREN      reduce using rule 142 ($@10)
+    IDENTIFIER  [reduce using rule 146 ($@11)]
+    $default    reduce using rule 146 ($@11)
+
+    simpleIdentifier         go to state 327
+    opt_valueArgument        go to state 328
+    $@10                     go to state 329
+    opt_simpleIdentifier_EQ  go to state 330
+    $@11                     go to state 331
+    valueArgument            go to state 332
 
 
 State 282
 
-  130 postfixUnaryOperator: DECR •
+  130 postfixUnaryOperator: INCR •
 
     $default  reduce using rule 130 (postfixUnaryOperator)
 
 
 State 283
 
-  131 postfixUnaryOperator: EXCL_NO_WS • EXCL_NO_WS
+  131 postfixUnaryOperator: DECR •
 
-    EXCL_NO_WS  shift, and go to state 332
+    $default  reduce using rule 131 (postfixUnaryOperator)
 
 
 State 284
 
-  128 memberAccessOperator: QUEST_NO_WS • DOT
+  132 postfixUnaryOperator: EXCL_NO_WS • EXCL_NO_WS
 
-    DOT  shift, and go to state 333
+    EXCL_NO_WS  shift, and go to state 333
 
 
 State 285
 
-  115 multi_postfixUnarySuffix: multi_postfixUnarySuffix postfixUnarySuffix •
+  129 memberAccessOperator: QUEST_NO_WS • DOT
 
-    $default  reduce using rule 115 (multi_postfixUnarySuffix)
+    DOT  shift, and go to state 334
 
 
 State 286
 
-  122 postfixUnarySuffix: navigationSuffix •
+  116 multi_postfixUnarySuffix: multi_postfixUnarySuffix postfixUnarySuffix •
 
-    $default  reduce using rule 122 (postfixUnarySuffix)
+    $default  reduce using rule 116 (multi_postfixUnarySuffix)
 
 
 State 287
 
-  126 navigationSuffix: memberAccessOperator • identifier_expression_class
+  123 postfixUnarySuffix: navigationSuffix •
 
-    LPAREN      shift, and go to state 112
-    CLASS       shift, and go to state 334
-    IDENTIFIER  shift, and go to state 13
-
-    simpleIdentifier             go to state 335
-    identifier_expression_class  go to state 336
-    parenthesizedExpression      go to state 337
+    $default  reduce using rule 123 (postfixUnarySuffix)
 
 
 State 288
 
-  119 postfixUnarySuffix: postfixUnaryOperator •
+  127 navigationSuffix: memberAccessOperator • identifier_expression_class
 
-    $default  reduce using rule 119 (postfixUnarySuffix)
+    LPAREN      shift, and go to state 112
+    CLASS       shift, and go to state 335
+    IDENTIFIER  shift, and go to state 13
+
+    simpleIdentifier             go to state 336
+    identifier_expression_class  go to state 337
+    parenthesizedExpression      go to state 338
 
 
 State 289
 
-  120 postfixUnarySuffix: indexingSuffix •
+  120 postfixUnarySuffix: postfixUnaryOperator •
 
     $default  reduce using rule 120 (postfixUnarySuffix)
 
 
 State 290
 
-  121 postfixUnarySuffix: callSuffix •
+  121 postfixUnarySuffix: indexingSuffix •
 
     $default  reduce using rule 121 (postfixUnarySuffix)
 
 
 State 291
 
-  136 callSuffix: valueArguments •
+  122 postfixUnarySuffix: callSuffix •
 
-    $default  reduce using rule 136 (callSuffix)
+    $default  reduce using rule 122 (postfixUnarySuffix)
 
 
 State 292
 
-   99 parenthesizedAssignableExpression: LPAREN assignableExpression • RPAREN
+  137 callSuffix: valueArguments •
 
-    RPAREN  shift, and go to state 338
+    $default  reduce using rule 137 (callSuffix)
 
 
 State 293
 
-  114 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression RPAREN •
+   99 parenthesizedAssignableExpression: LPAREN assignableExpression • RPAREN
 
-    $default  reduce using rule 114 (parenthesizedDirectlyAssignableExpression)
+    RPAREN  shift, and go to state 339
 
 
 State 294
+
+  115 parenthesizedDirectlyAssignableExpression: LPAREN assignableExpression RPAREN •
+
+    $default  reduce using rule 115 (parenthesizedDirectlyAssignableExpression)
+
+
+State 295
 
    95 prefixUnaryOperator: INCR •
 
     $default  reduce using rule 95 (prefixUnaryOperator)
 
 
-State 295
+State 296
 
    96 prefixUnaryOperator: DECR •
 
     $default  reduce using rule 96 (prefixUnaryOperator)
 
 
-State 296
+State 297
 
    97 prefixUnaryOperator: EXCL_NO_WS • EXCL_NO_WS
 
-    EXCL_NO_WS  shift, and go to state 339
+    EXCL_NO_WS  shift, and go to state 340
 
 
-State 297
+State 298
 
    93 prefixUnaryOperator: ADD •
 
     $default  reduce using rule 93 (prefixUnaryOperator)
 
 
-State 298
+State 299
 
    94 prefixUnaryOperator: SUB •
 
     $default  reduce using rule 94 (prefixUnaryOperator)
 
 
-State 299
+State 300
 
    90 multi_unaryPrefix: multi_unaryPrefix prefixUnaryOperator •
 
     $default  reduce using rule 90 (multi_unaryPrefix)
 
 
-State 300
+State 301
 
    98 prefixUnaryExpression: multi_unaryPrefix postfixUnaryExpression •
 
     $default  reduce using rule 98 (prefixUnaryExpression)
 
 
-State 301
-
-  166 variable_multivariable: variableDeclaration •
-
-    $default  reduce using rule 166 (variable_multivariable)
-
-
 State 302
 
-  167 variable_multivariable: multiVariableDeclaration •
+  167 variable_multivariable: variableDeclaration •
 
     $default  reduce using rule 167 (variable_multivariable)
 
 
 State 303
 
-  174 forStatement: FOR LPAREN variable_multivariable • IN expression RPAREN controlStructureBody
+  168 variable_multivariable: multiVariableDeclaration •
 
-    IN  shift, and go to state 340
+    $default  reduce using rule 168 (variable_multivariable)
 
 
 State 304
 
-  175 doWhileStatement: DO controlStructureBody WHILE • LPAREN expression RPAREN
+  175 forStatement: FOR LPAREN variable_multivariable • IN expression RPAREN controlStructureBody
 
-    LPAREN  shift, and go to state 341
+    IN  shift, and go to state 341
 
 
 State 305
 
-  173 whileStatement: WHILE LPAREN expression • RPAREN control_structure_body_or_comma
+  176 doWhileStatement: DO controlStructureBody WHILE • LPAREN expression RPAREN
 
-    RPAREN  shift, and go to state 342
+    LPAREN  shift, and go to state 342
 
 
 State 306
+
+  174 whileStatement: WHILE LPAREN expression • RPAREN control_structure_body_or_comma
+
+    RPAREN  shift, and go to state 343
+
+
+State 307
 
    25 semis_statement: semis_statement semis • statement
 
@@ -5159,7 +5178,7 @@ State 306
     $default  reduce using rule 40 ($@1)
 
     functionDeclaration                        go to state 7
-    statement                                  go to state 343
+    statement                                  go to state 344
     declaration                                go to state 162
     opt_modifier                               go to state 9
     $@1                                        go to state 10
@@ -5197,31 +5216,31 @@ State 306
     collectionLiteral                          go to state 148
 
 
-State 307
-
-  135 indexingSuffix: LSQUARE expression • multi_comma_expression opt_comma RSQUARE
-
-    $default  reduce using rule 133 ($@8)
-
-    multi_comma_expression  go to state 344
-    $@8                     go to state 254
-
-
 State 308
 
-  248 collectionLiteral: LSQUARE expression COMMA RSQUARE •
+  136 indexingSuffix: LSQUARE expression • multi_comma_expression opt_comma RSQUARE
 
-    $default  reduce using rule 248 (collectionLiteral)
+    $default  reduce using rule 134 ($@8)
+
+    multi_comma_expression  go to state 345
+    $@8                     go to state 255
 
 
 State 309
 
-  132 multi_comma_expression: multi_comma_expression COMMA • expression
-  251 collectionLiteral: LSQUARE expression multi_comma_expression COMMA • RSQUARE
+  249 collectionLiteral: LSQUARE expression COMMA RSQUARE •
+
+    $default  reduce using rule 249 (collectionLiteral)
+
+
+State 310
+
+  133 multi_comma_expression: multi_comma_expression COMMA • expression
+  252 collectionLiteral: LSQUARE expression multi_comma_expression COMMA • RSQUARE
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
-    RSQUARE            shift, and go to state 345
+    RSQUARE            shift, and go to state 346
     IF                 shift, and go to state 114
     WHEN               shift, and go to state 115
     RETURN             shift, and go to state 116
@@ -5246,7 +5265,7 @@ State 309
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 346
+    expression                 go to state 347
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -5261,21 +5280,21 @@ State 309
     collectionLiteral          go to state 148
 
 
-State 310
-
-  250 collectionLiteral: LSQUARE expression multi_comma_expression RSQUARE •
-
-    $default  reduce using rule 250 (collectionLiteral)
-
-
 State 311
 
-  152 ifExpression: IF LPAREN expression RPAREN • opt_else
+  251 collectionLiteral: LSQUARE expression multi_comma_expression RSQUARE •
+
+    $default  reduce using rule 251 (collectionLiteral)
+
+
+State 312
+
+  153 ifExpression: IF LPAREN expression RPAREN • opt_else
 
     LPAREN             shift, and go to state 155
     LSQUARE            shift, and go to state 113
     LCURL              shift, and go to state 104
-    SEMICOLON          shift, and go to state 347
+    SEMICOLON          shift, and go to state 348
     CLASS              shift, and go to state 1
     FUN                shift, and go to state 2
     IF                 shift, and go to state 114
@@ -5316,14 +5335,14 @@ State 311
     postfixUnaryExpression                     go to state 168
     parenthesizedExpression                    go to state 130
     ifExpression                               go to state 131
-    opt_else                                   go to state 348
+    opt_else                                   go to state 349
     functionCall                               go to state 132
     dotExpression                              go to state 133
     loopStatement                              go to state 169
     whileStatement                             go to state 170
     forStatement                               go to state 171
     doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 349
+    controlStructureBody                       go to state 350
     jumpExpression                             go to state 134
     whenExpression                             go to state 135
     expression                                 go to state 173
@@ -5341,127 +5360,46 @@ State 311
     collectionLiteral                          go to state 148
 
 
-State 312
-
-  187 whenSubject: LPAREN VAL variableDeclaration • ASSIGNMENT expression RPAREN
-
-    ASSIGNMENT  shift, and go to state 350
-
-
 State 313
 
-  186 whenSubject: LPAREN expression RPAREN •
+  188 whenSubject: LPAREN VAL variableDeclaration • ASSIGNMENT expression RPAREN
 
-    $default  reduce using rule 186 (whenSubject)
+    ASSIGNMENT  shift, and go to state 351
 
 
 State 314
 
-  185 whenExpression: WHEN LCURL multi_whenEntry RCURL •
+  187 whenSubject: LPAREN expression RPAREN •
 
-    $default  reduce using rule 185 (whenExpression)
+    $default  reduce using rule 187 (whenSubject)
 
 
 State 315
 
-  193 whenEntry: ELSE • ARROW controlStructureBody SEMICOLON
-  194          | ELSE • ARROW controlStructureBody
+  186 whenExpression: WHEN LCURL multi_whenEntry RCURL •
 
-    ARROW  shift, and go to state 351
+    $default  reduce using rule 186 (whenExpression)
 
 
 State 316
 
-  197 rangeTest: IN • expression
+  194 whenEntry: ELSE • ARROW controlStructureBody SEMICOLON
+  195          | ELSE • ARROW controlStructureBody
 
-    LPAREN             shift, and go to state 112
-    LSQUARE            shift, and go to state 113
-    IF                 shift, and go to state 114
-    WHEN               shift, and go to state 115
-    RETURN             shift, and go to state 116
-    CONTINUE           shift, and go to state 117
-    BREAK              shift, and go to state 118
-    NULL_LITERAL       shift, and go to state 119
-    FLOAT_LITERAL      shift, and go to state 120
-    DOUBLE_LITERAL     shift, and go to state 121
-    INTEGER_LITERAL    shift, and go to state 122
-    CHARACTER_LITERAL  shift, and go to state 123
-    BOOLEAN_LITERAL    shift, and go to state 124
-    STRING_LITERAL     shift, and go to state 125
-    ARRAYTYPELITERAL   shift, and go to state 31
-    IDENTIFIER         shift, and go to state 126
-
-    arrayType                  go to state 127
-    simpleIdentifier           go to state 128
-    postfixUnaryExpression     go to state 129
-    parenthesizedExpression    go to state 130
-    ifExpression               go to state 131
-    functionCall               go to state 132
-    dotExpression              go to state 133
-    jumpExpression             go to state 134
-    whenExpression             go to state 135
-    expression                 go to state 352
-    disjunction                go to state 137
-    conjunction                go to state 138
-    equality                   go to state 139
-    comparison                 go to state 140
-    genericCallLikeComparison  go to state 141
-    elvisExpression            go to state 142
-    rangeExpression            go to state 143
-    additiveExpression         go to state 144
-    multiplicativeExpression   go to state 145
-    primaryExpression          go to state 146
-    arrayExpression            go to state 147
-    collectionLiteral          go to state 148
+    ARROW  shift, and go to state 352
 
 
 State 317
 
-  182 multi_whenEntry: multi_whenEntry whenEntry •
-
-    $default  reduce using rule 182 (multi_whenEntry)
-
-
-State 318
-
-  191 whenEntry: whenCondition • multi_comma_whenCondition ARROW controlStructureBody
-  192          | whenCondition • multi_comma_whenCondition COMMA ARROW controlStructureBody
-
-    $default  reduce using rule 189 ($@13)
-
-    multi_comma_whenCondition  go to state 353
-    $@13                       go to state 354
-
-
-State 319
-
-  196 whenCondition: rangeTest •
-
-    $default  reduce using rule 196 (whenCondition)
-
-
-State 320
-
-  195 whenCondition: expression •
-
-    $default  reduce using rule 195 (whenCondition)
-
-
-State 321
-
-  182 multi_whenEntry: multi_whenEntry • whenEntry
-  184 whenExpression: WHEN whenSubject LCURL multi_whenEntry • RCURL
+  198 rangeTest: IN • expression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
-    RCURL              shift, and go to state 355
     IF                 shift, and go to state 114
-    ELSE               shift, and go to state 315
     WHEN               shift, and go to state 115
     RETURN             shift, and go to state 116
     CONTINUE           shift, and go to state 117
     BREAK              shift, and go to state 118
-    IN                 shift, and go to state 316
     NULL_LITERAL       shift, and go to state 119
     FLOAT_LITERAL      shift, and go to state 120
     DOUBLE_LITERAL     shift, and go to state 121
@@ -5481,10 +5419,7 @@ State 321
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    whenEntry                  go to state 317
-    whenCondition              go to state 318
-    rangeTest                  go to state 319
-    expression                 go to state 320
+    expression                 go to state 353
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -5499,17 +5434,53 @@ State 321
     collectionLiteral          go to state 148
 
 
+State 318
+
+  183 multi_whenEntry: multi_whenEntry whenEntry •
+
+    $default  reduce using rule 183 (multi_whenEntry)
+
+
+State 319
+
+  192 whenEntry: whenCondition • multi_comma_whenCondition ARROW controlStructureBody
+  193          | whenCondition • multi_comma_whenCondition COMMA ARROW controlStructureBody
+
+    $default  reduce using rule 190 ($@13)
+
+    multi_comma_whenCondition  go to state 354
+    $@13                       go to state 355
+
+
+State 320
+
+  197 whenCondition: rangeTest •
+
+    $default  reduce using rule 197 (whenCondition)
+
+
+State 321
+
+  196 whenCondition: expression •
+
+    $default  reduce using rule 196 (whenCondition)
+
+
 State 322
 
-  164 functionArguments: functionArguments COMMA • expression
+  183 multi_whenEntry: multi_whenEntry • whenEntry
+  185 whenExpression: WHEN whenSubject LCURL multi_whenEntry • RCURL
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
+    RCURL              shift, and go to state 356
     IF                 shift, and go to state 114
+    ELSE               shift, and go to state 316
     WHEN               shift, and go to state 115
     RETURN             shift, and go to state 116
     CONTINUE           shift, and go to state 117
     BREAK              shift, and go to state 118
+    IN                 shift, and go to state 317
     NULL_LITERAL       shift, and go to state 119
     FLOAT_LITERAL      shift, and go to state 120
     DOUBLE_LITERAL     shift, and go to state 121
@@ -5529,7 +5500,10 @@ State 322
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 356
+    whenEntry                  go to state 318
+    whenCondition              go to state 319
+    rangeTest                  go to state 320
+    expression                 go to state 321
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -5546,144 +5520,7 @@ State 322
 
 State 323
 
-  159 functionCall: IDENTIFIER LPAREN functionArguments RPAREN • semis
-
-    SEMICOLON  shift, and go to state 21
-
-    SEMICOLON  [reduce using rule 24 (semis)]
-    $default   reduce using rule 24 (semis)
-
-    semis  go to state 357
-
-
-State 324
-
-  246 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN • LCURL typeLiteral RCURL
-
-    LCURL  shift, and go to state 358
-
-
-State 325
-
-  160 functionCall: dotExpression LPAREN functionArguments RPAREN • semis
-
-    SEMICOLON  shift, and go to state 21
-
-    SEMICOLON  [reduce using rule 24 (semis)]
-    $default   reduce using rule 24 (semis)
-
-    semis  go to state 359
-
-
-State 326
-
-  144 opt_simpleIdentifier_EQ: simpleIdentifier • ASSIGNMENT
-
-    ASSIGNMENT  shift, and go to state 360
-
-
-State 327
-
-  143 valueArguments: LPAREN opt_valueArgument • RPAREN
-
-    RPAREN  shift, and go to state 361
-
-
-State 328
-
-  142 opt_valueArgument: $@10 •
-
-    $default  reduce using rule 142 (opt_valueArgument)
-
-
-State 329
-
-  150 valueArgument: opt_simpleIdentifier_EQ • opt_Multi expression
-
-    MULT  shift, and go to state 362
-
-    $default  reduce using rule 148 ($@12)
-
-    opt_Multi  go to state 363
-    $@12       go to state 364
-
-
-State 330
-
-  146 opt_simpleIdentifier_EQ: $@11 •
-
-    $default  reduce using rule 146 (opt_simpleIdentifier_EQ)
-
-
-State 331
-
-  140 opt_valueArgument: valueArgument • multi_comma_valueArgument opt_comma
-
-    $default  reduce using rule 138 ($@9)
-
-    multi_comma_valueArgument  go to state 365
-    $@9                        go to state 366
-
-
-State 332
-
-  131 postfixUnaryOperator: EXCL_NO_WS EXCL_NO_WS •
-
-    $default  reduce using rule 131 (postfixUnaryOperator)
-
-
-State 333
-
-  128 memberAccessOperator: QUEST_NO_WS DOT •
-
-    $default  reduce using rule 128 (memberAccessOperator)
-
-
-State 334
-
-  125 identifier_expression_class: CLASS •
-
-    $default  reduce using rule 125 (identifier_expression_class)
-
-
-State 335
-
-  123 identifier_expression_class: simpleIdentifier •
-
-    $default  reduce using rule 123 (identifier_expression_class)
-
-
-State 336
-
-  126 navigationSuffix: memberAccessOperator identifier_expression_class •
-
-    $default  reduce using rule 126 (navigationSuffix)
-
-
-State 337
-
-  124 identifier_expression_class: parenthesizedExpression •
-
-    $default  reduce using rule 124 (identifier_expression_class)
-
-
-State 338
-
-   99 parenthesizedAssignableExpression: LPAREN assignableExpression RPAREN •
-
-    $default  reduce using rule 99 (parenthesizedAssignableExpression)
-
-
-State 339
-
-   97 prefixUnaryOperator: EXCL_NO_WS EXCL_NO_WS •
-
-    $default  reduce using rule 97 (prefixUnaryOperator)
-
-
-State 340
-
-  174 forStatement: FOR LPAREN variable_multivariable IN • expression RPAREN controlStructureBody
+  165 functionArguments: functionArguments COMMA • expression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -5711,7 +5548,7 @@ State 340
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 367
+    expression                 go to state 357
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -5726,9 +5563,146 @@ State 340
     collectionLiteral          go to state 148
 
 
+State 324
+
+  160 functionCall: IDENTIFIER LPAREN functionArguments RPAREN • semis
+
+    SEMICOLON  shift, and go to state 21
+
+    SEMICOLON  [reduce using rule 24 (semis)]
+    $default   reduce using rule 24 (semis)
+
+    semis  go to state 358
+
+
+State 325
+
+  247 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN • LCURL typeLiteral RCURL
+
+    LCURL  shift, and go to state 359
+
+
+State 326
+
+  161 functionCall: dotExpression LPAREN functionArguments RPAREN • semis
+
+    SEMICOLON  shift, and go to state 21
+
+    SEMICOLON  [reduce using rule 24 (semis)]
+    $default   reduce using rule 24 (semis)
+
+    semis  go to state 360
+
+
+State 327
+
+  145 opt_simpleIdentifier_EQ: simpleIdentifier • ASSIGNMENT
+
+    ASSIGNMENT  shift, and go to state 361
+
+
+State 328
+
+  144 valueArguments: LPAREN opt_valueArgument • RPAREN
+
+    RPAREN  shift, and go to state 362
+
+
+State 329
+
+  143 opt_valueArgument: $@10 •
+
+    $default  reduce using rule 143 (opt_valueArgument)
+
+
+State 330
+
+  151 valueArgument: opt_simpleIdentifier_EQ • opt_Multi expression
+
+    MULT  shift, and go to state 363
+
+    $default  reduce using rule 149 ($@12)
+
+    opt_Multi  go to state 364
+    $@12       go to state 365
+
+
+State 331
+
+  147 opt_simpleIdentifier_EQ: $@11 •
+
+    $default  reduce using rule 147 (opt_simpleIdentifier_EQ)
+
+
+State 332
+
+  141 opt_valueArgument: valueArgument • multi_comma_valueArgument opt_comma
+
+    $default  reduce using rule 139 ($@9)
+
+    multi_comma_valueArgument  go to state 366
+    $@9                        go to state 367
+
+
+State 333
+
+  132 postfixUnaryOperator: EXCL_NO_WS EXCL_NO_WS •
+
+    $default  reduce using rule 132 (postfixUnaryOperator)
+
+
+State 334
+
+  129 memberAccessOperator: QUEST_NO_WS DOT •
+
+    $default  reduce using rule 129 (memberAccessOperator)
+
+
+State 335
+
+  126 identifier_expression_class: CLASS •
+
+    $default  reduce using rule 126 (identifier_expression_class)
+
+
+State 336
+
+  124 identifier_expression_class: simpleIdentifier •
+
+    $default  reduce using rule 124 (identifier_expression_class)
+
+
+State 337
+
+  127 navigationSuffix: memberAccessOperator identifier_expression_class •
+
+    $default  reduce using rule 127 (navigationSuffix)
+
+
+State 338
+
+  125 identifier_expression_class: parenthesizedExpression •
+
+    $default  reduce using rule 125 (identifier_expression_class)
+
+
+State 339
+
+   99 parenthesizedAssignableExpression: LPAREN assignableExpression RPAREN •
+
+    $default  reduce using rule 99 (parenthesizedAssignableExpression)
+
+
+State 340
+
+   97 prefixUnaryOperator: EXCL_NO_WS EXCL_NO_WS •
+
+    $default  reduce using rule 97 (prefixUnaryOperator)
+
+
 State 341
 
-  175 doWhileStatement: DO controlStructureBody WHILE LPAREN • expression RPAREN
+  175 forStatement: FOR LPAREN variable_multivariable IN • expression RPAREN controlStructureBody
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -5773,9 +5747,54 @@ State 341
 
 State 342
 
-  173 whileStatement: WHILE LPAREN expression RPAREN • control_structure_body_or_comma
+  176 doWhileStatement: DO controlStructureBody WHILE LPAREN • expression RPAREN
 
-    COMMA              shift, and go to state 369
+    LPAREN             shift, and go to state 112
+    LSQUARE            shift, and go to state 113
+    IF                 shift, and go to state 114
+    WHEN               shift, and go to state 115
+    RETURN             shift, and go to state 116
+    CONTINUE           shift, and go to state 117
+    BREAK              shift, and go to state 118
+    NULL_LITERAL       shift, and go to state 119
+    FLOAT_LITERAL      shift, and go to state 120
+    DOUBLE_LITERAL     shift, and go to state 121
+    INTEGER_LITERAL    shift, and go to state 122
+    CHARACTER_LITERAL  shift, and go to state 123
+    BOOLEAN_LITERAL    shift, and go to state 124
+    STRING_LITERAL     shift, and go to state 125
+    ARRAYTYPELITERAL   shift, and go to state 31
+    IDENTIFIER         shift, and go to state 126
+
+    arrayType                  go to state 127
+    simpleIdentifier           go to state 128
+    postfixUnaryExpression     go to state 129
+    parenthesizedExpression    go to state 130
+    ifExpression               go to state 131
+    functionCall               go to state 132
+    dotExpression              go to state 133
+    jumpExpression             go to state 134
+    whenExpression             go to state 135
+    expression                 go to state 369
+    disjunction                go to state 137
+    conjunction                go to state 138
+    equality                   go to state 139
+    comparison                 go to state 140
+    genericCallLikeComparison  go to state 141
+    elvisExpression            go to state 142
+    rangeExpression            go to state 143
+    additiveExpression         go to state 144
+    multiplicativeExpression   go to state 145
+    primaryExpression          go to state 146
+    arrayExpression            go to state 147
+    collectionLiteral          go to state 148
+
+
+State 343
+
+  174 whileStatement: WHILE LPAREN expression RPAREN • control_structure_body_or_comma
+
+    COMMA              shift, and go to state 370
     LPAREN             shift, and go to state 155
     LSQUARE            shift, and go to state 113
     LCURL              shift, and go to state 104
@@ -5821,12 +5840,12 @@ State 342
     ifExpression                               go to state 131
     functionCall                               go to state 132
     dotExpression                              go to state 133
-    control_structure_body_or_comma            go to state 370
+    control_structure_body_or_comma            go to state 371
     loopStatement                              go to state 169
     whileStatement                             go to state 170
     forStatement                               go to state 171
     doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 371
+    controlStructureBody                       go to state 372
     jumpExpression                             go to state 134
     whenExpression                             go to state 135
     expression                                 go to state 173
@@ -5844,70 +5863,70 @@ State 342
     collectionLiteral                          go to state 148
 
 
-State 343
+State 344
 
    25 semis_statement: semis_statement semis statement •
 
     $default  reduce using rule 25 (semis_statement)
 
 
-State 344
+State 345
 
-  132 multi_comma_expression: multi_comma_expression • COMMA expression
-  135 indexingSuffix: LSQUARE expression multi_comma_expression • opt_comma RSQUARE
+  133 multi_comma_expression: multi_comma_expression • COMMA expression
+  136 indexingSuffix: LSQUARE expression multi_comma_expression • opt_comma RSQUARE
 
-    COMMA  shift, and go to state 372
+    COMMA  shift, and go to state 373
 
     $default  reduce using rule 69 (opt_comma)
 
-    opt_comma  go to state 373
-
-
-State 345
-
-  251 collectionLiteral: LSQUARE expression multi_comma_expression COMMA RSQUARE •
-
-    $default  reduce using rule 251 (collectionLiteral)
+    opt_comma  go to state 374
 
 
 State 346
 
-  132 multi_comma_expression: multi_comma_expression COMMA expression •
+  252 collectionLiteral: LSQUARE expression multi_comma_expression COMMA RSQUARE •
 
-    $default  reduce using rule 132 (multi_comma_expression)
+    $default  reduce using rule 252 (collectionLiteral)
 
 
 State 347
 
-  154 opt_else: SEMICOLON •
+  133 multi_comma_expression: multi_comma_expression COMMA expression •
 
-    $default  reduce using rule 154 (opt_else)
+    $default  reduce using rule 133 (multi_comma_expression)
 
 
 State 348
 
-  152 ifExpression: IF LPAREN expression RPAREN opt_else •
+  155 opt_else: SEMICOLON •
 
-    $default  reduce using rule 152 (ifExpression)
+    $default  reduce using rule 155 (opt_else)
 
 
 State 349
 
-  153 opt_else: controlStructureBody •
-  155         | controlStructureBody • SEMICOLON ELSE ifElseTail
-  156         | controlStructureBody • ELSE ifElseTail
+  153 ifExpression: IF LPAREN expression RPAREN opt_else •
 
-    SEMICOLON  shift, and go to state 374
-    ELSE       shift, and go to state 375
-
-    SEMICOLON  [reduce using rule 153 (opt_else)]
-    ELSE       [reduce using rule 153 (opt_else)]
-    $default   reduce using rule 153 (opt_else)
+    $default  reduce using rule 153 (ifExpression)
 
 
 State 350
 
-  187 whenSubject: LPAREN VAL variableDeclaration ASSIGNMENT • expression RPAREN
+  154 opt_else: controlStructureBody •
+  156         | controlStructureBody • SEMICOLON ELSE ifElseTail
+  157         | controlStructureBody • ELSE ifElseTail
+
+    SEMICOLON  shift, and go to state 375
+    ELSE       shift, and go to state 376
+
+    SEMICOLON  [reduce using rule 154 (opt_else)]
+    ELSE       [reduce using rule 154 (opt_else)]
+    $default   reduce using rule 154 (opt_else)
+
+
+State 351
+
+  188 whenSubject: LPAREN VAL variableDeclaration ASSIGNMENT • expression RPAREN
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -5935,7 +5954,7 @@ State 350
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 376
+    expression                 go to state 377
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -5950,10 +5969,10 @@ State 350
     collectionLiteral          go to state 148
 
 
-State 351
+State 352
 
-  193 whenEntry: ELSE ARROW • controlStructureBody SEMICOLON
-  194          | ELSE ARROW • controlStructureBody
+  194 whenEntry: ELSE ARROW • controlStructureBody SEMICOLON
+  195          | ELSE ARROW • controlStructureBody
 
     LPAREN             shift, and go to state 155
     LSQUARE            shift, and go to state 113
@@ -6004,7 +6023,7 @@ State 351
     whileStatement                             go to state 170
     forStatement                               go to state 171
     doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 377
+    controlStructureBody                       go to state 378
     jumpExpression                             go to state 134
     whenExpression                             go to state 135
     expression                                 go to state 173
@@ -6022,96 +6041,96 @@ State 351
     collectionLiteral                          go to state 148
 
 
-State 352
-
-  197 rangeTest: IN expression •
-
-    $default  reduce using rule 197 (rangeTest)
-
-
 State 353
 
-  188 multi_comma_whenCondition: multi_comma_whenCondition • COMMA whenCondition
-  191 whenEntry: whenCondition multi_comma_whenCondition • ARROW controlStructureBody
-  192          | whenCondition multi_comma_whenCondition • COMMA ARROW controlStructureBody
+  198 rangeTest: IN expression •
 
-    COMMA  shift, and go to state 378
-    ARROW  shift, and go to state 379
+    $default  reduce using rule 198 (rangeTest)
 
 
 State 354
 
-  190 multi_comma_whenCondition: $@13 •
+  189 multi_comma_whenCondition: multi_comma_whenCondition • COMMA whenCondition
+  192 whenEntry: whenCondition multi_comma_whenCondition • ARROW controlStructureBody
+  193          | whenCondition multi_comma_whenCondition • COMMA ARROW controlStructureBody
 
-    $default  reduce using rule 190 (multi_comma_whenCondition)
+    COMMA  shift, and go to state 379
+    ARROW  shift, and go to state 380
 
 
 State 355
 
-  184 whenExpression: WHEN whenSubject LCURL multi_whenEntry RCURL •
+  191 multi_comma_whenCondition: $@13 •
 
-    $default  reduce using rule 184 (whenExpression)
+    $default  reduce using rule 191 (multi_comma_whenCondition)
 
 
 State 356
 
-  164 functionArguments: functionArguments COMMA expression •
+  185 whenExpression: WHEN whenSubject LCURL multi_whenEntry RCURL •
 
-    $default  reduce using rule 164 (functionArguments)
+    $default  reduce using rule 185 (whenExpression)
 
 
 State 357
 
-  159 functionCall: IDENTIFIER LPAREN functionArguments RPAREN semis •
+  165 functionArguments: functionArguments COMMA expression •
 
-    $default  reduce using rule 159 (functionCall)
+    $default  reduce using rule 165 (functionArguments)
 
 
 State 358
 
-  246 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL • typeLiteral RCURL
-
-    FLOAT_LITERAL      shift, and go to state 380
-    DOUBLE_LITERAL     shift, and go to state 381
-    INTEGER_LITERAL    shift, and go to state 382
-    CHARACTER_LITERAL  shift, and go to state 383
-    BOOLEAN_LITERAL    shift, and go to state 384
-    STRING_LITERAL     shift, and go to state 385
-
-    typeLiteral  go to state 386
-
-
-State 359
-
-  160 functionCall: dotExpression LPAREN functionArguments RPAREN semis •
+  160 functionCall: IDENTIFIER LPAREN functionArguments RPAREN semis •
 
     $default  reduce using rule 160 (functionCall)
 
 
+State 359
+
+  247 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL • typeLiteral RCURL
+
+    FLOAT_LITERAL      shift, and go to state 381
+    DOUBLE_LITERAL     shift, and go to state 382
+    INTEGER_LITERAL    shift, and go to state 383
+    CHARACTER_LITERAL  shift, and go to state 384
+    BOOLEAN_LITERAL    shift, and go to state 385
+    STRING_LITERAL     shift, and go to state 386
+
+    typeLiteral  go to state 387
+
+
 State 360
 
-  144 opt_simpleIdentifier_EQ: simpleIdentifier ASSIGNMENT •
+  161 functionCall: dotExpression LPAREN functionArguments RPAREN semis •
 
-    $default  reduce using rule 144 (opt_simpleIdentifier_EQ)
+    $default  reduce using rule 161 (functionCall)
 
 
 State 361
 
-  143 valueArguments: LPAREN opt_valueArgument RPAREN •
+  145 opt_simpleIdentifier_EQ: simpleIdentifier ASSIGNMENT •
 
-    $default  reduce using rule 143 (valueArguments)
+    $default  reduce using rule 145 (opt_simpleIdentifier_EQ)
 
 
 State 362
 
-  147 opt_Multi: MULT •
+  144 valueArguments: LPAREN opt_valueArgument RPAREN •
 
-    $default  reduce using rule 147 (opt_Multi)
+    $default  reduce using rule 144 (valueArguments)
 
 
 State 363
 
-  150 valueArgument: opt_simpleIdentifier_EQ opt_Multi • expression
+  148 opt_Multi: MULT •
+
+    $default  reduce using rule 148 (opt_Multi)
+
+
+State 364
+
+  151 valueArgument: opt_simpleIdentifier_EQ opt_Multi • expression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -6139,7 +6158,7 @@ State 363
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 387
+    expression                 go to state 388
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -6154,71 +6173,71 @@ State 363
     collectionLiteral          go to state 148
 
 
-State 364
-
-  149 opt_Multi: $@12 •
-
-    $default  reduce using rule 149 (opt_Multi)
-
-
 State 365
 
-  137 multi_comma_valueArgument: multi_comma_valueArgument • COMMA valueArgument
-  140 opt_valueArgument: valueArgument multi_comma_valueArgument • opt_comma
+  150 opt_Multi: $@12 •
 
-    COMMA  shift, and go to state 388
-
-    $default  reduce using rule 69 (opt_comma)
-
-    opt_comma  go to state 389
+    $default  reduce using rule 150 (opt_Multi)
 
 
 State 366
 
-  139 multi_comma_valueArgument: $@9 •
+  138 multi_comma_valueArgument: multi_comma_valueArgument • COMMA valueArgument
+  141 opt_valueArgument: valueArgument multi_comma_valueArgument • opt_comma
 
-    $default  reduce using rule 139 (multi_comma_valueArgument)
+    COMMA  shift, and go to state 389
+
+    $default  reduce using rule 69 (opt_comma)
+
+    opt_comma  go to state 390
 
 
 State 367
 
-  174 forStatement: FOR LPAREN variable_multivariable IN expression • RPAREN controlStructureBody
+  140 multi_comma_valueArgument: $@9 •
 
-    RPAREN  shift, and go to state 390
+    $default  reduce using rule 140 (multi_comma_valueArgument)
 
 
 State 368
 
-  175 doWhileStatement: DO controlStructureBody WHILE LPAREN expression • RPAREN
+  175 forStatement: FOR LPAREN variable_multivariable IN expression • RPAREN controlStructureBody
 
     RPAREN  shift, and go to state 391
 
 
 State 369
 
-  169 control_structure_body_or_comma: COMMA •
+  176 doWhileStatement: DO controlStructureBody WHILE LPAREN expression • RPAREN
 
-    $default  reduce using rule 169 (control_structure_body_or_comma)
+    RPAREN  shift, and go to state 392
 
 
 State 370
 
-  173 whileStatement: WHILE LPAREN expression RPAREN control_structure_body_or_comma •
+  170 control_structure_body_or_comma: COMMA •
 
-    $default  reduce using rule 173 (whileStatement)
+    $default  reduce using rule 170 (control_structure_body_or_comma)
 
 
 State 371
 
-  168 control_structure_body_or_comma: controlStructureBody •
+  174 whileStatement: WHILE LPAREN expression RPAREN control_structure_body_or_comma •
 
-    $default  reduce using rule 168 (control_structure_body_or_comma)
+    $default  reduce using rule 174 (whileStatement)
 
 
 State 372
 
+  169 control_structure_body_or_comma: controlStructureBody •
+
+    $default  reduce using rule 169 (control_structure_body_or_comma)
+
+
+State 373
+
    68 opt_comma: COMMA •
-  132 multi_comma_expression: multi_comma_expression COMMA • expression
+  133 multi_comma_expression: multi_comma_expression COMMA • expression
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
@@ -6248,7 +6267,7 @@ State 372
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    expression                 go to state 346
+    expression                 go to state 347
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -6263,28 +6282,28 @@ State 372
     collectionLiteral          go to state 148
 
 
-State 373
-
-  135 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma • RSQUARE
-
-    RSQUARE  shift, and go to state 392
-
-
 State 374
 
-  155 opt_else: controlStructureBody SEMICOLON • ELSE ifElseTail
+  136 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma • RSQUARE
 
-    ELSE  shift, and go to state 393
+    RSQUARE  shift, and go to state 393
 
 
 State 375
 
-  156 opt_else: controlStructureBody ELSE • ifElseTail
+  156 opt_else: controlStructureBody SEMICOLON • ELSE ifElseTail
+
+    ELSE  shift, and go to state 394
+
+
+State 376
+
+  157 opt_else: controlStructureBody ELSE • ifElseTail
 
     LPAREN             shift, and go to state 155
     LSQUARE            shift, and go to state 113
     LCURL              shift, and go to state 104
-    SEMICOLON          shift, and go to state 394
+    SEMICOLON          shift, and go to state 395
     CLASS              shift, and go to state 1
     FUN                shift, and go to state 2
     IF                 shift, and go to state 114
@@ -6325,14 +6344,14 @@ State 375
     postfixUnaryExpression                     go to state 168
     parenthesizedExpression                    go to state 130
     ifExpression                               go to state 131
-    ifElseTail                                 go to state 395
+    ifElseTail                                 go to state 396
     functionCall                               go to state 132
     dotExpression                              go to state 133
     loopStatement                              go to state 169
     whileStatement                             go to state 170
     forStatement                               go to state 171
     doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 396
+    controlStructureBody                       go to state 397
     jumpExpression                             go to state 134
     whenExpression                             go to state 135
     expression                                 go to state 173
@@ -6350,37 +6369,37 @@ State 375
     collectionLiteral                          go to state 148
 
 
-State 376
-
-  187 whenSubject: LPAREN VAL variableDeclaration ASSIGNMENT expression • RPAREN
-
-    RPAREN  shift, and go to state 397
-
-
 State 377
 
-  193 whenEntry: ELSE ARROW controlStructureBody • SEMICOLON
-  194          | ELSE ARROW controlStructureBody •
+  188 whenSubject: LPAREN VAL variableDeclaration ASSIGNMENT expression • RPAREN
 
-    SEMICOLON  shift, and go to state 398
-
-    $default  reduce using rule 194 (whenEntry)
+    RPAREN  shift, and go to state 398
 
 
 State 378
 
-  188 multi_comma_whenCondition: multi_comma_whenCondition COMMA • whenCondition
-  192 whenEntry: whenCondition multi_comma_whenCondition COMMA • ARROW controlStructureBody
+  194 whenEntry: ELSE ARROW controlStructureBody • SEMICOLON
+  195          | ELSE ARROW controlStructureBody •
+
+    SEMICOLON  shift, and go to state 399
+
+    $default  reduce using rule 195 (whenEntry)
+
+
+State 379
+
+  189 multi_comma_whenCondition: multi_comma_whenCondition COMMA • whenCondition
+  193 whenEntry: whenCondition multi_comma_whenCondition COMMA • ARROW controlStructureBody
 
     LPAREN             shift, and go to state 112
     LSQUARE            shift, and go to state 113
-    ARROW              shift, and go to state 399
+    ARROW              shift, and go to state 400
     IF                 shift, and go to state 114
     WHEN               shift, and go to state 115
     RETURN             shift, and go to state 116
     CONTINUE           shift, and go to state 117
     BREAK              shift, and go to state 118
-    IN                 shift, and go to state 316
+    IN                 shift, and go to state 317
     NULL_LITERAL       shift, and go to state 119
     FLOAT_LITERAL      shift, and go to state 120
     DOUBLE_LITERAL     shift, and go to state 121
@@ -6400,9 +6419,9 @@ State 378
     dotExpression              go to state 133
     jumpExpression             go to state 134
     whenExpression             go to state 135
-    whenCondition              go to state 400
-    rangeTest                  go to state 319
-    expression                 go to state 320
+    whenCondition              go to state 401
+    rangeTest                  go to state 320
+    expression                 go to state 321
     disjunction                go to state 137
     conjunction                go to state 138
     equality                   go to state 139
@@ -6417,9 +6436,9 @@ State 378
     collectionLiteral          go to state 148
 
 
-State 379
+State 380
 
-  191 whenEntry: whenCondition multi_comma_whenCondition ARROW • controlStructureBody
+  192 whenEntry: whenCondition multi_comma_whenCondition ARROW • controlStructureBody
 
     LPAREN             shift, and go to state 155
     LSQUARE            shift, and go to state 113
@@ -6470,7 +6489,7 @@ State 379
     whileStatement                             go to state 170
     forStatement                               go to state 171
     doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 401
+    controlStructureBody                       go to state 402
     jumpExpression                             go to state 134
     whenExpression                             go to state 135
     expression                                 go to state 173
@@ -6488,282 +6507,282 @@ State 379
     collectionLiteral                          go to state 148
 
 
-State 380
-
-  243 typeLiteral: FLOAT_LITERAL •
-
-    $default  reduce using rule 243 (typeLiteral)
-
-
 State 381
 
-  244 typeLiteral: DOUBLE_LITERAL •
+  244 typeLiteral: FLOAT_LITERAL •
 
     $default  reduce using rule 244 (typeLiteral)
 
 
 State 382
 
-  240 typeLiteral: INTEGER_LITERAL •
-
-    $default  reduce using rule 240 (typeLiteral)
-
-
-State 383
-
-  245 typeLiteral: CHARACTER_LITERAL •
+  245 typeLiteral: DOUBLE_LITERAL •
 
     $default  reduce using rule 245 (typeLiteral)
 
 
-State 384
+State 383
 
-  242 typeLiteral: BOOLEAN_LITERAL •
-
-    $default  reduce using rule 242 (typeLiteral)
-
-
-State 385
-
-  241 typeLiteral: STRING_LITERAL •
+  241 typeLiteral: INTEGER_LITERAL •
 
     $default  reduce using rule 241 (typeLiteral)
 
 
+State 384
+
+  246 typeLiteral: CHARACTER_LITERAL •
+
+    $default  reduce using rule 246 (typeLiteral)
+
+
+State 385
+
+  243 typeLiteral: BOOLEAN_LITERAL •
+
+    $default  reduce using rule 243 (typeLiteral)
+
+
 State 386
 
-  246 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral • RCURL
+  242 typeLiteral: STRING_LITERAL •
 
-    RCURL  shift, and go to state 402
+    $default  reduce using rule 242 (typeLiteral)
 
 
 State 387
 
-  150 valueArgument: opt_simpleIdentifier_EQ opt_Multi expression •
+  247 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral • RCURL
 
-    $default  reduce using rule 150 (valueArgument)
+    RCURL  shift, and go to state 403
 
 
 State 388
 
-   68 opt_comma: COMMA •
-  137 multi_comma_valueArgument: multi_comma_valueArgument COMMA • valueArgument
+  151 valueArgument: opt_simpleIdentifier_EQ opt_Multi expression •
 
-    IDENTIFIER  shift, and go to state 13
-
-    RPAREN      reduce using rule 68 (opt_comma)
-    IDENTIFIER  [reduce using rule 145 ($@11)]
-    $default    reduce using rule 145 ($@11)
-
-    simpleIdentifier         go to state 326
-    opt_simpleIdentifier_EQ  go to state 329
-    $@11                     go to state 330
-    valueArgument            go to state 403
+    $default  reduce using rule 151 (valueArgument)
 
 
 State 389
 
-  140 opt_valueArgument: valueArgument multi_comma_valueArgument opt_comma •
+   68 opt_comma: COMMA •
+  138 multi_comma_valueArgument: multi_comma_valueArgument COMMA • valueArgument
 
-    $default  reduce using rule 140 (opt_valueArgument)
+    IDENTIFIER  shift, and go to state 13
+
+    RPAREN      reduce using rule 68 (opt_comma)
+    IDENTIFIER  [reduce using rule 146 ($@11)]
+    $default    reduce using rule 146 ($@11)
+
+    simpleIdentifier         go to state 327
+    opt_simpleIdentifier_EQ  go to state 330
+    $@11                     go to state 331
+    valueArgument            go to state 404
 
 
 State 390
 
-  174 forStatement: FOR LPAREN variable_multivariable IN expression RPAREN • controlStructureBody
+  141 opt_valueArgument: valueArgument multi_comma_valueArgument opt_comma •
 
-    LPAREN             shift, and go to state 155
-    LSQUARE            shift, and go to state 113
-    LCURL              shift, and go to state 104
-    CLASS              shift, and go to state 1
-    FUN                shift, and go to state 2
-    IF                 shift, and go to state 114
-    WHEN               shift, and go to state 115
-    FOR                shift, and go to state 156
-    DO                 shift, and go to state 157
-    WHILE              shift, and go to state 158
-    RETURN             shift, and go to state 116
-    CONTINUE           shift, and go to state 117
-    BREAK              shift, and go to state 118
-    NULL_LITERAL       shift, and go to state 119
-    CONST              shift, and go to state 3
-    FLOAT_LITERAL      shift, and go to state 120
-    DOUBLE_LITERAL     shift, and go to state 121
-    INTEGER_LITERAL    shift, and go to state 122
-    CHARACTER_LITERAL  shift, and go to state 123
-    BOOLEAN_LITERAL    shift, and go to state 124
-    STRING_LITERAL     shift, and go to state 125
-    ARRAYTYPELITERAL   shift, and go to state 31
-    IDENTIFIER         shift, and go to state 126
-
-    $default  reduce using rule 40 ($@1)
-
-    functionDeclaration                        go to state 7
-    block                                      go to state 224
-    statement                                  go to state 225
-    declaration                                go to state 162
-    opt_modifier                               go to state 9
-    $@1                                        go to state 10
-    arrayType                                  go to state 127
-    propertyDeclaration                        go to state 11
-    simpleIdentifier                           go to state 163
-    classDeclaration                           go to state 12
-    assignment                                 go to state 164
-    directly_assign                            go to state 165
-    directlyAssignableExpression               go to state 166
-    parenthesizedDirectlyAssignableExpression  go to state 167
-    postfixUnaryExpression                     go to state 168
-    parenthesizedExpression                    go to state 130
-    ifExpression                               go to state 131
-    functionCall                               go to state 132
-    dotExpression                              go to state 133
-    loopStatement                              go to state 169
-    whileStatement                             go to state 170
-    forStatement                               go to state 171
-    doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 404
-    jumpExpression                             go to state 134
-    whenExpression                             go to state 135
-    expression                                 go to state 173
-    disjunction                                go to state 137
-    conjunction                                go to state 138
-    equality                                   go to state 139
-    comparison                                 go to state 140
-    genericCallLikeComparison                  go to state 141
-    elvisExpression                            go to state 142
-    rangeExpression                            go to state 143
-    additiveExpression                         go to state 144
-    multiplicativeExpression                   go to state 145
-    primaryExpression                          go to state 146
-    arrayExpression                            go to state 147
-    collectionLiteral                          go to state 148
+    $default  reduce using rule 141 (opt_valueArgument)
 
 
 State 391
 
-  175 doWhileStatement: DO controlStructureBody WHILE LPAREN expression RPAREN •
+  175 forStatement: FOR LPAREN variable_multivariable IN expression RPAREN • controlStructureBody
 
-    $default  reduce using rule 175 (doWhileStatement)
+    LPAREN             shift, and go to state 155
+    LSQUARE            shift, and go to state 113
+    LCURL              shift, and go to state 104
+    CLASS              shift, and go to state 1
+    FUN                shift, and go to state 2
+    IF                 shift, and go to state 114
+    WHEN               shift, and go to state 115
+    FOR                shift, and go to state 156
+    DO                 shift, and go to state 157
+    WHILE              shift, and go to state 158
+    RETURN             shift, and go to state 116
+    CONTINUE           shift, and go to state 117
+    BREAK              shift, and go to state 118
+    NULL_LITERAL       shift, and go to state 119
+    CONST              shift, and go to state 3
+    FLOAT_LITERAL      shift, and go to state 120
+    DOUBLE_LITERAL     shift, and go to state 121
+    INTEGER_LITERAL    shift, and go to state 122
+    CHARACTER_LITERAL  shift, and go to state 123
+    BOOLEAN_LITERAL    shift, and go to state 124
+    STRING_LITERAL     shift, and go to state 125
+    ARRAYTYPELITERAL   shift, and go to state 31
+    IDENTIFIER         shift, and go to state 126
+
+    $default  reduce using rule 40 ($@1)
+
+    functionDeclaration                        go to state 7
+    block                                      go to state 224
+    statement                                  go to state 225
+    declaration                                go to state 162
+    opt_modifier                               go to state 9
+    $@1                                        go to state 10
+    arrayType                                  go to state 127
+    propertyDeclaration                        go to state 11
+    simpleIdentifier                           go to state 163
+    classDeclaration                           go to state 12
+    assignment                                 go to state 164
+    directly_assign                            go to state 165
+    directlyAssignableExpression               go to state 166
+    parenthesizedDirectlyAssignableExpression  go to state 167
+    postfixUnaryExpression                     go to state 168
+    parenthesizedExpression                    go to state 130
+    ifExpression                               go to state 131
+    functionCall                               go to state 132
+    dotExpression                              go to state 133
+    loopStatement                              go to state 169
+    whileStatement                             go to state 170
+    forStatement                               go to state 171
+    doWhileStatement                           go to state 172
+    controlStructureBody                       go to state 405
+    jumpExpression                             go to state 134
+    whenExpression                             go to state 135
+    expression                                 go to state 173
+    disjunction                                go to state 137
+    conjunction                                go to state 138
+    equality                                   go to state 139
+    comparison                                 go to state 140
+    genericCallLikeComparison                  go to state 141
+    elvisExpression                            go to state 142
+    rangeExpression                            go to state 143
+    additiveExpression                         go to state 144
+    multiplicativeExpression                   go to state 145
+    primaryExpression                          go to state 146
+    arrayExpression                            go to state 147
+    collectionLiteral                          go to state 148
 
 
 State 392
 
-  135 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma RSQUARE •
+  176 doWhileStatement: DO controlStructureBody WHILE LPAREN expression RPAREN •
 
-    $default  reduce using rule 135 (indexingSuffix)
+    $default  reduce using rule 176 (doWhileStatement)
 
 
 State 393
 
-  155 opt_else: controlStructureBody SEMICOLON ELSE • ifElseTail
+  136 indexingSuffix: LSQUARE expression multi_comma_expression opt_comma RSQUARE •
 
-    LPAREN             shift, and go to state 155
-    LSQUARE            shift, and go to state 113
-    LCURL              shift, and go to state 104
-    SEMICOLON          shift, and go to state 394
-    CLASS              shift, and go to state 1
-    FUN                shift, and go to state 2
-    IF                 shift, and go to state 114
-    WHEN               shift, and go to state 115
-    FOR                shift, and go to state 156
-    DO                 shift, and go to state 157
-    WHILE              shift, and go to state 158
-    RETURN             shift, and go to state 116
-    CONTINUE           shift, and go to state 117
-    BREAK              shift, and go to state 118
-    NULL_LITERAL       shift, and go to state 119
-    CONST              shift, and go to state 3
-    FLOAT_LITERAL      shift, and go to state 120
-    DOUBLE_LITERAL     shift, and go to state 121
-    INTEGER_LITERAL    shift, and go to state 122
-    CHARACTER_LITERAL  shift, and go to state 123
-    BOOLEAN_LITERAL    shift, and go to state 124
-    STRING_LITERAL     shift, and go to state 125
-    ARRAYTYPELITERAL   shift, and go to state 31
-    IDENTIFIER         shift, and go to state 126
-
-    $default  reduce using rule 40 ($@1)
-
-    functionDeclaration                        go to state 7
-    block                                      go to state 224
-    statement                                  go to state 225
-    declaration                                go to state 162
-    opt_modifier                               go to state 9
-    $@1                                        go to state 10
-    arrayType                                  go to state 127
-    propertyDeclaration                        go to state 11
-    simpleIdentifier                           go to state 163
-    classDeclaration                           go to state 12
-    assignment                                 go to state 164
-    directly_assign                            go to state 165
-    directlyAssignableExpression               go to state 166
-    parenthesizedDirectlyAssignableExpression  go to state 167
-    postfixUnaryExpression                     go to state 168
-    parenthesizedExpression                    go to state 130
-    ifExpression                               go to state 131
-    ifElseTail                                 go to state 405
-    functionCall                               go to state 132
-    dotExpression                              go to state 133
-    loopStatement                              go to state 169
-    whileStatement                             go to state 170
-    forStatement                               go to state 171
-    doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 396
-    jumpExpression                             go to state 134
-    whenExpression                             go to state 135
-    expression                                 go to state 173
-    disjunction                                go to state 137
-    conjunction                                go to state 138
-    equality                                   go to state 139
-    comparison                                 go to state 140
-    genericCallLikeComparison                  go to state 141
-    elvisExpression                            go to state 142
-    rangeExpression                            go to state 143
-    additiveExpression                         go to state 144
-    multiplicativeExpression                   go to state 145
-    primaryExpression                          go to state 146
-    arrayExpression                            go to state 147
-    collectionLiteral                          go to state 148
+    $default  reduce using rule 136 (indexingSuffix)
 
 
 State 394
 
-  158 ifElseTail: SEMICOLON •
+  156 opt_else: controlStructureBody SEMICOLON ELSE • ifElseTail
 
-    $default  reduce using rule 158 (ifElseTail)
+    LPAREN             shift, and go to state 155
+    LSQUARE            shift, and go to state 113
+    LCURL              shift, and go to state 104
+    SEMICOLON          shift, and go to state 395
+    CLASS              shift, and go to state 1
+    FUN                shift, and go to state 2
+    IF                 shift, and go to state 114
+    WHEN               shift, and go to state 115
+    FOR                shift, and go to state 156
+    DO                 shift, and go to state 157
+    WHILE              shift, and go to state 158
+    RETURN             shift, and go to state 116
+    CONTINUE           shift, and go to state 117
+    BREAK              shift, and go to state 118
+    NULL_LITERAL       shift, and go to state 119
+    CONST              shift, and go to state 3
+    FLOAT_LITERAL      shift, and go to state 120
+    DOUBLE_LITERAL     shift, and go to state 121
+    INTEGER_LITERAL    shift, and go to state 122
+    CHARACTER_LITERAL  shift, and go to state 123
+    BOOLEAN_LITERAL    shift, and go to state 124
+    STRING_LITERAL     shift, and go to state 125
+    ARRAYTYPELITERAL   shift, and go to state 31
+    IDENTIFIER         shift, and go to state 126
+
+    $default  reduce using rule 40 ($@1)
+
+    functionDeclaration                        go to state 7
+    block                                      go to state 224
+    statement                                  go to state 225
+    declaration                                go to state 162
+    opt_modifier                               go to state 9
+    $@1                                        go to state 10
+    arrayType                                  go to state 127
+    propertyDeclaration                        go to state 11
+    simpleIdentifier                           go to state 163
+    classDeclaration                           go to state 12
+    assignment                                 go to state 164
+    directly_assign                            go to state 165
+    directlyAssignableExpression               go to state 166
+    parenthesizedDirectlyAssignableExpression  go to state 167
+    postfixUnaryExpression                     go to state 168
+    parenthesizedExpression                    go to state 130
+    ifExpression                               go to state 131
+    ifElseTail                                 go to state 406
+    functionCall                               go to state 132
+    dotExpression                              go to state 133
+    loopStatement                              go to state 169
+    whileStatement                             go to state 170
+    forStatement                               go to state 171
+    doWhileStatement                           go to state 172
+    controlStructureBody                       go to state 397
+    jumpExpression                             go to state 134
+    whenExpression                             go to state 135
+    expression                                 go to state 173
+    disjunction                                go to state 137
+    conjunction                                go to state 138
+    equality                                   go to state 139
+    comparison                                 go to state 140
+    genericCallLikeComparison                  go to state 141
+    elvisExpression                            go to state 142
+    rangeExpression                            go to state 143
+    additiveExpression                         go to state 144
+    multiplicativeExpression                   go to state 145
+    primaryExpression                          go to state 146
+    arrayExpression                            go to state 147
+    collectionLiteral                          go to state 148
 
 
 State 395
 
-  156 opt_else: controlStructureBody ELSE ifElseTail •
+  159 ifElseTail: SEMICOLON •
 
-    $default  reduce using rule 156 (opt_else)
+    $default  reduce using rule 159 (ifElseTail)
 
 
 State 396
 
-  157 ifElseTail: controlStructureBody •
+  157 opt_else: controlStructureBody ELSE ifElseTail •
 
-    $default  reduce using rule 157 (ifElseTail)
+    $default  reduce using rule 157 (opt_else)
 
 
 State 397
 
-  187 whenSubject: LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN •
+  158 ifElseTail: controlStructureBody •
 
-    $default  reduce using rule 187 (whenSubject)
+    $default  reduce using rule 158 (ifElseTail)
 
 
 State 398
 
-  193 whenEntry: ELSE ARROW controlStructureBody SEMICOLON •
+  188 whenSubject: LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN •
 
-    $default  reduce using rule 193 (whenEntry)
+    $default  reduce using rule 188 (whenSubject)
 
 
 State 399
 
-  192 whenEntry: whenCondition multi_comma_whenCondition COMMA ARROW • controlStructureBody
+  194 whenEntry: ELSE ARROW controlStructureBody SEMICOLON •
+
+    $default  reduce using rule 194 (whenEntry)
+
+
+State 400
+
+  193 whenEntry: whenCondition multi_comma_whenCondition COMMA ARROW • controlStructureBody
 
     LPAREN             shift, and go to state 155
     LSQUARE            shift, and go to state 113
@@ -6814,7 +6833,7 @@ State 399
     whileStatement                             go to state 170
     forStatement                               go to state 171
     doWhileStatement                           go to state 172
-    controlStructureBody                       go to state 406
+    controlStructureBody                       go to state 407
     jumpExpression                             go to state 134
     whenExpression                             go to state 135
     expression                                 go to state 173
@@ -6832,50 +6851,50 @@ State 399
     collectionLiteral                          go to state 148
 
 
-State 400
-
-  188 multi_comma_whenCondition: multi_comma_whenCondition COMMA whenCondition •
-
-    $default  reduce using rule 188 (multi_comma_whenCondition)
-
-
 State 401
 
-  191 whenEntry: whenCondition multi_comma_whenCondition ARROW controlStructureBody •
+  189 multi_comma_whenCondition: multi_comma_whenCondition COMMA whenCondition •
 
-    $default  reduce using rule 191 (whenEntry)
+    $default  reduce using rule 189 (multi_comma_whenCondition)
 
 
 State 402
 
-  246 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL •
+  192 whenEntry: whenCondition multi_comma_whenCondition ARROW controlStructureBody •
 
-    $default  reduce using rule 246 (arrayExpression)
+    $default  reduce using rule 192 (whenEntry)
 
 
 State 403
 
-  137 multi_comma_valueArgument: multi_comma_valueArgument COMMA valueArgument •
+  247 arrayExpression: arrayType LPAREN INTEGER_LITERAL RPAREN LCURL typeLiteral RCURL •
 
-    $default  reduce using rule 137 (multi_comma_valueArgument)
+    $default  reduce using rule 247 (arrayExpression)
 
 
 State 404
 
-  174 forStatement: FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody •
+  138 multi_comma_valueArgument: multi_comma_valueArgument COMMA valueArgument •
 
-    $default  reduce using rule 174 (forStatement)
+    $default  reduce using rule 138 (multi_comma_valueArgument)
 
 
 State 405
 
-  155 opt_else: controlStructureBody SEMICOLON ELSE ifElseTail •
+  175 forStatement: FOR LPAREN variable_multivariable IN expression RPAREN controlStructureBody •
 
-    $default  reduce using rule 155 (opt_else)
+    $default  reduce using rule 175 (forStatement)
 
 
 State 406
 
-  192 whenEntry: whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody •
+  156 opt_else: controlStructureBody SEMICOLON ELSE ifElseTail •
 
-    $default  reduce using rule 192 (whenEntry)
+    $default  reduce using rule 156 (opt_else)
+
+
+State 407
+
+  193 whenEntry: whenCondition multi_comma_whenCondition COMMA ARROW controlStructureBody •
+
+    $default  reduce using rule 193 (whenEntry)
