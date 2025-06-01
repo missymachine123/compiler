@@ -1636,7 +1636,7 @@ void typecheck(struct tree *n) {
                                 se2 = lookup_st(current, value->leaf->text);
                                 rhs_type = se2->type;
                             }else {
-                                printf("value->leaf->category: %d\n", value->leaf->category);
+                                // printf("value->leaf->category: %d\n", value->leaf->category);
                                 rhs_type = get_type(value->leaf->category);
                             }
                             break; 
@@ -1645,7 +1645,7 @@ void typecheck(struct tree *n) {
                 if (lhs_type == NULL && rhs_type != NULL) {
                     if(find_node_by_prodrule(n->kids[0], 1059) != NULL){
                         lhs = find_leaf(n->kids[0], 407); 
-                        printnode(lhs);
+                        // printnode(lhs);
                         insert_type(current, lhs->leaf->text, assignType("Int"));
                         //printf("array is here\n");
                     }
@@ -1884,7 +1884,7 @@ void assign_addresses_in_scope(SymbolTable st){
     int i;
     SymbolTableEntry ste;
     if (st == NULL) return;
-    printf("In Symbol table for: %s\n", st->name);
+    // printf("In Symbol table for: %s\n", st->name);
     // Iterate over each bucket
     for (i = 0; i < st->nBuckets; i++) {
         for (ste = st->tbl[i]; ste != NULL; ste = ste->next) {   
@@ -1907,8 +1907,7 @@ struct string_table string_tbl;
 // if constant value is encountered like 10 + 2, get the text, and set a.u.offset = t->??->leaf->text
 void assign_address(struct tree *t)
 {
-    int i;
-    SymbolTable temp;
+    int i; 
     if (t == NULL) return;
     /* pre-order activity */
     switch (t->prodrule) {  
@@ -2029,7 +2028,7 @@ void assign_address(struct tree *t)
 
         break;
         case 392: /* String literal */
-            printf("String literal: %s\n", t->leaf->text);
+            // printf("String literal: %s\n", t->leaf->text);
             addString(&string_tbl, descape(t->leaf->text)); // Add the string to the string table
             //t->address = genvar(R_CONST); // Generate a constant address for the string literal
         break; 
@@ -2171,7 +2170,7 @@ void assign_address(struct tree *t)
             case 2000: //array declaration
             if (t->address == NULL) {
                 t->address = genvar(R_LOCAL);  // Generate a local address for the current node
-                printf("Assigning address for node with addr %d\n", t->address->u.offset);
+                // printf("Assigning address for node with addr %d\n", t->address->u.offset);
                 t->kids[1]->address = genvar(R_CONST); 
                 t->kids[1]->address->u.offset = t->kids[2]->leaf->ival * 8; // Assign the integer value to the offset
                 struct addr *a = malloc(sizeof(struct addr));
@@ -2190,19 +2189,11 @@ void assign_address(struct tree *t)
             break; 
 
             case 1028: { /* Property declaration (variables) */
-                printf("here\n");
+                // printf("here\n");
                 //printnode(t->kids[3]);
                 //check if its an array first 
                 struct tree *var_decl = t->kids[3]; // multivariable_variableDeclaration
-                if (var_decl->kids[0]->kids[2] != NULL){
-                    //printnode(var_decl->kids[0]->kids[2]);
-                    if (find_node_by_prodrule(t->kids[3],2001)){
-                        struct tree *arraytype= find_node_by_prodrule(t->kids[3],2001);
-                        printnode(arraytype);
-                        //t->kids[3]->address = parenthesis->kids[1]->address; // Assign the address from the child
-                        //assign_address(t->kids[2]);
-                    }
-                }
+                 
                 if (var_decl->prodrule == 1035) { // multiVariableDeclaration
                     // Handle multiple variables
                     struct tree *var_list = var_decl;
@@ -2607,7 +2598,7 @@ void collect_globals_and_functions() {
             
             assign_addresses_in_scope(globals);
             assign_address(root);
-            print_tree_with_addresses(root,0); // Print the tree with addresses
+            // print_tree_with_addresses(root,0); // Print the tree with addresses
 
             codegen(root);
             collect_globals_and_functions();
@@ -2619,13 +2610,7 @@ void collect_globals_and_functions() {
             }
             const char *extension = ".ic";
             strcat(filename_ic, extension);
-            FILE *ic_file = fopen(filename_ic, "w");
-            if (!ic_file) {
-                fprintf(stderr, "Error: Could not open %s for writing.\n", filename_ic);
-                exit(EXIT_FAILURE);
-            }
-            fflush(stdout);
-            dup2(fileno(ic_file), fileno(stdout));
+            freopen(filename_ic, "w", stdout);
             print_tcode(filename,global_entries, &string_tbl);
             fclose(stdout);
             reset_stdout();

@@ -755,6 +755,7 @@ void print_child_icode(struct tree *t) {
         }
     }
 }
+struct tree *find_node_by_prodrule(struct tree *t, int prodrule) ;
 
 void codegen(struct tree *t)
 {
@@ -798,7 +799,7 @@ void codegen(struct tree *t)
     
         case 1043: { // Assignment with operators like =, +=, -=, *=, /=
             if (find_node_by_prodrule(t->kids[0], 1059) != NULL) {
-                fprintf(stderr, "array assignmmet\n");
+                // fprintf(stderr, "array assignmmet\n");
                 char *operator = t->kids[0]->kids[1]->leaf->text;
             if (strcmp(operator, "=") == 0) {
                   // Simple assignment
@@ -904,7 +905,7 @@ void codegen(struct tree *t)
                 t->icode = concat(t->kids[4]->icode, assign);
                 add_to_tcode(assign);
            }
-           struct tree *c= find_node_by_prodrule(t->kids[4]->kids[1],2000);
+           struct tree *c= find_node_by_prodrule(t->kids[4]->kids[1],2000); 
            int array_size = c->kids[2]->leaf->ival;
 
            for(int i = 0; i < array_size; i++) {

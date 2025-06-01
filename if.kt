@@ -1,14 +1,7 @@
-fun fib(n : Int) : Int {
- var m : Int = 0;
- if (n < 2) {
-    return 1;
-    }
-	 m = fib(n-1);
-	 m = m + fib(n-2);
-	 return m;
-}
 
 fun main() {
-  var i : Int = 5;
-  i = fib(i);
+   var a : Array<Int> = Array<Int>( 8 ) { 0 }
+   a[5] = 5;
+   var i : Int = a[5]
+   println("$i")
 }
